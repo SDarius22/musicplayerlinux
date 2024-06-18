@@ -114,7 +114,7 @@ class _TracksState extends State<Tracks>{
                                   borderRadius: BorderRadius.circular(10),
                                   image: DecorationImage(
                                     fit: BoxFit.cover,
-                                    image: Image.memory(File("assets\\bg.png").readAsBytesSync()).image,
+                                    image: Image.memory(File("./assets/bg.png").readAsBytesSync()).image,
                                   )
                               ),
                               child: const Center(
@@ -153,7 +153,7 @@ class _TracksState extends State<Tracks>{
                                         borderRadius: BorderRadius.circular(10),
                                         image: DecorationImage(
                                           fit: BoxFit.cover,
-                                          image: Image.memory(File("assets\\bg.png").readAsBytesSync()).image,
+                                          image: Image.memory(File("./assets/bg.png").readAsBytesSync()).image,
                                         )
                                     ),
                                     child: Center(

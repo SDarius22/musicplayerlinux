@@ -319,7 +319,7 @@ class _HomePageState extends State<HomePage>{
                                                             borderRadius: BorderRadius.circular(10),
                                                             image: DecorationImage(
                                                               fit: BoxFit.cover,
-                                                              image: Image.memory(File("assets\\bg.png").readAsBytesSync()).image,
+                                                              image: Image.memory(File("./assets/bg.png").readAsBytesSync()).image,
                                                             )
                                                         ),
                                                         child: Center(
@@ -931,7 +931,7 @@ class _HomePageState extends State<HomePage>{
                                                                   borderRadius: BorderRadius.circular(10),
                                                                   image: DecorationImage(
                                                                     fit: BoxFit.cover,
-                                                                    image: Image.memory(File("assets\\bg.png").readAsBytesSync()).image,
+                                                                    image: Image.memory(File("./assets/bg.png").readAsBytesSync()).image,
                                                                   )
                                                               ),
                                                               child: Center(
@@ -978,7 +978,7 @@ class _HomePageState extends State<HomePage>{
                                                                           borderRadius: BorderRadius.circular(10),
                                                                           image: DecorationImage(
                                                                             fit: BoxFit.cover,
-                                                                            image: Image.memory(File("assets\\bg.png").readAsBytesSync()).image,
+                                                                            image: Image.memory(File("./assets/bg.png").readAsBytesSync()).image,
                                                                           )
                                                                       ),
                                                                       child: Center(
@@ -1360,7 +1360,7 @@ class _HomePageState extends State<HomePage>{
                                               decoration: BoxDecoration(
                                                 borderRadius: BorderRadius.circular(10),
                                                 image: DecorationImage(
-                                                  image: Image.memory(File("assets\\bg.png").readAsBytesSync()).image,
+                                                  image: Image.memory(File("./assets/bg.png").readAsBytesSync()).image,
                                                   fit: BoxFit.cover,
                                                 ),
                                               ),
@@ -1408,7 +1408,7 @@ class _HomePageState extends State<HomePage>{
                                                       decoration: BoxDecoration(
                                                         borderRadius: BorderRadius.circular(10),
                                                         image: DecorationImage(
-                                                          image: Image.memory(File("assets\\bg.png").readAsBytesSync()).image,
+                                                          image: Image.memory(File("./assets/bg.png").readAsBytesSync()).image,
                                                           fit: BoxFit.cover,
                                                         ),
                                                       ),
@@ -2055,7 +2055,7 @@ class _HomePageState extends State<HomePage>{
                                                                           borderRadius: BorderRadius.circular(10),
                                                                           image: DecorationImage(
                                                                             fit: BoxFit.cover,
-                                                                            image: Image.memory(File("assets\\bg.png").readAsBytesSync()).image,
+                                                                            image: Image.memory(File("./assets/bg.png").readAsBytesSync()).image,
                                                                           )
                                                                       ),
                                                                       child: Center(
@@ -2102,7 +2102,7 @@ class _HomePageState extends State<HomePage>{
                                                                                   borderRadius: BorderRadius.circular(10),
                                                                                   image: DecorationImage(
                                                                                     fit: BoxFit.cover,
-                                                                                    image: Image.memory(File("assets\\bg.png").readAsBytesSync()).image,
+                                                                                    image: Image.memory(File("./assets/bg.png").readAsBytesSync()).image,
                                                                                   )
                                                                               ),
                                                                               child: Center(
@@ -2491,7 +2491,7 @@ class _HomePageState extends State<HomePage>{
                                               decoration: BoxDecoration(
                                                 borderRadius: BorderRadius.circular(10),
                                                 image: DecorationImage(
-                                                  image: Image.memory(File("assets\\bg.png").readAsBytesSync()).image,
+                                                  image: Image.memory(File("./assets/bg.png").readAsBytesSync()).image,
                                                   fit: BoxFit.cover,
                                                 ),
                                               ),
@@ -2539,7 +2539,7 @@ class _HomePageState extends State<HomePage>{
                                                       decoration: BoxDecoration(
                                                         borderRadius: BorderRadius.circular(10),
                                                         image: DecorationImage(
-                                                          image: Image.memory(File("assets\\bg.png").readAsBytesSync()).image,
+                                                          image: Image.memory(File("./assets/bg.png").readAsBytesSync()).image,
                                                           fit: BoxFit.cover,
                                                         ),
                                                       ),
@@ -2699,10 +2699,11 @@ class _HomePageState extends State<HomePage>{
   }
 
   List<Widget> buildPlayControl() {
+    print("duration: ${functions1.playingsongs[functions1.index].duration}");
     return [
       ProgressBar(
-        progress: Duration(milliseconds: functions1.sliderProgress),
-        total: Duration(milliseconds: functions1.playingsongs[functions1.index].duration),
+        progress: Duration(seconds: functions1.sliderProgress),
+        total: Duration(seconds: functions1.playingsongs[functions1.index].duration),
         progressBarColor: functions1.color,
         baseBarColor: Colors.white.withOpacity(0.24),
         bufferedBarColor: Colors.white.withOpacity(0.24),

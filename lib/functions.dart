@@ -13,9 +13,9 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_media_metadata/flutter_media_metadata.dart';
 import 'package:audioplayers/audioplayers.dart';
 import '../lyric_reader/lyrics_reader.dart';
+import 'package:audiotags/audiotags.dart';
 
 class functions with ChangeNotifier{
   settings settings1 = settings.fromJson(jsonDecode(File("./assets/settings.json").readAsStringSync()));
@@ -42,7 +42,7 @@ class functions with ChangeNotifier{
   late PaletteGenerator generator;
   late var lyricModel;
   late var lyricUI;
-  late List<metadata_type> found;
+  List<metadata_type> found = [];
 
   void lyricModelReset() {
     lyricModel = LyricsModelBuilder.create().bindLyricToMain(playingsongs[index].lyrics).getModel();
@@ -95,14 +95,12 @@ class functions with ChangeNotifier{
     );
     lyricModel = LyricsModelBuilder.create().bindLyricToMain(playingsongs[index].lyrics).getModel();
     audioPlayer?.onDurationChanged.listen((Duration event) {
-        max_value = event.inMilliseconds;
+        max_value = event.inSeconds;
     });
     audioPlayer?.onPositionChanged.listen((Duration event) async {
-      currentpos = event.inMilliseconds;
-      //print(playingsongs[index].duration);
-      int tduration = playingsongs[index].duration.toInt();
-      tduration = tduration~/1000*1000;
-      //print(tduration);
+      currentpos = event.inSeconds;
+      print(playingsongs[index].duration);
+      int tduration = playingsongs[index].duration;
       if(currentpos.toInt() == tduration){
         if(repeat){
           print("repeat");
@@ -110,38 +108,37 @@ class functions with ChangeNotifier{
         }
         else {
           print("next");
-          if (index == playingsongs.length - 1)
+          if (index == playingsongs.length - 1) {
             index = 0;
-          else
+          } else {
             index++;
+          }
           playSong();
         }
       }else
       {
         //generating the duration label
-        int sminutes = Duration(milliseconds: currentpos).inMinutes;
-        int sseconds = Duration(milliseconds: currentpos).inSeconds;
+        int sminutes = currentpos ~/ 60;
+        int sseconds = currentpos - (sminutes * 60);
 
-        int rminutes = sminutes;
-        int rseconds = sseconds - (sminutes * 60);
-        if (rminutes < 10 && rseconds < 10) {
-          currentpostlabel = "0$rminutes:0$rseconds";
+        if (sminutes < 10 && sseconds < 10) {
+          currentpostlabel = "0$sminutes:0$sseconds";
         }
         else {
-          if (rminutes < 10) {
-            currentpostlabel = "0$rminutes:$rseconds";
+          if (sminutes < 10) {
+            currentpostlabel = "0$sminutes:$sseconds";
           }
           else {
-            if (rseconds < 10) {
-              currentpostlabel = "$rminutes:0$rseconds";
+            if (sseconds < 10) {
+              currentpostlabel = "$sminutes:0$sseconds";
             }
             else {
-              currentpostlabel = "$rminutes:$rseconds";
+              currentpostlabel = "$sminutes:$sseconds";
             }
           }
         }
-        sliderProgress = event.inMilliseconds;
-        playProgress = event.inMilliseconds;
+        sliderProgress = event.inSeconds;
+        playProgress = event.inSeconds;
         notifyListeners();
       }
     });
@@ -212,6 +209,7 @@ class functions with ChangeNotifier{
     for(int i = 0; i < entitiesbig.length; i++){
       if(entitiesbig[i] is File){
         String path = entitiesbig[i].path.replaceAll("\\", "/");
+        //print(path);
         if (path.endsWith(".flac") || path.endsWith(".mp3") || path.endsWith(".wav") || path.endsWith(".m4a")) {
           //print(path);
           entities.add(entitiesbig[i]);
@@ -265,7 +263,6 @@ class functions with ChangeNotifier{
   }
 
   Future<metadata_type> retrievesong(String path) async {
-    var metadatavar;
     metadata_type metadatavariable = metadata_type();
 
     metadatavariable.artists = '';
@@ -273,10 +270,11 @@ class functions with ChangeNotifier{
     int sminutes = 0;
     int sseconds = 0;
 
-    metadatavar = await MetadataRetriever.fromFile(File(path));
-    if(metadatavar.albumArt == null){
+    var metadatavar = await AudioTags.read(path);
+    //print(metadatavar);
+    if( metadatavar == null || metadatavar.pictures.isEmpty == true){
+      print(path);
       if(path.endsWith(".flac")) {
-        //print(path);
         var flac = FlacInfo(File(path));
         var metadatas = await flac.readMetadatas();
         String metadata = metadatas[2].toString();
@@ -290,7 +288,7 @@ class functions with ChangeNotifier{
         metadata = metadata.substring(1, metadata.length - 1);
         List<String> metadata2 = metadata.split(', *1234a678::876a4321*,');
 
-        //print(metadata2);
+        print(metadata2);
         for (var metadate2 in metadata2) {
           if (metadate2.contains("TITLE=")) {
             metadatavariable.title = metadate2.substring(6);
@@ -378,55 +376,41 @@ class functions with ChangeNotifier{
       }
     }
     else {
-      metadatavariable.title = metadatavar.trackName ?? "Unknown Song";
-      metadatavariable.album = metadatavar.albumName ?? "Unknown Album";
-      metadatavariable.duration = metadatavar.trackDuration ?? 0;
+      metadatavariable.title = metadatavar.title ?? "Unknown Song";
+      metadatavariable.album = metadatavar.album ?? "Unknown Album";
+      //print(metadatavar.duration);
+      metadatavariable.duration = metadatavar.duration ?? 0;
       metadatavariable.tracknumber = metadatavar.trackNumber ?? 0;
-      metadatavariable.image = metadatavar.albumArt ?? File(
-          "./assets/bg.png").readAsBytesSync();
-      if (metadatavar.trackArtistNames.length > 0) {
-        metadatavariable.artists = '';
-        if (metadatavar.trackArtistNames.length == 1) {
-          metadatavariable.artists = metadatavar.trackArtistNames[0];
-        } else {
-          for (String artist in metadatavar.trackArtistNames) {
-            metadatavariable.artists = metadatavariable.artists + artist + "; ";
-          }
-          metadatavariable.artists.replaceAll(" ; ", "; ");
-          if(metadatavariable.artists.endsWith("; ")) {
-            metadatavariable.artists = metadatavariable.artists.substring(
-                0, metadatavariable.artists.length - 2);
-          }
-        }
-      }
-      else {
-        metadatavariable.artists = "Unknown Artist";
+      metadatavariable.image = (metadatavar.pictures.isEmpty ? File(
+          "./assets/bg.png").readAsBytesSync() : metadatavar.pictures[0].bytes);
+      metadatavariable.artists = metadatavar.trackArtist ?? "Unknown Artist";
+      metadatavariable.discnumber = metadatavar.discNumber ?? 0;
+
+      if (metadatavar.duration != null) {
+        sminutes = metadatavar.duration!~/60;
+        sseconds = metadatavar.duration! - (sminutes * 60);
       }
 
-      if (metadatavar.trackDuration != null) {
-        sminutes = Duration(milliseconds: metadatavar.trackDuration)
-            .inMinutes;
-        sseconds = Duration(milliseconds: metadatavar.trackDuration)
-            .inSeconds;
-      }
-      int rminutes = sminutes;
-      int rseconds = sseconds - (sminutes * 60);
-      if (rminutes < 10 && rseconds < 10) {
-        metadatavariable.durationString = "0$rminutes:0$rseconds";
+      //print("sminutes: $sminutes");
+      //print("sseconds: $sseconds");
+      //print(rminutes);
+      if (sminutes < 10 && sseconds < 10) {
+        metadatavariable.durationString = "0$sminutes:0$sseconds";
       }
       else {
-        if (rminutes < 10) {
-          metadatavariable.durationString = "0$rminutes:$rseconds";
+        if (sminutes < 10) {
+          metadatavariable.durationString = "0$sminutes:$sseconds";
         }
         else {
-          if (rseconds < 10) {
-            metadatavariable.durationString = "$rminutes:0$rseconds";
+          if (sseconds < 10) {
+            metadatavariable.durationString = "$sminutes:0$sseconds";
           }
           else {
-            metadatavariable.durationString = "$rminutes:$rseconds";
+            metadatavariable.durationString = "$sminutes:$sseconds";
           }
         }
       }
+      //print(metadatavariable.durationString);
     }
     var lyrpath = path.replaceAll(".mp3", ".lrc")
         .replaceAll(
@@ -444,42 +428,71 @@ class functions with ChangeNotifier{
       }
     }
     if (!exists) {
-      metadatavariable.lyrics = "No Lyrics";
+      //print("lyrics not found");
+      bool lyricsfound = false;
+      if(path.endsWith(".flac")) {
+        //print("flac");
+        var flac = FlacInfo(File(path));
+        var metadatas = await flac.readMetadatas();
+        String metadata = metadatas[2].toString();
+        metadata = metadata.substring(1, metadata.length - 1);
+        //print(metadata);
+        List<String> metadata2 = metadata.split(', *1234a678::876a4321*,');
+
+        for (var metadate2 in metadata2) {
+          if (metadate2.contains("LYRICS=")) {
+            metadatavariable.lyrics = metadate2.substring(7);
+            lyricsfound = true;
+          }
+        }
+      }
+      else if(path.endsWith(".mp3")){
+        //print(path);
+        var parser = ID3TagReader.path(path);
+        var tags = parser.readTagSync();
+        if (tags.lyrics.isEmpty == false) {
+          metadatavariable.lyrics = tags.lyrics.toString();
+          lyricsfound = true;
+        }
+      }
+      if(!lyricsfound){
+        metadatavariable.lyrics = "No Lyrics";
+      }
     }
     metadatavariable.path = path;
 
-    if(path.endsWith(".flac")) {
-      //print(path);
-      var flac = FlacInfo(File(path));
-      var metadatas = await flac.readMetadatas();
-      String metadata = metadatas[2].toString();
-      metadata = metadata.substring(1, metadata.length - 1);
-      List<String> metadata2 = metadata.split(', *1234a678::876a4321*,');
-
-      //print(metadata2);
-      for (var metadate2 in metadata2) {
-        if(metadate2.contains("DISCNUMBER=")){
-          metadatavariable.discnumber = int.parse(metadate2.substring(12));
-          //print(metadatavariable.discnumber);
-        }
-      }
-    }
-    else if(path.endsWith(".mp3")){
-      //print(path);
-      var parser = ID3TagReader.path(path);
-      var tags = parser.readTagSync();
-      metadatavariable.discnumber = int.parse(tags.trackNumber ?? "0");
-    }
+    // if(path.endsWith(".flac")) {
+    //   //print(path);
+    //   var flac = FlacInfo(File(path));
+    //   var metadatas = await flac.readMetadatas();
+    //   String metadata = metadatas[2].toString();
+    //   metadata = metadata.substring(1, metadata.length - 1);
+    //   List<String> metadata2 = metadata.split(', *1234a678::876a4321*,');
+    //
+    //   //print(metadata2);
+    //   for (var metadate2 in metadata2) {
+    //     if(metadate2.contains("DISCNUMBER=")){
+    //       metadatavariable.discnumber = int.parse(metadate2.substring(12));
+    //       //print(metadatavariable.discnumber);
+    //     }
+    //   }
+    // }
+    // else if(path.endsWith(".mp3")){
+    //   //print(path);
+    //   var parser = ID3TagReader.path(path);
+    //   var tags = parser.readTagSync();
+    //   metadatavariable.discnumber = int.parse(tags.trackNumber ?? "0");
+    // }
 
 
     if(metadatavariable.duration == 0){
-      var metadatavar2;
-      metadatavar2 = await MetadataRetriever.fromFile(File(metadatavariable.path));
-      if (metadatavar2.trackDuration != null) {
-        metadatavariable.duration = metadatavar2.trackDuration;
-        sminutes = Duration(milliseconds: metadatavar.trackDuration)
+      //print("duration is 0");
+      var metadatavar2 = await AudioTags.read(path);
+      if (metadatavar2?.duration != null) {
+        metadatavariable.duration = metadatavar2!.duration!;
+        sminutes = Duration(milliseconds: metadatavar?.duration ?? 0)
             .inMinutes;
-        sseconds = Duration(milliseconds: metadatavar.trackDuration)
+        sseconds = Duration(milliseconds: metadatavar?.duration ?? 0)
             .inSeconds;
         int rminutes = sminutes;
         int rseconds = sseconds - (sminutes * 60);
@@ -503,7 +516,8 @@ class functions with ChangeNotifier{
 
 
     }
-
+    //print(metadatavariable.duration);
+    //print (metadatavariable.durationString);
     //print("song: ${metadatavariable.title} discnumber: ${metadatavariable.discnumber}");
 
     return metadatavariable;
@@ -525,11 +539,13 @@ class functions with ChangeNotifier{
         _found = true;
       }
     }
-    if(_found == false)
+    if(_found == false) {
       print("how?");
-    Uint8List image = File("./assets//bg.png").readAsBytesSync();
-    var metadatavar = await MetadataRetriever.fromFile(File(path));
-    if(metadatavar.albumArt == null){
+    }
+    Uint8List image = File("./assets/bg.png").readAsBytesSync();
+    var metadatavar = await AudioTags.read(path);
+    // print(metadatavar?.pictures[0].bytes);
+    if(metadatavar?.pictures.isEmpty == true){
       if(path.endsWith(".flac")) {
         var flac = FlacInfo(File(path));
         var metadatas = await flac.readMetadatas();
@@ -549,8 +565,8 @@ class functions with ChangeNotifier{
       }
     }
     else{
-      image = metadatavar.albumArt ?? File(
-          "./assets//bg.png").readAsBytesSync();
+        image = metadatavar?.pictures[0].bytes ?? File(
+            "./assets/bg.png").readAsBytesSync();
     }
 
     allmetadata[pathindex].image = image;
