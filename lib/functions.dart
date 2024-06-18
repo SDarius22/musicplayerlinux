@@ -99,7 +99,7 @@ class functions with ChangeNotifier{
     });
     audioPlayer?.onPositionChanged.listen((Duration event) async {
       currentpos = event.inSeconds;
-      print(playingsongs[index].duration);
+      //print(playingsongs[index].duration);
       int tduration = playingsongs[index].duration;
       if(currentpos.toInt() == tduration){
         if(repeat){

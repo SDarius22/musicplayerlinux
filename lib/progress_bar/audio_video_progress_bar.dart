@@ -256,7 +256,7 @@ class ProgressBar extends LeafRenderObjectWidget {
   RenderObject createRenderObject(BuildContext context) {
     final theme = Theme.of(context);
     final primaryColor = theme.colorScheme.primary;
-    final textStyle = timeLabelTextStyle ?? theme.textTheme.bodyText1;
+    final textStyle = timeLabelTextStyle ?? theme.textTheme.bodyMedium;
     return _RenderProgressBar(
       progress: progress,
       total: total,
@@ -287,7 +287,7 @@ class ProgressBar extends LeafRenderObjectWidget {
   void updateRenderObject(BuildContext context, RenderObject renderObject) {
     final theme = Theme.of(context);
     final primaryColor = theme.colorScheme.primary;
-    final textStyle = timeLabelTextStyle ?? theme.textTheme.bodyText1;
+    final textStyle = timeLabelTextStyle ?? theme.textTheme.bodyMedium;
     (renderObject as _RenderProgressBar)
       ..progress = progress
       ..total = total

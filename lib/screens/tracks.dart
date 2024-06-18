@@ -32,7 +32,6 @@ class _TracksState extends State<Tracks>{
     return Container(
       height: MediaQuery.of(context).size.height,
       child: GridView.builder(
-        cacheExtent: 1000,
         padding: EdgeInsets.all(MediaQuery.of(context).size.width * 0.01),
         controller: _scrollController,
         itemCount: functions1.allmetadata.length + 12,
@@ -95,7 +94,6 @@ class _TracksState extends State<Tracks>{
                         margin: EdgeInsets.only(bottom: 10),
                         child: Stack(
                           children: [
-
                             functions1.allmetadata[sindex].imageloaded ?
                             Container(
                               decoration: BoxDecoration(

@@ -2699,7 +2699,7 @@ class _HomePageState extends State<HomePage>{
   }
 
   List<Widget> buildPlayControl() {
-    print("duration: ${functions1.playingsongs[functions1.index].duration}");
+    //print("duration: ${functions1.playingsongs[functions1.index].duration}");
     return [
       ProgressBar(
         progress: Duration(seconds: functions1.sliderProgress),
