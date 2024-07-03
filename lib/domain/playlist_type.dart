@@ -1,16 +1,12 @@
-import 'dart:io';
-import 'package:flutter/foundation.dart';
-import 'package:flutter/services.dart';
 import 'featured_artist_type.dart';
 import 'metadata_type.dart';
 
-class playlist{
+class PlaylistType{
   String name = "Unknown playlist";
   List<String> paths = [];
-  List<metadata_type> songs = [];
+  List<MetadataType> songs = [];
   String duration = "Unknown duration";
-  List<featured_artist_type> featuredartists = [];
-  Uint8List image = File("assets\\bg.png").readAsBytesSync();
+  List<FeaturedArtistType> featuredartists = [];
 
   Map<String, dynamic> toJson() {
     return {

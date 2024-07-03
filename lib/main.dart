@@ -1,10 +1,10 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'functions.dart';
 import 'screens/main_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:window_manager/window_manager.dart';
 import 'package:system_tray/system_tray.dart';
+import 'controller/controller.dart';
 
 
 Future<void> main() async {
@@ -20,6 +20,7 @@ Future<void> main() async {
     await windowManager.show();
     await windowManager.focus();
   });
+  Controller controller = Controller();
 
   runApp(
       MaterialApp(
@@ -29,10 +30,7 @@ Future<void> main() async {
           scaffoldBackgroundColor: const Color(0xFF0E0E0E),
         ),
           debugShowCheckedModeBanner: false,
-          home: ChangeNotifierProvider(
-            create: (context) => functions(),
-            child: MyApp(),
-          ),
+          home: MyApp(controller: controller),
       )
   );
 }

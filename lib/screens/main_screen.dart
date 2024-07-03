@@ -1,13 +1,15 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import '../functions.dart';
+import '../controller/controller.dart';
 import 'package:system_tray/system_tray.dart';
 import 'home.dart';
 import 'welcome_screen.dart';
 
 
 class MyApp extends StatefulWidget {
+  Controller controller;
+  MyApp({Key? key, required this.controller}) : super(key: key);
   @override
   _MyAppState createState() => _MyAppState();
 }
@@ -22,7 +24,6 @@ String getImagePath(String imageName) {
 
 
 class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
-  functions functions1 = functions();
   final SystemTray _systemTray = SystemTray();
   final Menu _menuMain = Menu();
   final Menu _menuSimple = Menu();
@@ -34,6 +35,7 @@ class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
 
   @override
   void initState() {
+    widget.controller.context = context;
     super.initState();
     initSystemTray();
   }
@@ -219,15 +221,11 @@ class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    Widget finalWidget;
-    if (functions1.settings1.firsttime == true) {
-      finalWidget = WelcomeScreen();
-    }
-    else {
-      finalWidget = HomePage();
-    }
-    return WillPopScope(
-      onWillPop: () async => false,
+    Widget finalWidget = widget.controller.settings.firstTime ?
+    WelcomeScreen(controller: widget.controller) :
+    HomePage(controller: widget.controller);
+    return PopScope(
+      canPop: false,
       child: finalWidget,
     );
   }

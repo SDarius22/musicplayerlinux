@@ -3,22 +3,21 @@ import 'dart:ui';
 
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
-import 'package:musicplayer/functions.dart';
 import 'dart:io';
+
+import '../controller/controller.dart';
 
 
 class Albums extends StatefulWidget{
-  final functions functions1;
-  Albums({super.key, required this.functions1});
+  final Controller controller;
+  const Albums({super.key, required this.controller});
 
   @override
-  _AlbumsState createState() => _AlbumsState(functions1);
+  _AlbumsState createState() => _AlbumsState();
 }
 
 
 class _AlbumsState extends State<Albums>{
-  final functions functions1;
-  _AlbumsState(this.functions1);
   int _hovereditem = -1;
   bool loading = false;
   ScrollController _scrollController = ScrollController(initialScrollOffset: 0.0);
@@ -35,7 +34,7 @@ class _AlbumsState extends State<Albums>{
         cacheExtent: 1000,
         padding: EdgeInsets.all(MediaQuery.of(context).size.width * 0.01),
         controller: _scrollController,
-        itemCount: functions1.allalbums.length + 12,
+        itemCount: widget.controller.repo.albums.length + 12,
         gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
             childAspectRatio: 0.8 ,
             maxCrossAxisExtent: MediaQuery.of(context).size.width* 0.14,
@@ -43,7 +42,7 @@ class _AlbumsState extends State<Albums>{
             mainAxisSpacing: MediaQuery.of(context).size.width * 0.01
         ),
         itemBuilder: (BuildContext context, int sindex) {
-          return sindex < functions1.allalbums.length?
+          return sindex < widget.controller.repo.albums.length?
           MouseRegion(
             cursor: SystemMouseCursors.click,
             onEnter: (event){
@@ -58,12 +57,12 @@ class _AlbumsState extends State<Albums>{
             },
             child: GestureDetector(
               onTap: () {
-                for(int i = functions1.allalbums[sindex].featuredartists.length - 1; i >= 0 ; i--){
-                  if(artistsforalbum.length + functions1.allalbums[sindex].featuredartists[i].name.length < 75)
-                    artistsforalbum = artistsforalbum + functions1.allalbums[sindex].featuredartists[i].name + ", ";
+                for(int i = widget.controller.repo.albums[sindex].featuredartists.length - 1; i >= 0 ; i--){
+                  if(artistsforalbum.length + widget.controller.repo.albums[sindex].featuredartists[i].name.length < 75)
+                    artistsforalbum = artistsforalbum + widget.controller.repo.albums[sindex].featuredartists[i].name + ", ";
                   else{
                     artistsforalbum = artistsforalbum.substring(0, artistsforalbum.length - 2);
-                    artistsforalbum = artistsforalbum + " and " + (functions1.allalbums[sindex].featuredartists.length - i).toString() + " more";
+                    artistsforalbum = artistsforalbum + " and " + (widget.controller.repo.albums[sindex].featuredartists.length - i).toString() + " more";
                     break;
                   }
                 }
@@ -81,140 +80,140 @@ class _AlbumsState extends State<Albums>{
                     child: Container(
                       height: MediaQuery.of(context).size.width * 0.2,
                       margin: EdgeInsets.only(bottom: 10),
-                      child: Stack(
-                        children: [
-
-                          functions1.allalbums[sindex].songs.first.imageloaded ?
-                          Container(
-                            decoration: BoxDecoration(
-                                color: Colors.black,
-                                borderRadius: BorderRadius.circular(10),
-                                image: DecorationImage(
-                                  fit: BoxFit.cover,
-                                  image: Image.memory(functions1.allalbums[sindex].songs.first.image).image,
-                                )
-                            ),
-                          ) :
-                          functions1.loading?
-                          Container(
-                            decoration: BoxDecoration(
-                                color: Colors.black,
-                                borderRadius: BorderRadius.circular(10),
-                                image: DecorationImage(
-                                  fit: BoxFit.cover,
-                                  image: Image.memory(File("./assets/bg.png").readAsBytesSync()).image,
-                                )
-                            ),
-                            child: const Center(
-                              child: CircularProgressIndicator(
-                                color: Colors.white,
-                              ),
-                            ),
-                          ) :
-                          FutureBuilder(
-                            future: functions1.imageretrieve(functions1.allalbums[sindex].songs.first.path),
-                            builder: (ctx, snapshot) {
-                              if (snapshot.hasData) {
-                                return
-                                  Container(
-                                    decoration: BoxDecoration(
-                                        color: Colors.black,
-                                        borderRadius: BorderRadius.circular(10),
-                                        image: DecorationImage(
-                                          fit: BoxFit.cover,
-                                          image: Image.memory(snapshot.data!).image,
-                                        )
-                                    ),
-                                  );
-                              }
-                              else if (snapshot.hasError) {
-                                return Center(
-                                  child: Text(
-                                    '${snapshot.error} occurred',
-                                    style: TextStyle(fontSize: 18),
-                                  ),
-                                );
-                              } else{
-                                return Container(
-                                  decoration: BoxDecoration(
-                                      color: Colors.black,
-                                      borderRadius: BorderRadius.circular(10),
-                                      image: DecorationImage(
-                                        fit: BoxFit.cover,
-                                        image: Image.memory(File("./assets/bg.png").readAsBytesSync()).image,
-                                      )
-                                  ),
-                                  child: Center(
-                                    child: CircularProgressIndicator(
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                );
-                              }
-                            },
-                          ),
-                          if (_hovereditem == sindex)
-                            ClipRRect(
-                              // Clip it cleanly.
-                              child: BackdropFilter(
-                                filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                                child: Container(
-                                  color: Colors.black.withOpacity(0.3),
-                                  alignment: Alignment.center,
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                                    crossAxisAlignment: CrossAxisAlignment.center,
-                                    children: [
-                                      IconButton(onPressed: (){
-                                        print("Add ${sindex}");
-                                        // _songstoadd.add(functions1.allmetadata[sindex]);
-                                        // setState(() {
-                                        //   addelement = true;
-                                        // });
-                                      },
-                                        padding: EdgeInsets.all(0),
-                                        icon:
-                                        Icon(FluentIcons.add_12_filled, color: Colors.white, size: 40,),
-                                      ),
-
-                                      Icon(FluentIcons.open_16_filled, size: 110, color: Colors.white,),
-
-                                      IconButton(onPressed: (){
-                                        functions1.playingsongs.clear();
-                                        functions1.playingsongs_unshuffled.clear();
-
-                                        functions1.playingsongs.addAll(functions1.allalbums[sindex].songs);
-                                        functions1.playingsongs_unshuffled.addAll(functions1.allalbums[sindex].songs);
-
-                                        if(functions1.shuffle == true)
-                                          functions1.playingsongs.shuffle();
-
-                                        var file = File("assets/settings.json");
-                                        functions1.settings1.lastplaying.clear();
-
-                                        for(int i = 0; i < functions1.playingsongs.length; i++){
-                                          functions1.settings1.lastplaying.add(functions1.playingsongs[i].path);
-                                        }
-                                        functions1.settings1.lastplayingindex = functions1.playingsongs.indexOf(functions1.playingsongs_unshuffled[0]);
-                                        file.writeAsStringSync(jsonEncode(functions1.settings1.toJson()));
-
-                                        functions1.index = functions1.settings1.lastplayingindex;
-                                        functions1.playSong();
-                                      },
-                                        padding: EdgeInsets.all(0),
-                                        icon: Icon(FluentIcons.play_12_filled, color: Colors.white, size: 40,),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ),
-                        ],
-                      ),
+                      // child: Stack(
+                      //   children: [
+                      //
+                      //     widget.controller.repo.albums[sindex].songs.first.imageloaded ?
+                      //     Container(
+                      //       decoration: BoxDecoration(
+                      //           color: Colors.black,
+                      //           borderRadius: BorderRadius.circular(10),
+                      //           image: DecorationImage(
+                      //             fit: BoxFit.cover,
+                      //             image: Image.memory(widget.controller.repo.albums[sindex].songs.first.image).image,
+                      //           )
+                      //       ),
+                      //     ) :
+                      //     widget.controller.loading?
+                      //     Container(
+                      //       decoration: BoxDecoration(
+                      //           color: Colors.black,
+                      //           borderRadius: BorderRadius.circular(10),
+                      //           image: DecorationImage(
+                      //             fit: BoxFit.cover,
+                      //             image: Image.memory(File("./assets/bg.png").readAsBytesSync()).image,
+                      //           )
+                      //       ),
+                      //       child: const Center(
+                      //         child: CircularProgressIndicator(
+                      //           color: Colors.white,
+                      //         ),
+                      //       ),
+                      //     ) :
+                      //     FutureBuilder(
+                      //       future: widget.controller.imageretrieve(widget.controller.repo.albums[sindex].songs.first.path),
+                      //       builder: (ctx, snapshot) {
+                      //         if (snapshot.hasData) {
+                      //           return
+                      //             Container(
+                      //               decoration: BoxDecoration(
+                      //                   color: Colors.black,
+                      //                   borderRadius: BorderRadius.circular(10),
+                      //                   image: DecorationImage(
+                      //                     fit: BoxFit.cover,
+                      //                     image: Image.memory(snapshot.data!).image,
+                      //                   )
+                      //               ),
+                      //             );
+                      //         }
+                      //         else if (snapshot.hasError) {
+                      //           return Center(
+                      //             child: Text(
+                      //               '${snapshot.error} occurred',
+                      //               style: TextStyle(fontSize: 18),
+                      //             ),
+                      //           );
+                      //         } else{
+                      //           return Container(
+                      //             decoration: BoxDecoration(
+                      //                 color: Colors.black,
+                      //                 borderRadius: BorderRadius.circular(10),
+                      //                 image: DecorationImage(
+                      //                   fit: BoxFit.cover,
+                      //                   image: Image.memory(File("./assets/bg.png").readAsBytesSync()).image,
+                      //                 )
+                      //             ),
+                      //             child: Center(
+                      //               child: CircularProgressIndicator(
+                      //                 color: Colors.white,
+                      //               ),
+                      //             ),
+                      //           );
+                      //         }
+                      //       },
+                      //     ),
+                      //     if (_hovereditem == sindex)
+                      //       ClipRRect(
+                      //         // Clip it cleanly.
+                      //         child: BackdropFilter(
+                      //           filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                      //           child: Container(
+                      //             color: Colors.black.withOpacity(0.3),
+                      //             alignment: Alignment.center,
+                      //             child: Row(
+                      //               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      //               crossAxisAlignment: CrossAxisAlignment.center,
+                      //               children: [
+                      //                 IconButton(onPressed: (){
+                      //                   print("Add ${sindex}");
+                      //                   // _songstoadd.add(widget.controller.allmetadata[sindex]);
+                      //                   // setState(() {
+                      //                   //   addelement = true;
+                      //                   // });
+                      //                 },
+                      //                   padding: EdgeInsets.all(0),
+                      //                   icon:
+                      //                   Icon(FluentIcons.add_12_filled, color: Colors.white, size: 40,),
+                      //                 ),
+                      //
+                      //                 Icon(FluentIcons.open_16_filled, size: 110, color: Colors.white,),
+                      //
+                      //                 IconButton(onPressed: (){
+                      //                   widget.controller.playingsongs.clear();
+                      //                   widget.controller.playingsongs_unshuffled.clear();
+                      //
+                      //                   widget.controller.playingsongs.addAll(widget.controller.repo.albums[sindex].songs);
+                      //                   widget.controller.playingsongs_unshuffled.addAll(widget.controller.repo.albums[sindex].songs);
+                      //
+                      //                   if(widget.controller.shuffle == true)
+                      //                     widget.controller.playingsongs.shuffle();
+                      //
+                      //                   var file = File("assets/settings.json");
+                      //                   widget.controller.settings1.lastplaying.clear();
+                      //
+                      //                   for(int i = 0; i < widget.controller.playingsongs.length; i++){
+                      //                     widget.controller.settings1.lastplaying.add(widget.controller.playingsongs[i].path);
+                      //                   }
+                      //                   widget.controller.settings1.lastplayingindex = widget.controller.playingsongs.indexOf(widget.controller.playingsongs_unshuffled[0]);
+                      //                   file.writeAsStringSync(jsonEncode(widget.controller.settings1.toJson()));
+                      //
+                      //                   widget.controller.index = widget.controller.settings1.lastplayingindex;
+                      //                   widget.controller.playSong();
+                      //                 },
+                      //                   padding: EdgeInsets.all(0),
+                      //                   icon: Icon(FluentIcons.play_12_filled, color: Colors.white, size: 40,),
+                      //                 ),
+                      //               ],
+                      //             ),
+                      //           ),
+                      //         ),
+                      //       ),
+                      //   ],
+                      // ),
                     ),
                   ),
                   Text(
-                    functions1.allalbums[sindex].name.length > 35 ? functions1.allalbums[sindex].name.substring(0, 35) + "..." : functions1.allalbums[sindex].name,
+                    widget.controller.repo.albums[sindex].name.length > 35 ? widget.controller.repo.albums[sindex].name.substring(0, 35) + "..." : widget.controller.repo.albums[sindex].name,
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 18,

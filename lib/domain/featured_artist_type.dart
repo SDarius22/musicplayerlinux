@@ -1,4 +1,4 @@
-class featured_artist_type{
+class FeaturedArtistType{
   String name = "Unknown artist";
   int appearances = 0;
 

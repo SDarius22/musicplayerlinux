@@ -4,30 +4,25 @@ import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 
-import '../functions.dart';
+import '../controller/controller.dart';
 import 'home.dart';
 
 class WelcomeScreen extends StatefulWidget {
+  final Controller controller;
+  const WelcomeScreen({super.key, required this.controller});
   @override
   _WelcomeScreenState createState() => _WelcomeScreenState();
 }
 
 class _WelcomeScreenState extends State<WelcomeScreen> {
-  functions functions1 = functions();
-
-  @override
-  void initState() {
-    functions1.addListener(() {
-      setState(() {});
-    });
-    super.initState();
-  }
-
   @override
   Widget build(BuildContext context) {
+    var width = MediaQuery.of(context).size.width;
+    var height = MediaQuery.of(context).size.height;
+    var fontSize = height * 0.03;
     return Scaffold(
       appBar: AppBar(
-        title: Text("Music Player"),
+        title: const Text("Music Player"),
       ),
       body: Center(
         child: Column(
@@ -37,29 +32,31 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
             Container(
               height: 25,
             ),
-            Text( functions1.retrieving ? "Retrieving all your songs" : "Add music to your library by choosing a folder below:", style: const TextStyle(fontSize: 20),),
+            Text("Add music to your library by choosing a folder below:", style: const TextStyle(fontSize: 20),),
             Container(
               height: 25,
             ),
-            functions1.retrieving ?
+            // functions1.retrieving ?
+            // Container(
+            //     width: 500,
+            //     child: Column(
+            //         children: <Widget>[
+            //           LinearProgressIndicator(
+            //             backgroundColor: Colors.cyanAccent,
+            //             valueColor: new AlwaysStoppedAnimation<Color>(Colors.red),
+            //             value: functions1.progressvalue,
+            //           ),
+            //           Container(
+            //             height: 10,
+            //           ),
+            //           Text('${(functions1.progressvalue * 100).round()}%'),
+            //         ]
+            //     )
+            // ):
             Container(
-                width: 500,
-                child: Column(
-                    children: <Widget>[
-                      LinearProgressIndicator(
-                        backgroundColor: Colors.cyanAccent,
-                        valueColor: new AlwaysStoppedAnimation<Color>(Colors.red),
-                        value: functions1.progressvalue,
-                      ),
-                      Container(
-                        height: 10,
-                      ),
-                      Text('${(functions1.progressvalue * 100).round()}%'),
-                    ]
-                )
-            ):
-            Container(
-              width: functions1.settings1.directory.length > 0 ? functions1.settings1.directory.length * 15 > 500 ? 500 : functions1.settings1.directory.length * 15 : 100,
+              width: widget.controller.settings.directory.isNotEmpty ?
+              widget.controller.settings.directory.length * 15 > 500 ? 500 :
+              widget.controller.settings.directory.length * 15 : 100,
               height: 50,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
@@ -72,13 +69,11 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                 onPressed: () async {
                   String directory = await FilePicker.platform.getDirectoryPath() ?? "";
                   if(directory != "") {
-                    setState(() {
-                      functions1.settings1.directory = directory;
-                    });
+                      widget.controller.settings.directory = directory;
                   }
                 },
-                child: functions1.settings1.directory.length > 0 ? Text(
-                  functions1.settings1.directory.length <= 50 ? functions1.settings1.directory : functions1.settings1.directory.substring(0, 50) + "...",
+                child: widget.controller.settings.directory.isNotEmpty ?
+                Text(widget.controller.settings.directory.length < 50 ? widget.controller.settings.directory : widget.controller.settings.directory.substring(0, 50) + "...",
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.normal,
@@ -91,11 +86,12 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
               height: 25,
             ),
 
-            functions1.retrieving ?
+            // functions1.retrieving ?
+            // Container(
+            //   width: 1000,
+            //   height: 150,
+            // ) :
             Container(
-              width: 1000,
-              height: 150,
-            ) : Container(
               width: 1000,
               height: 150,
               child: Row(
@@ -112,13 +108,10 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                     onPressed: () async {
                       print("Pressed");
                       var file = File("./assets/settings.json");
-                      file.writeAsStringSync(jsonEncode(functions1.settings1.toJson()));
-                      await functions1.songretrieve(true);
-                      if (functions1.finished_retrieving){
+                      file.writeAsStringSync(jsonEncode(widget.controller.settings.toJson()));
                         Navigator.push(context, MaterialPageRoute(builder: (BuildContext context){
-                          return HomePage();
+                          return HomePage(controller: widget.controller);
                         }));
-                      }
                     },
                     child: Icon(FluentIcons.arrow_right_12_filled, color: Colors.white, size: 30,),
                   ),

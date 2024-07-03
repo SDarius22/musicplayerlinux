@@ -1,23 +1,21 @@
-import 'dart:async';
 import 'dart:io';
 import 'dart:convert';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:musicplayer/screens/main_screen.dart';
 
-import '../functions.dart';
-import 'welcome_screen.dart';
+import '../controller/controller.dart';
 
 
 class Settings extends StatefulWidget {
+  final Controller controller;
+  const Settings({super.key, required this.controller});
   @override
   _SettingsState createState() => _SettingsState();
 }
 
 class _SettingsState extends State<Settings> {
-  functions functions1 = functions();
   String dropdownvalue = "Off";
   @override
   Widget build(BuildContext context) {
@@ -33,7 +31,7 @@ class _SettingsState extends State<Settings> {
                   onPressed: (){
                     print("Tapped back");
                     Navigator.push(context, MaterialPageRoute(builder: (BuildContext context){
-                      return MyApp();
+                      return MyApp(controller: widget.controller);
                     }));
                   }, icon: Icon(FluentIcons.arrow_left_16_filled)),
               Container(
@@ -111,19 +109,19 @@ class _SettingsState extends State<Settings> {
                             String directory = await FilePicker.platform.getDirectoryPath() ?? "";
                             if(directory != "") {
                               setState(() {
-                                functions1.settings1.directory = directory;
+                                widget.controller.settings.directory = directory;
                               });
                               setState(() {
-                                functions1.settings1.firsttime = true;
+                                widget.controller.settings.firstTime = true;
                               });
-                              functions1.songretrieve(true);
+                              widget.controller.retrieveSongs();
 
                             }
                             var file = File("assets/settings.json");
-                            file.writeAsStringSync(jsonEncode(functions1.settings1.toJson()));
+                            file.writeAsStringSync(jsonEncode(widget.controller.settings.toJson()));
                           },
                           child: Text(
-                            functions1.settings1.directory.length <= 40 ? functions1.settings1.directory : functions1.settings1.directory.substring(0, 40) + "...",
+                            widget.controller.settings.directory.length <= 40 ? widget.controller.settings.directory : widget.controller.settings.directory.substring(0, 40) + "...",
                             style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.normal,
