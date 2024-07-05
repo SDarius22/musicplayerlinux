@@ -7,15 +7,16 @@ class Settings{
   Settings.fromJson(Map<String, dynamic> json):
         firstTime = json['firstTime'],
         directory = json['directory'],
-        lastPlaying = json['lastPlaying'].cast<String>(),
-        lastPlayingIndex = json['lastPlayingIndex'];
+        lastPlayingIndex = json['lastPlayingIndex'],
+        lastPlaying = json['lastPlaying'].cast<String>();
+
 
   Map<String, dynamic> toJson() {
     return {
       'firstTime': firstTime,
       'directory': directory,
-      'lastPlaying': lastPlaying,
       'lastPlayingIndex': lastPlayingIndex,
+      'lastPlaying': lastPlaying,
     };
   }
 }

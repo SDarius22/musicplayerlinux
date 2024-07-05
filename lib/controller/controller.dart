@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:audioplayers/audioplayers.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:audiotags/audiotags.dart';
@@ -29,7 +30,6 @@ class Controller{
 
   List<MetadataType> playingSongs = [];
   List<MetadataType> playingSongsUnShuffled = [];
-  Uint8List image = File("./assets/bg.png").readAsBytesSync();
 
   ValueNotifier<double> volumeNotifier = ValueNotifier<double>(0.5);
   ValueNotifier<double> speedNotifier = ValueNotifier<double>(1);
@@ -47,6 +47,7 @@ class Controller{
   ValueNotifier<LyricUI> lyricUINotifier = ValueNotifier<LyricUI>(UINetease());
   ValueNotifier<List<MetadataType>> found = ValueNotifier<List<MetadataType>>([]);
   ValueNotifier<Color> colorNotifier = ValueNotifier<Color>(Colors.deepPurpleAccent.shade400);
+  ValueNotifier<Uint8List> imageNotifier = ValueNotifier<Uint8List>(File("./assets/bg.png").readAsBytesSync());
 
   int currentPosition = 0;
 
@@ -54,7 +55,6 @@ class Controller{
     this.context = context;
     lyricModelReset();
   }
-
 
 
   void lyricModelReset() {
@@ -81,10 +81,13 @@ class Controller{
 
   Future<void> indexChange(int newIndex) async {
     indexNotifier.value = newIndex;
+    var file = File("assets/settings.json");
+    settings.lastPlayingIndex = newIndex;
+    file.writeAsStringSync(jsonEncode(settings.toJson()));
     sliderNotifier.value = 0;
     playingNotifier.value = false;
     await imageRetrieve(playingSongs[newIndex].path, true);
-    DominantColors extractor = DominantColors(bytes: image, dominantColorsCount: 2);
+    DominantColors extractor = DominantColors(bytes: imageNotifier.value, dominantColorsCount: 2);
     colorNotifier.value = extractor.extractDominantColors().first;
     lyricModelReset();
   }
@@ -206,7 +209,7 @@ class Controller{
     makeAlbumsArtists();
     getPlaylists();
     await imageRetrieve(playingSongs[indexNotifier.value].path, true);
-    DominantColors extractor = DominantColors(bytes: image, dominantColorsCount: 2);
+    DominantColors extractor = DominantColors(bytes: imageNotifier.value, dominantColorsCount: 2);
     colorNotifier.value = extractor.extractDominantColors().first;
     lyricModelReset();
     finishedRetrievingNotifier.value = true;
@@ -400,7 +403,7 @@ class Controller{
     }
     if (update){
       print("image changed");
-      this.image = image;
+      imageNotifier.value = image;
     }
     return image;
   }
