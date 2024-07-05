@@ -18,14 +18,6 @@ class Tracks extends StatefulWidget{
 
 
 class _TracksState extends State<Tracks>{
-  GlobalKey<State> key = GlobalKey();
-  bool loading = false;
-  ScrollController _scrollController = ScrollController(initialScrollOffset: 0.0);
-  int displayedalbum = -1;
-  String artistsforalbum = "", playlistname = "New playlist";
-  
-
-
   @override
   void initState() {
     super.initState();
@@ -36,15 +28,14 @@ class _TracksState extends State<Tracks>{
   Widget build(BuildContext context) {
     var width = MediaQuery.of(context).size.width;
     var height = MediaQuery.of(context).size.height;
-    var boldSize = height * 0.025;
-    var normalSize = height * 0.02;
+    // var boldSize = height * 0.025;
+    // var normalSize = height * 0.02;
     var smallSize = height * 0.015;
     return ValueListenableBuilder(
       valueListenable: widget.controller.repo.songs,
       builder: (context, value, child){
         return GridView.builder(
           padding: EdgeInsets.all(width * 0.01),
-          controller: _scrollController,
           itemCount: widget.controller.repo.songs.value.length + 7,
           gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
             childAspectRatio: 0.85,
@@ -93,7 +84,6 @@ class _TracksState extends State<Tracks>{
                       aspectRatio: 1.0,
                       child: AnimatedContainer(
                         duration: const Duration(milliseconds: 500),
-                        height: width * 0.2,
                         margin: EdgeInsets.only(bottom: width * 0.005),
                         child: FutureBuilder(
                           future: widget.controller.imageRetrieve(widget.controller.repo.songs.value[index].path, false),
@@ -104,12 +94,12 @@ class _TracksState extends State<Tracks>{
                                   children: [
                                     Container(
                                       decoration: BoxDecoration(
-                                          color: Colors.black,
-                                          borderRadius: BorderRadius.circular(10),
-                                          image: DecorationImage(
-                                            fit: BoxFit.cover,
-                                            image: Image.memory(snapshot.data!).image,
-                                          )
+                                        color: Colors.black,
+                                        borderRadius: BorderRadius.circular(height * 0.01),
+                                        image: DecorationImage(
+                                          fit: BoxFit.cover,
+                                          image: Image.memory(snapshot.data!).image,
+                                        )
                                       ),
                                     ),
                                     ClipRRect(
@@ -125,15 +115,14 @@ class _TracksState extends State<Tracks>{
                                             children: [
                                               IconButton(
                                                 onPressed: (){
-                                                print("Add ${index}");
+                                                print("Add $index");
                                                 // _songstoadd.add(widget.controller.repo.songs.value[sindex]);
                                                 // setState(() {
                                                 //   addelement = true;
                                                 // });
                                               },
                                                 padding: const EdgeInsets.all(0),
-                                                icon:
-                                                Icon(
+                                                icon: Icon(
                                                   FluentIcons.add_12_filled,
                                                   color: Colors.white,
                                                   size: height * 0.035,
@@ -152,30 +141,32 @@ class _TracksState extends State<Tracks>{
                                               ),
                                               IconButton(
                                                 onPressed: (){
-                                                int indextodisplay = 0;
-                                                for(int i = 0; i < widget.controller.repo.albums.length; i++){
-                                                  if(widget.controller.repo.albums[i].name == widget.controller.repo.songs.value[index].album){
-                                                    indextodisplay = i;
-                                                    break;
-                                                  }
-                                                }
-                                                artistsforalbum = '';
-                                                for(int i = widget.controller.repo.albums[indextodisplay].featuredartists.length - 1; i >= 0 ; i--){
-                                                  if(artistsforalbum.length + widget.controller.repo.albums[indextodisplay].featuredartists[i].name.length < 75) {
-                                                    artistsforalbum = artistsforalbum + widget.controller.repo.albums[indextodisplay].featuredartists[i].name + ", ";
-                                                  } else{
-                                                    artistsforalbum = artistsforalbum.substring(0, artistsforalbum.length - 2);
-                                                    artistsforalbum = "$artistsforalbum and ${widget.controller.repo.albums[indextodisplay].featuredartists.length - i} more";
-                                                    break;
-                                                  }
-                                                }
-                                                if(artistsforalbum.endsWith(", ")) {
-                                                  artistsforalbum = artistsforalbum.substring(0, artistsforalbum.length - 2);
-                                                }
-                                                artistsforalbum.replaceAll("  ", " ").replaceAll(" , ", ", ");
-                                                setState(() {
-                                                  displayedalbum = indextodisplay;
-                                                });
+
+                                                  /// SOMETHING LIKE NAVIGATE TO ALBUM
+                                                // int indextodisplay = 0;
+                                                // for(int i = 0; i < widget.controller.repo.albums.length; i++){
+                                                //   if(widget.controller.repo.albums[i].name == widget.controller.repo.songs.value[index].album){
+                                                //     indextodisplay = i;
+                                                //     break;
+                                                //   }
+                                                // }
+                                                // artistsforalbum = '';
+                                                // for(int i = widget.controller.repo.albums[indextodisplay].featuredartists.length - 1; i >= 0 ; i--){
+                                                //   if(artistsforalbum.length + widget.controller.repo.albums[indextodisplay].featuredartists[i].name.length < 75) {
+                                                //     artistsforalbum = artistsforalbum + widget.controller.repo.albums[indextodisplay].featuredartists[i].name + ", ";
+                                                //   } else{
+                                                //     artistsforalbum = artistsforalbum.substring(0, artistsforalbum.length - 2);
+                                                //     artistsforalbum = "$artistsforalbum and ${widget.controller.repo.albums[indextodisplay].featuredartists.length - i} more";
+                                                //     break;
+                                                //   }
+                                                // }
+                                                // if(artistsforalbum.endsWith(", ")) {
+                                                //   artistsforalbum = artistsforalbum.substring(0, artistsforalbum.length - 2);
+                                                // }
+                                                // artistsforalbum.replaceAll("  ", " ").replaceAll(" , ", ", ");
+                                                // setState(() {
+                                                //   displayedalbum = indextodisplay;
+                                                // });
                                               },
                                                 padding: const EdgeInsets.all(0),
                                                 icon: Icon(
@@ -195,12 +186,12 @@ class _TracksState extends State<Tracks>{
                                 },
                                 child: Container(
                                   decoration: BoxDecoration(
-                                      color: Colors.black,
-                                      borderRadius: BorderRadius.circular(height * 0.01),
-                                      image: DecorationImage(
-                                        fit: BoxFit.cover,
-                                        image: Image.memory(snapshot.data!).image,
-                                      )
+                                    color: Colors.black,
+                                    borderRadius: BorderRadius.circular(height * 0.01),
+                                    image: DecorationImage(
+                                      fit: BoxFit.cover,
+                                      image: Image.memory(snapshot.data!).image,
+                                    )
                                   ),
                                 )
                               );
@@ -209,7 +200,7 @@ class _TracksState extends State<Tracks>{
                               return Center(
                                 child: Text(
                                   '${snapshot.error} occurred',
-                                  style: TextStyle(fontSize: 18),
+                                  style: const TextStyle(fontSize: 18),
                                 ),
                               );
                             }
@@ -235,20 +226,20 @@ class _TracksState extends State<Tracks>{
                       ),
                     ),
                     ValueListenableBuilder(
-                        valueListenable: widget.controller.indexNotifier,
-                        builder: (context, value, child){
-                          return Text(
-                            widget.controller.repo.songs.value[index].title.length > 25 ?
-                            "${widget.controller.repo.songs.value[index].title.substring(0, 25)}..." :
-                            widget.controller.repo.songs.value[index].title,
-                            style: TextStyle(
-                              color: widget.controller.playingSongs.isNotEmpty && widget.controller.playingSongs[widget.controller.indexNotifier.value] == widget.controller.repo.songs.value[index] ? Colors.blue : Colors.white,
-                              fontSize: smallSize,
-                              fontWeight: FontWeight.normal,
-                            ),
-                            textAlign: TextAlign.center,
-                          );
-                        }
+                      valueListenable: widget.controller.indexNotifier,
+                      builder: (context, value, child){
+                        return Text(
+                          widget.controller.repo.songs.value[index].title.length > 25 ?
+                          "${widget.controller.repo.songs.value[index].title.substring(0, 25)}..." :
+                          widget.controller.repo.songs.value[index].title,
+                          style: TextStyle(
+                            color: widget.controller.playingSongs.isNotEmpty && widget.controller.playingSongs[widget.controller.indexNotifier.value] == widget.controller.repo.songs.value[index] ? Colors.blue : Colors.white,
+                            fontSize: smallSize,
+                            fontWeight: FontWeight.normal,
+                          ),
+                          textAlign: TextAlign.center,
+                        );
+                      }
                     ),
 
                   ],

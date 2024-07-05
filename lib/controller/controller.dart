@@ -2,11 +2,9 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:audioplayers/audioplayers.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:audiotags/audiotags.dart';
-import 'package:musicplayer/lyric_reader/lyrics_reader_model.dart';
 
 import '../domain/album_type.dart';
 import '../domain/artist_type.dart';
@@ -14,12 +12,12 @@ import '../domain/featured_artist_type.dart';
 import '../domain/metadata_type.dart';
 import '../domain/playlist_type.dart';
 import '../domain/settings_type.dart';
-import '../dominant_color/dominant_color.dart';
+import '../utils/dominant_color/dominant_color.dart';
 import '../repo/repository.dart';
-import '../flac_metadata/flacstream.dart';
-import '../id3tag/id3tag.dart';
-import '../lyric_reader/lyrics_reader.dart';
-
+import '../utils/flac_metadata/flacstream.dart';
+import '../utils/id3tag/id3tag.dart';
+import '../utils/lyric_reader/lyrics_reader.dart';
+import '../utils/lyric_reader/lyrics_reader_model.dart';
 
 
 class Controller{

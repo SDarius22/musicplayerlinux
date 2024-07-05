@@ -3,11 +3,11 @@ import 'dart:convert';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:hovering/hovering.dart';
-import 'package:musicplayer/multivaluelistenablebuilder/mvlb.dart';
+import '../utils/multivaluelistenablebuilder/mvlb.dart';
 import '../controller/controller.dart';
 import '../domain/metadata_type.dart';
-import '../lyric_reader/lyrics_reader.dart';
-import '../../progress_bar/audio_video_progress_bar.dart';
+import '../utils/lyric_reader/lyrics_reader.dart';
+import '../utils/progress_bar/audio_video_progress_bar.dart';
 
 class SongPlayerWidget extends StatefulWidget {
   final Controller controller;
