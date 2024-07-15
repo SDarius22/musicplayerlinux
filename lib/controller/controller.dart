@@ -57,6 +57,7 @@ class Controller{
   }
 
   Future<void> searchLyrics() async {
+    plainLyricNotifier.value = 'Searching for lyrics...';
     final Map<String, String> cookies = {'arl': '8436641c809f643da885ce7eb45e39e6a9514f882b1541a05282a33485f6f96fc56ddb724424ec3518e25bbaa08de4e7521e5f289a14c512dd65dc2ec0ad10b83138e5d02c1531a5bf5766ecfd492d0157815bafa5f08b90dcfe51a1eba1bbbf'};
     final Map<String, String> params = {'jo': 'p', 'rto': 'c', 'i': 'c'};
     const String loginUrl = 'https://auth.deezer.com/login/arl';
@@ -504,7 +505,7 @@ class Controller{
 
 
   Future<Uint8List> imageRetrieve(String path, bool update) async{
-    Uint8List image = File("./assets/bg.png").readAsBytesSync();
+    Uint8List image = File("assets/bg.png").readAsBytesSync();
     var metadatavar = await AudioTags.read(path);
     // print(metadatavar?.pictures[0].bytes);
     if(metadatavar?.pictures.isEmpty == true){
@@ -527,8 +528,7 @@ class Controller{
       }
     }
     else{
-      image = metadatavar?.pictures[0].bytes ?? File(
-          "./assets/bg.png").readAsBytesSync();
+      image = metadatavar?.pictures[0].bytes ?? File("assets/bg.png").readAsBytesSync();
     }
     if (update){
       print("image changed");

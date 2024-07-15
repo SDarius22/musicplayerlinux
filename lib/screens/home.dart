@@ -370,17 +370,28 @@ class _HomePageState extends State<HomePage>{
               ValueListenableBuilder(
                 valueListenable: widget.controller.finishedRetrievingNotifier,
                 builder: (context, value, child) {
-                  return value ?
-                  SongPlayerWidget(controller: widget.controller) :
-                  ValueListenableBuilder(
-                      valueListenable: widget.controller.progressNotifier,
-                      builder: (context, value, child) {
-                        return LinearProgressIndicator(
-                          backgroundColor: Colors.grey,
-                          valueColor: const AlwaysStoppedAnimation<Color>(Colors.deepPurpleAccent),
-                          value: widget.controller.progressNotifier.value,
-                        );
-                      }
+                  return AnimatedContainer(
+                    duration: const Duration(milliseconds: 500),
+                    alignment: Alignment.bottomCenter,
+                    child: value ?
+                    SongPlayerWidget(controller: widget.controller) :
+                      AnimatedContainer(
+                        duration: const Duration(milliseconds: 500),
+                        decoration: BoxDecoration(
+                          color: Colors.black,
+                          borderRadius: BorderRadius.circular(height * 0.1),
+                        ),
+                        child: ValueListenableBuilder(
+                          valueListenable: widget.controller.progressNotifier,
+                          builder: (context, value, child) {
+                            return LinearProgressIndicator(
+                              backgroundColor: Colors.grey,
+                              valueColor: const AlwaysStoppedAnimation<Color>(Colors.deepPurpleAccent),
+                              value: widget.controller.progressNotifier.value,
+                            );
+                          }
+                        ),
+                      ),
                   );
                 }
               ),

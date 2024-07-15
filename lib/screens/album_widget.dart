@@ -1,13 +1,11 @@
+import 'dart:convert';
 import 'dart:io';
+import 'dart:ui';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:hovering/hovering.dart';
 import 'package:musicplayer/domain/album_type.dart';
-import '../utils/multivaluelistenablebuilder/mvlb.dart';
 import '../controller/controller.dart';
-import '../domain/metadata_type.dart';
-import '../utils/lyric_reader/lyrics_reader.dart';
-import '../utils/progress_bar/audio_video_progress_bar.dart';
 import 'settings.dart';
 
 class AlbumWidget extends StatefulWidget {
@@ -24,297 +22,19 @@ class _AlbumWidget extends State<AlbumWidget> {
   final ValueNotifier<bool> _visible = ValueNotifier(false);
   FocusNode searchNode = FocusNode();
 
+  String featuredArtists = "";
+
 
   @override
   void initState() {
+    for(int i = 0; i < widget.album.featuredartists.length; i++) {
+      featuredArtists += widget.album.featuredartists[i].name;
+      if(i != widget.album.featuredartists.length - 1) {
+        featuredArtists += ", ";
+      }
+    }
     super.initState();
   }
-
-  // Column(
-  // children:[
-  // Row(
-  // children:[
-  // Container(
-  // width: 25,
-  // height: 250,
-  // alignment: Alignment.topCenter,
-  // child:
-  // Column(
-  // mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-  // crossAxisAlignment: CrossAxisAlignment.center,
-  // children: [
-  // IconButton(
-  // onPressed: (){
-  // setState(() {
-  // _inalbum = false;
-  // create = false;
-  // playlistname = "New playlist";
-  // artistsforalbum = "";
-  // _hovereditem = -1;
-  // _newplaylistsongs = [];
-  // });
-  // },
-  // icon: Icon(FluentIcons.arrow_left_16_filled, color: Colors.white,),
-  // ),
-  // IconButton(onPressed: (){
-  // print("Add ${displayedalbum}");
-  // for(metadata1 song in allalbums[displayedalbum].songs) {
-  // _songstoadd.add(song);
-  // }
-  // setState(() {
-  // addelement = true;
-  // });
-  // }, icon: Icon(FluentIcons.add_12_filled, color: Colors.white, size: 25,),),
-  // IconButton(onPressed: (){
-  // playingsongs.clear();
-  // playingsongs_unshuffled.clear();
-  //
-  // playingsongs.addAll(allalbums[displayedalbum].songs);
-  // playingsongs_unshuffled.addAll(allalbums[displayedalbum].songs);
-  //
-  // if(shuffle == true)
-  // playingsongs.shuffle();
-  //
-  // var file = File("assets/settings.json");
-  // settings1.lastplaying.clear();
-  //
-  // for(int i = 0; i < playingsongs.length; i++){
-  // settings1.lastplaying.add(playingsongs[i].path);
-  // }
-  // settings1.lastplayingindex = playingsongs.indexOf(playingsongs_unshuffled[0]);
-  // file.writeAsStringSync(jsonEncode(settings1.toJson()));
-  //
-  // index = settings1.lastplayingindex;
-  // playsong();
-  // }, icon: Icon(FluentIcons.play_12_filled, color: Colors.white, size: 25,),),
-  // ]
-  // ),
-  //
-  // ),
-  // Container(
-  // height: 250,
-  // width: 300,
-  // padding: EdgeInsets.only(left: 50),
-  // child: DecoratedBox(
-  // decoration: BoxDecoration(
-  // borderRadius: BorderRadius.circular(10),
-  // image: DecorationImage(
-  // image: Image.memory(allalbums[displayedalbum].songs.first.image).image,
-  // fit: BoxFit.cover,
-  // ),
-  // ),
-  // ),
-  // ),
-  // Container(
-  // width: 50,
-  // ),
-  // Column(
-  // mainAxisAlignment: MainAxisAlignment.center,
-  // crossAxisAlignment: CrossAxisAlignment.start,
-  // children: [
-  // Text(
-  // "Album name:",
-  // style: TextStyle(
-  // color: Colors.white,
-  // fontSize: 22,
-  // fontWeight: FontWeight.normal,
-  // ),
-  // ),
-  // Container(
-  // height: 5,
-  // ),
-  // Text(
-  // allalbums[displayedalbum].name,
-  // style: TextStyle(
-  // color: Colors.white,
-  // fontSize: 24,
-  // fontWeight: FontWeight.bold,
-  // ),
-  // textAlign: TextAlign.center,
-  // ),
-  // Container(
-  // height: 10,
-  // ),
-  // Text(
-  // "Featured artists:",
-  // style: TextStyle(
-  // color: Colors.white,
-  // fontSize: 22,
-  // fontWeight: FontWeight.normal,
-  // ),
-  // ),
-  // Container(
-  // height: 5,
-  // ),
-  // Text(
-  // artistsforalbum,
-  // style: TextStyle(
-  // color: Colors.white,
-  // fontSize: 20,
-  // fontWeight: FontWeight.bold,
-  // ),
-  // textAlign: TextAlign.center,
-  // ),
-  // Container(
-  // height: 10,
-  // ),
-  // Text(
-  // "Album duration:",
-  // style: TextStyle(
-  // color: Colors.white,
-  // fontSize: 22,
-  // fontWeight: FontWeight.normal,
-  // ),
-  // ),
-  // Container(
-  // height: 5,
-  // ),
-  // Text(
-  // allalbums[displayedalbum].duration,
-  // style: TextStyle(
-  // color: Colors.white,
-  // fontSize: 20,
-  // fontWeight: FontWeight.bold,
-  // ),
-  // textAlign: TextAlign.center,
-  // ),
-  // ],
-  // ),
-  // ],
-  //
-  // ),
-  // Container(
-  // height: 25,
-  // ),
-  // Container(
-  // height: 425,
-  // child: ListView.builder(
-  // itemCount: allalbums[displayedalbum].songs.length + 3,
-  // itemBuilder: (context, int _aindex) {
-  // return _aindex < allalbums[displayedalbum].songs.length ?
-  // Container(
-  // height: 110,
-  // child: ElevatedButton(
-  // style: ElevatedButton.styleFrom(
-  // backgroundColor: Color(0xFF0E0E0E),
-  // ),
-  // onPressed: () {
-  // playingsongs.clear();
-  // playingsongs_unshuffled.clear();
-  //
-  // playingsongs.addAll(allalbums[displayedalbum].songs);
-  // playingsongs_unshuffled.addAll(allalbums[displayedalbum].songs);
-  //
-  // if(shuffle == true)
-  // playingsongs.shuffle();
-  //
-  // var file = File("assets/settings.json");
-  // settings1.lastplaying.clear();
-  //
-  // for(int i = 0; i < playingsongs.length; i++){
-  // settings1.lastplaying.add(playingsongs[i].path);
-  // }
-  // settings1.lastplayingindex = playingsongs.indexOf(playingsongs_unshuffled[_aindex]);
-  // file.writeAsStringSync(jsonEncode(settings1.toJson()));
-  //
-  // index = playingsongs.indexOf(playingsongs_unshuffled[_aindex]);
-  // print(index.toString() + "\n\n\n");
-  // playsong();
-  // },
-  // child: Row(
-  // children: [
-  // Container(
-  // height: 100,
-  // width: 110,
-  // padding: EdgeInsets.only(left: 10),
-  // child: DecoratedBox(
-  // decoration: BoxDecoration(
-  // borderRadius: BorderRadius.circular(10),
-  // image: DecorationImage(
-  // image: Image.memory(allalbums[displayedalbum].songs.first.image).image,
-  // fit: BoxFit.cover,
-  // ),
-  // ),
-  // child: ClipRRect(
-  // // Clip it cleanly.
-  // child: BackdropFilter(
-  // filter: ImageFilter.blur(
-  // sigmaX: 1, sigmaY: 1),
-  // child: Container(
-  // color: Colors.black.withOpacity(0.3),
-  // alignment: Alignment.center,
-  // child: Text(
-  // allalbums[displayedalbum].songs[_aindex].tracknumber.toString(),
-  // style: TextStyle(
-  // color: Colors.white,
-  // fontSize: 35,
-  // fontWeight: FontWeight.normal,
-  // ),
-  // textAlign: TextAlign.center,
-  // ),
-  // ),
-  // ),
-  // ),
-  // ),
-  // ),
-  // Container(
-  // width: 20,
-  // ),
-  // Column(
-  // mainAxisAlignment: MainAxisAlignment.center,
-  // crossAxisAlignment: CrossAxisAlignment.start,
-  // children: [
-  // Text(
-  // allalbums[displayedalbum].songs[_aindex].title.toString(),
-  // style: allalbums[displayedalbum].songs[_aindex] == playingsongs[index] && allalbums[displayedalbum].name == playingsongs[index].album ? TextStyle(
-  // color: Colors.blue,
-  // fontSize: 20,
-  // ) : TextStyle(
-  // color: Colors.white,
-  // fontSize: 20,
-  // ),
-  // ),
-  // Container(
-  // height: 5,
-  // ),
-  // Text(allalbums[displayedalbum].songs[_aindex].artists.toString(),
-  // style: allalbums[displayedalbum].songs[_aindex] == playingsongs[index]? TextStyle(
-  // color: Colors.blue,
-  // fontSize: 18,
-  // ) : TextStyle(
-  // color: Colors.white,
-  // fontSize: 18,
-  // ),
-  // ),
-  // ]
-  // ),
-  // Spacer(),
-  // Text(
-  // allalbums[displayedalbum].songs[_aindex].durationString,
-  // style: allalbums[displayedalbum].songs[_aindex] == playingsongs[index]? TextStyle(
-  // color: Colors.blue,
-  // fontSize: 18,
-  // ) : TextStyle(
-  // color: Colors.white,
-  // fontSize: 18,
-  // ),
-  // ),
-  // Container(
-  // width: 20,
-  // ),
-  // ],
-  // ),
-  // ),
-  //
-  // ) :
-  // Container(
-  // height: 50,
-  // );
-  // },
-  // ),
-  // ),
-  // ]
-  // )
 
 
   @override
@@ -393,7 +113,7 @@ class _AlbumWidget extends State<AlbumWidget> {
                           width: 20,
                         ),
                         IconButton(onPressed: (){
-                          print("Search");
+                          //print("Search");
                           setState(() {
                             search = !search;
                           });
@@ -403,7 +123,7 @@ class _AlbumWidget extends State<AlbumWidget> {
                           width: 20,
                         ),
                         IconButton(onPressed: (){
-                          print("Tapped settings");
+                          //print("Tapped settings");
                           Navigator.push(context, MaterialPageRoute(builder: (BuildContext context){
                             return Settings(controller: widget.controller,);
                           }));
@@ -414,142 +134,480 @@ class _AlbumWidget extends State<AlbumWidget> {
         ],
       ),
       body: SafeArea(
-        child: Container(
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 500),
           width: width,
           height: height,
-          padding: EdgeInsets.all(height * 0.01),
-          child: Column(
+          padding: EdgeInsets.only(
+              top: height * 0.025,
+              left: width * 0.01,
+              right: width * 0.01,
+              bottom: height * 0.025
+          ),
+          alignment: Alignment.center,
+          child: Row(
             children: [
-              Row(
-                children: [
-                  FutureBuilder(
-                      future: widget.controller.imageRetrieve(widget.album.songs.first.path, false),
-                      builder: (context, snapshot){
-                        if(snapshot.hasData) {
-                          return Container(
-                            height: height * 0.25,
-                            width: width * 0.3,
-                            padding: EdgeInsets.only(left: 50),
-                            child: DecoratedBox(
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(10),
-                                image: DecorationImage(
-                                  image: Image.memory(snapshot.data!).image,
-                                  fit: BoxFit.cover,
-                                ),
-                              ),
-                            ),
-                          );
-                        }
-                        return Container();
-                      }
-                  ),
-                  Container(
-                    width: 50,
-                  ),
-                  Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        "Album name:",
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 22,
-                          fontWeight: FontWeight.normal,
-                        ),
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 500),
+                width: width * 0.45,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children:[
+                    AnimatedContainer(
+                      duration: const Duration(milliseconds: 500),
+                      curve: Curves.easeInOut,
+                      height: height * 0.5,
+                      padding: EdgeInsets.only(
+                        bottom: height * 0.01,
                       ),
-                      Container(
-                        height: 5,
-                      ),
-                      Text(
-                        widget.album.name,
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                      Container(
-                        height: 10,
-                      ),
-                      Text(
-                        "Featured artists:",
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 22,
-                          fontWeight: FontWeight.normal,
-                        ),
-                      ),
-                      Container(
-                        height: 5,
-                      ),
-                      Text(
-                        widget.album.featuredartists[0].name,
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                      Container(
-                        height: 10,
-                      ),
-                      Text(
-                        "Album duration:",
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 22,
-                          fontWeight: FontWeight.normal,
-                        ),
-                      ),
-                      Container(
-                        height: 5,
-                      ),
-                      Text(
-                        widget.album.duration,
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                      Container(
-                        height: 10,
-                      ),
-                      Container(
-                        height: 450,
-                        width: 300,
-                        child: ListView.builder(
-                            itemCount: widget.album.songs.length + 3,
-                            itemBuilder: (context, index){
-                              return index < widget.album.songs.length ?
-                                  Container(
-                                    height: 50,
-                                    width: 300,
-                                    child: Text (
-                                      widget.album.songs[index].title,
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 20,
-                                      ),
-                                  )
-
-                              ) :
-                              Container(
-                                height: 50,
-                              );
+                      //color: Colors.red,
+                      child: AspectRatio(
+                        aspectRatio: 1.0,
+                        child: FutureBuilder(
+                            future: widget.controller.imageRetrieve(widget.album.songs.first.path, false),
+                            builder: (context, snapshot){
+                              if(snapshot.hasData) {
+                                return DecoratedBox(
+                                  decoration: BoxDecoration(
+                                    color: Colors.black,
+                                    borderRadius: BorderRadius.circular(width * 0.025),
+                                    image: DecorationImage(
+                                      image: Image.memory(snapshot.data!).image,
+                                      fit: BoxFit.cover,
+                                    ),
+                                  ),
+                                );
+                              }
+                              else{
+                                return DecoratedBox(
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(10),
+                                    image: DecorationImage(
+                                      image: Image.memory(File("assets/bg.png").readAsBytesSync()).image,
+                                      fit: BoxFit.cover,
+                                    ),
+                                  ),
+                                );
+                              }
                             }
                         ),
                       ),
+                    ),
+                    Text(
+                      "Album name:",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: normalSize,
+                        fontWeight: FontWeight.normal,
+                      ),
+                    ),
+                    SizedBox(
+                      height: height * 0.005,
+                    ),
+                    Text(
+                      widget.album.name,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: boldSize,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    SizedBox(
+                      height: height * 0.01,
+                    ),
+                    Text(
+                      "Featured artists:",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: normalSize,
+                        fontWeight: FontWeight.normal,
+                      ),
+                    ),
+                    SizedBox(
+                      height: height * 0.005,
+                    ),
+                    Text(
+                      featuredArtists,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: boldSize,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    SizedBox(
+                      height: height * 0.01,
+                    ),
+                    Text(
+                      "Album duration:",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: normalSize,
+                        fontWeight: FontWeight.normal,
+                      ),
+                    ),
+                    SizedBox(
+                      height: height * 0.005,
+                    ),
+                    Text(
+                      widget.album.duration,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: boldSize,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        IconButton(
+                          onPressed: (){
+                            //print("Playing ${widget.controller.indexNotifier.value}");
+                            widget.controller.playingSongs.clear();
+                            widget.controller.playingSongsUnShuffled.clear();
 
-                    ],
-                  ),
-                ],
-              )
+                            widget.controller.playingSongs.addAll(widget.album.songs);
+                            widget.controller.playingSongsUnShuffled.addAll(widget.album.songs);
+
+                            if(widget.controller.shuffleNotifier.value == true) {
+                              widget.controller.playingSongs.shuffle();
+                            }
+
+                            var file = File("assets/settings.json");
+                            widget.controller.settings.lastPlaying.clear();
+
+                            for(int i = 0; i < widget.controller.playingSongs.length; i++){
+                              widget.controller.settings.lastPlaying.add(widget.controller.playingSongs[i].path);
+                            }
+                            widget.controller.settings.lastPlayingIndex = widget.controller.playingSongs.indexOf(widget.controller.playingSongsUnShuffled[0]);
+                            file.writeAsStringSync(jsonEncode(widget.controller.settings.toJson()));
+                            widget.controller.indexChange(widget.controller.playingSongs.indexOf(widget.controller.playingSongsUnShuffled[0]));
+                            widget.controller.playSong();
+                        },
+                          icon: Icon(
+                            FluentIcons.play_12_filled,
+                            color: Colors.white,
+                            size: height * 0.025,
+                          ),
+                        ),
+                        IconButton(
+                          onPressed: (){
+                          print("Add ${widget.album.name}");
+                          // for(metadata1 song in allalbums[displayedalbum].songs) {
+                          //   _songstoadd.add(song);
+                          // }
+                          // setState(() {
+                          //   addelement = true;
+                          // });
+                        },
+                          icon: Icon(
+                            FluentIcons.add_12_filled,
+                            color: Colors.white,
+                            size: height * 0.025,
+                          ),
+                        ),
+                      ]
+                    ),
+                  ]
+                ),
+              ),
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 500),
+                width: width * 0.45,
+                padding: EdgeInsets.only(
+                  left: width * 0.02,
+                  top: height * 0.05,
+                  bottom: height * 0.05,
+                ),
+                child: ListView.builder(
+                  itemCount: widget.album.songs.length,
+                  itemBuilder: (context, int index) {
+                    return AnimatedContainer(
+                      duration: const Duration(milliseconds: 500),
+                      curve: Curves.easeInOut,
+                      height: height * 0.125,
+                      padding: EdgeInsets.only(
+                        right: width * 0.01,
+                      ),
+                      child: MouseRegion(
+                        cursor: SystemMouseCursors.click,
+                        child: GestureDetector(
+                            behavior: HitTestBehavior.translucent,
+                            onTap: (){
+                              //print(widget.controller.playingSongsUnShuffled[index].title);
+                              widget.controller.indexNotifier.value = widget.controller.playingSongs.indexOf(widget.controller.playingSongsUnShuffled[index]);
+                              widget.controller.indexChange(widget.controller.indexNotifier.value);
+                              widget.controller.playSong();
+                            },
+                            child: FutureBuilder(
+                                future: widget.controller.imageRetrieve(widget.album.songs[index].path, false),
+                                builder: (context, snapshot){
+                                  return HoverWidget(
+                                    hoverChild: Container(
+                                      padding: EdgeInsets.only(
+                                        left: width * 0.0075,
+                                        right: width * 0.0075,
+                                        top: height * 0.005,
+                                        bottom: height * 0.005,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(height * 0.02),
+                                        color: const Color(0xFF242424),
+                                      ),
+                                      child: Row(
+                                        children: [
+                                          if(snapshot.hasData)
+                                            AnimatedContainer(
+                                              duration: const Duration(milliseconds: 500),
+                                              height: height * 0.1,
+                                              width: height * 0.1,
+                                              child: AspectRatio(
+                                                aspectRatio: 1.0,
+                                                child: Container(
+                                                  decoration: BoxDecoration(
+                                                    color: Colors.black,
+                                                    borderRadius: BorderRadius.circular(height * 0.02),
+                                                    image: DecorationImage(
+                                                      fit: BoxFit.cover,
+                                                      image: Image.memory(snapshot.data!).image,
+                                                    )
+                                                  ),
+                                                  child: ClipRRect(
+                                                    // Clip it cleanly.
+                                                    child: BackdropFilter(
+                                                      filter: ImageFilter.blur(
+                                                          sigmaX: 1, sigmaY: 1
+                                                      ),
+                                                      child: Container(
+                                                        alignment: Alignment.center,
+                                                        decoration: BoxDecoration(
+                                                          color: Colors.black.withOpacity(0.3),
+                                                          borderRadius: BorderRadius.circular(height * 0.02),
+                                                        ),
+                                                        child: Text(
+                                                          widget.album.songs[index].trackNumber.toString(),
+                                                          style: TextStyle(
+                                                            color: Colors.white,
+                                                            fontSize: boldSize,
+                                                            fontWeight: FontWeight.normal,
+                                                          ),
+                                                          textAlign: TextAlign.center,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                            )
+                                          else if (snapshot.hasError)
+                                            SizedBox(
+                                              height: height * 0.1,
+                                              width: height * 0.1,
+                                              child: Center(
+                                                child: Text(
+                                                  '${snapshot.error} occurred',
+                                                  style: TextStyle(fontSize: normalSize),
+                                                ),
+                                              ),
+                                            )
+                                          else
+                                            AnimatedContainer(
+                                              duration: const Duration(milliseconds: 500),
+                                              height: height * 0.1,
+                                              width: height * 0.1,
+                                              child: AspectRatio(
+                                                aspectRatio: 1.0,
+                                                child: Container(
+                                                  decoration: BoxDecoration(
+                                                      color: Colors.black,
+                                                      borderRadius: BorderRadius.circular(height * 0.01),
+                                                      image: DecorationImage(
+                                                        fit: BoxFit.cover,
+                                                        image: Image.memory(File("./assets/bg.png").readAsBytesSync()).image,
+                                                      )
+                                                  ),
+                                                  child: const Center(
+                                                    child: CircularProgressIndicator(
+                                                      color: Colors.white,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          SizedBox(
+                                            width: width * 0.01,
+                                          ),
+                                          Column(
+                                              mainAxisAlignment: MainAxisAlignment.center,
+                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              children: [
+                                                Text(
+                                                    widget.album.songs[index].title.toString().length > 60 ? "${widget.album.songs[index].title.toString().substring(0, 60)}..." : widget.album.songs[index].title.toString(),
+                                                    style: TextStyle(
+                                                      color: Colors.white,
+                                                      fontSize: normalSize,
+                                                    )
+                                                ),
+                                                SizedBox(
+                                                  height: height * 0.005,
+                                                ),
+                                                Text(widget.album.songs[index].artists.toString().length > 60 ? "${widget.album.songs[index].artists.toString().substring(0, 60)}..." : widget.album.songs[index].artists.toString(),
+                                                    style: TextStyle(
+                                                      color: Colors.white,
+                                                      fontSize: smallSize,
+                                                    )
+                                                ),
+                                              ]
+                                          ),
+                                          const Spacer(),
+                                          Text(
+                                              "${widget.album.songs[index].duration ~/ 60}:${(widget.album.songs[index].duration % 60).toString().padLeft(2, '0')}",
+                                              style: TextStyle(
+                                                color: Colors.white,
+                                                fontSize: normalSize,
+                                              )
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    onHover: (event){
+                                      return;
+                                      //print("Hovering");
+                                    },
+                                    child: Container(
+                                      padding: EdgeInsets.only(
+                                        left: width * 0.0075,
+                                        right: width * 0.0075,
+                                        top: height * 0.005,
+                                        bottom: height * 0.005,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(height * 0.01),
+                                        color: Colors.transparent,
+                                      ),
+                                      child: Row(
+                                        children: [
+                                          if(snapshot.hasData)
+                                            AnimatedContainer(
+                                              duration: const Duration(milliseconds: 500),
+                                              height: height * 0.1,
+                                              width: height * 0.1,
+                                              child: AspectRatio(
+                                                aspectRatio: 1.0,
+                                                child: Container(
+                                                  decoration: BoxDecoration(
+                                                      color: Colors.black,
+                                                      borderRadius: BorderRadius.circular(height * 0.02),
+                                                      image: DecorationImage(
+                                                        fit: BoxFit.cover,
+                                                        image: Image.memory(snapshot.data!).image,
+                                                      )
+                                                  ),
+                                                  child: ClipRRect(
+                                                    // Clip it cleanly.
+                                                    child: BackdropFilter(
+                                                      filter: ImageFilter.blur(
+                                                          sigmaX: 1, sigmaY: 1
+                                                      ),
+                                                      child: Container(
+                                                        color: Colors.black.withOpacity(0.3),
+                                                        alignment: Alignment.center,
+                                                        child: Text(
+                                                          widget.album.songs[index].trackNumber.toString(),
+                                                          style: TextStyle(
+                                                            color: Colors.white,
+                                                            fontSize: boldSize,
+                                                            fontWeight: FontWeight.normal,
+                                                          ),
+                                                          textAlign: TextAlign.center,
+                                                        ),
+                                                      ),
+                                                ),
+                                              ),
+                                            )
+                                              ),
+                                            )
+                                          else if (snapshot.hasError)
+                                            SizedBox(
+                                              height: height * 0.1,
+                                              width: height * 0.1,
+                                              child: Center(
+                                                child: Text(
+                                                  '${snapshot.error} occurred',
+                                                  style: TextStyle(fontSize: normalSize),
+                                                ),
+                                              ),
+                                            )
+                                          else
+                                            AnimatedContainer(
+                                              duration: const Duration(milliseconds: 500),
+                                              height: height * 0.1,
+                                              width: height * 0.1,
+                                              child: AspectRatio(
+                                                aspectRatio: 1.0,
+                                                child: Container(
+                                                  decoration: BoxDecoration(
+                                                      borderRadius: BorderRadius.circular(height * 0.02),
+                                                      image: DecorationImage(
+                                                        fit: BoxFit.cover,
+                                                        image: Image.memory(File("assets/bg.png").readAsBytesSync()).image,
+                                                      )
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          SizedBox(
+                                            width: width * 0.01,
+                                          ),
+                                          Column(
+                                              mainAxisAlignment: MainAxisAlignment.center,
+                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              children: [
+                                                Text(
+                                                    widget.album.songs[index].title.toString().length > 60 ? "${widget.album.songs[index].title.toString().substring(0, 60)}..." : widget.album.songs[index].title.toString(),
+                                                    style: TextStyle(
+                                                      color: Colors.white,
+                                                      fontSize: normalSize,
+                                                    )
+                                                ),
+                                                SizedBox(
+                                                  height: height * 0.005,
+                                                ),
+                                                Text(widget.album.songs[index].artists.toString().length > 60 ? "${widget.album.songs[index].artists.toString().substring(0, 60)}..." : widget.album.songs[index].artists.toString(),
+                                                    style: TextStyle(
+                                                      color: Colors.white,
+                                                      fontSize: smallSize,
+                                                    )
+                                                ),
+                                              ]
+                                          ),
+                                          const Spacer(),
+                                          Text(
+                                              "${widget.album.songs[index].duration ~/ 60}:${(widget.album.songs[index].duration % 60).toString().padLeft(2, '0')}",
+                                              style: TextStyle(
+                                                color: Colors.white,
+                                                fontSize: normalSize,
+                                              )
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  );
+                                }
+                            )
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
             ],
           ),
         ),

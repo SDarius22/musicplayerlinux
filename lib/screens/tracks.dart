@@ -212,7 +212,7 @@ class _TracksState extends State<Tracks>{
                                   borderRadius: BorderRadius.circular(height * 0.01),
                                   image: DecorationImage(
                                     fit: BoxFit.cover,
-                                    image: Image.memory(File("./assets/bg.png").readAsBytesSync()).image,
+                                    image: Image.memory(File("assets/bg.png").readAsBytesSync()).image,
                                   )
                                 ),
                                 child: const Center(

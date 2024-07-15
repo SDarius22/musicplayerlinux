@@ -44,464 +44,453 @@ class _SongPlayerWidget extends State<SongPlayerWidget> {
       valueListenables: [widget.controller.minimizedNotifier, widget.controller.indexNotifier, widget.controller.imageNotifier],
       builder: (context, values, child){
         return AnimatedContainer(
-          duration: const Duration(milliseconds: 250),
+          duration: const Duration(milliseconds: 500),
           curve: Curves.linear,
-          height: height,
-          width: width,
-          alignment: values[0] ? Alignment.center : Alignment.topCenter,
-          padding: EdgeInsets.only(
-            top: values[0] ? 0 : height * 0.075,
-          ),
-          margin: EdgeInsets.only(
-            top: values[0] ? height * 0.75 : 0,
-            left: values[0] ? width * 0.035 : 0,
-            right: values[0] ? width * 0.035 : 0,
+          height: values[0] ? height * 0.15 : height,
+          width: values[0] ? width * 0.9 : width,
+          alignment: values[0] ? Alignment.centerLeft : Alignment.topCenter,
+          padding: EdgeInsets.symmetric(
+            horizontal: values[0] ? height * 0.005 : height * 0.1,
+            vertical: values[0] ? height * 0.005 : height * 0.1,
           ),
           decoration: BoxDecoration(
-            color: const Color(0xFF0E0E0E),
-            borderRadius: BorderRadius.circular(10),
+            color: values[0] ? widget.controller.colorNotifier.value : const Color(0xFF0E0E0E),
+            borderRadius: values[0] ? BorderRadius.circular(height * 0.1) : BorderRadius.circular(0),
           ),
           child: Wrap(
             alignment: WrapAlignment.center,
+            crossAxisAlignment: values[0] ? WrapCrossAlignment.center : WrapCrossAlignment.start,
             children: [
-              //Song Artwork. Details or List and Lyrics
-              ValueListenableBuilder(
-                valueListenable: widget.controller.listNotifier,
-                builder: (context, value, child){
-                  return AnimatedContainer(
-                    duration: const Duration(milliseconds: 500),
-                    curve: Curves.easeInOut,
-                    alignment: Alignment.center,
-                    height: values[0] ? height * 0.15 : height * 0.6,
-                    width: values[0] ? width * 0.15 : width * 0.6,
-                    padding: EdgeInsets.only(
-                      right: values[0] ? 0 : width * 0.025,
-                    ),
-                    child: value == true?
-                    // List of Songs
-                    ListView.builder(
-                      controller: itemScrollController,
-                      itemCount: widget.controller.playingSongsUnShuffled.length,
-                      itemBuilder: (context, int index) {
-                        return MouseRegion(
-                          cursor: SystemMouseCursors.click,
-                          child: GestureDetector(
-                              behavior: HitTestBehavior.translucent,
-                              onTap: (){
-                                //print(widget.controller.playingSongsUnShuffled[index].title);
-                                widget.controller.indexNotifier.value = widget.controller.playingSongs.indexOf(widget.controller.playingSongsUnShuffled[index]);
-                                widget.controller.indexChange(widget.controller.indexNotifier.value);
-                                widget.controller.playSong();
-                              },
-                              child: FutureBuilder(
-                                  future: widget.controller.imageRetrieve(widget.controller.repo.songs.value[index].path, false),
-                                  builder: (context, snapshot){
-                                    return HoverWidget(
-                                      hoverChild: Container(
-                                        padding: EdgeInsets.all(width * 0.005),
-                                        decoration: BoxDecoration(
-                                          borderRadius: BorderRadius.circular(height * 0.01),
-                                          color: const Color(0xFF242424),
-                                        ),
-                                        child: Row(
-                                          children: [
-                                            if(snapshot.hasData)
-                                              AnimatedContainer(
-                                                duration: const Duration(milliseconds: 500),
-                                                height: height * 0.1,
-                                                width: height * 0.1,
-                                                child: AspectRatio(
-                                                  aspectRatio: 1.0,
-                                                  child: Container(
-                                                    decoration: BoxDecoration(
-                                                        color: Colors.black,
-                                                        borderRadius: BorderRadius.circular(height * 0.01),
-                                                        image: DecorationImage(
-                                                          fit: BoxFit.cover,
-                                                          image: Image.memory(snapshot.data!).image,
-                                                        )
-                                                    ),
-                                                  ),
-                                                ),
-                                              )
-                                            else if (snapshot.hasError)
-                                              Center(
-                                                child: Text(
-                                                  '${snapshot.error} occurred',
-                                                  style: TextStyle(fontSize: normalSize),
-                                                ),
-                                              )
-                                            else
-                                              Container(
-                                                decoration: BoxDecoration(
-                                                    color: Colors.black,
-                                                    borderRadius: BorderRadius.circular(10),
-                                                    image: DecorationImage(
-                                                      fit: BoxFit.cover,
-                                                      image: Image.memory(File("./assets/bg.png").readAsBytesSync()).image,
-                                                    )
-                                                ),
-                                                child: const Center(
-                                                  child: CircularProgressIndicator(
-                                                    color: Colors.white,
-                                                  ),
-                                                ),
-                                              ),
-                                            SizedBox(
-                                              width: width * 0.01,
-                                            ),
-                                            Column(
-                                                mainAxisAlignment: MainAxisAlignment.center,
-                                                crossAxisAlignment: CrossAxisAlignment.start,
-                                                children: [
-                                                  Text(
-                                                      widget.controller.playingSongsUnShuffled[index].title.toString().length > 60 ? "${widget.controller.playingSongsUnShuffled[index].title.toString().substring(0, 60)}..." : widget.controller.playingSongsUnShuffled[index].title.toString(),
-                                                      style: TextStyle(
-                                                        color: widget.controller.playingSongsUnShuffled[index] != widget.controller.playingSongs[widget.controller.indexNotifier.value] ? Colors.white : Colors.blue,
-                                                        fontSize: normalSize,
-                                                      )
-                                                  ),
-                                                  SizedBox(
-                                                    height: height * 0.005,
-                                                  ),
-                                                  Text(widget.controller.playingSongsUnShuffled[index].artists.toString().length > 60 ? "${widget.controller.playingSongsUnShuffled[index].artists.toString().substring(0, 60)}..." : widget.controller.playingSongsUnShuffled[index].artists.toString(),
-                                                      style: TextStyle(
-                                                        color: widget.controller.playingSongsUnShuffled[index] != widget.controller.playingSongs[widget.controller.indexNotifier.value] ? Colors.white : Colors.blue,
-                                                        fontSize: smallSize,
-                                                      )
-                                                  ),
-                                                ]
-                                            ),
-                                            const Spacer(),
-                                            Text(
-                                                "${widget.controller.playingSongs[index].duration ~/ 60}:${(widget.controller.playingSongs[index].duration % 60).toString().padLeft(2, '0')}",
-                                                style: TextStyle(
-                                                  color: widget.controller.playingSongsUnShuffled[index] != widget.controller.playingSongs[widget.controller.indexNotifier.value] ? Colors.white : Colors.blue,
-                                                  fontSize: normalSize,
-                                                )
-                                            ),
-                                            Container(
-                                              width: 35,
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                      onHover: (event){
-                                        return;
-                                        //print("Hovering");
-                                      },
-                                      child: Container(
-                                        padding: EdgeInsets.all(width * 0.005),
-                                        decoration: BoxDecoration(
-                                          borderRadius: BorderRadius.circular(height * 0.01),
-                                          color: Colors.transparent,
-                                        ),
-                                        child: Row(
-                                          children: [
-                                            if(snapshot.hasData)
-                                              AnimatedContainer(
-                                                duration: const Duration(milliseconds: 500),
-                                                height: height * 0.1,
-                                                width: height * 0.1,
-                                                child: AspectRatio(
-                                                  aspectRatio: 1.0,
-                                                  child: Container(
-                                                    decoration: BoxDecoration(
-                                                        color: Colors.black,
-                                                        borderRadius: BorderRadius.circular(height * 0.01),
-                                                        image: DecorationImage(
-                                                          fit: BoxFit.cover,
-                                                          image: Image.memory(snapshot.data!).image,
-                                                        )
-                                                    ),
-                                                  ),
-                                                ),
-                                              )
-                                            else if (snapshot.hasError)
-                                              Center(
-                                                child: Text(
-                                                  '${snapshot.error} occurred',
-                                                  style: TextStyle(fontSize: normalSize),
-                                                ),
-                                              )
-                                            else
-                                              Container(
-                                                decoration: BoxDecoration(
-                                                    color: Colors.black,
-                                                    borderRadius: BorderRadius.circular(10),
-                                                    image: DecorationImage(
-                                                      fit: BoxFit.cover,
-                                                      image: Image.memory(File("./assets/bg.png").readAsBytesSync()).image,
-                                                    )
-                                                ),
-                                                child: const Center(
-                                                  child: CircularProgressIndicator(
-                                                    color: Colors.white,
-                                                  ),
-                                                ),
-                                              ),
-                                            SizedBox(
-                                              width: width * 0.01,
-                                            ),
-                                            Column(
-                                                mainAxisAlignment: MainAxisAlignment.center,
-                                                crossAxisAlignment: CrossAxisAlignment.start,
-                                                children: [
-                                                  Text(
-                                                      widget.controller.playingSongsUnShuffled[index].title.toString().length > 60 ? "${widget.controller.playingSongsUnShuffled[index].title.toString().substring(0, 60)}..." : widget.controller.playingSongsUnShuffled[index].title.toString(),
-                                                      style: TextStyle(
-                                                        color: widget.controller.playingSongsUnShuffled[index] != widget.controller.playingSongs[widget.controller.indexNotifier.value] ? Colors.white : Colors.blue,
-                                                        fontSize: normalSize,
-                                                      )
-                                                  ),
-                                                  SizedBox(
-                                                    height: height * 0.005,
-                                                  ),
-                                                  Text(widget.controller.playingSongsUnShuffled[index].artists.toString().length > 60 ? "${widget.controller.playingSongsUnShuffled[index].artists.toString().substring(0, 60)}..." : widget.controller.playingSongsUnShuffled[index].artists.toString(),
-                                                      style: TextStyle(
-                                                        color: widget.controller.playingSongsUnShuffled[index] != widget.controller.playingSongs[widget.controller.indexNotifier.value] ? Colors.white : Colors.blue,
-                                                        fontSize: smallSize,
-                                                      )
-                                                  ),
-                                                ]
-                                            ),
-                                            const Spacer(),
-                                            Text(
-                                                "${widget.controller.playingSongs[index].duration ~/ 60}:${(widget.controller.playingSongs[index].duration % 60).toString().padLeft(2, '0')}",
-                                                style: TextStyle(
-                                                  color: widget.controller.playingSongsUnShuffled[index] != widget.controller.playingSongs[widget.controller.indexNotifier.value] ? Colors.white : Colors.blue,
-                                                  fontSize: normalSize,
-                                                )
-                                            ),
-                                            Container(
-                                              width: 35,
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    );
-                                  }
-                              )
-                          ),
-                        );
-                      },
-                    ) :
-                    // Song Details
-                    Row(
-                      children: [
-                        // Song Artwork
-                        AnimatedContainer(
-                          duration: const Duration(milliseconds: 500),
-                          curve: Curves.easeInOut,
-                          padding: EdgeInsets.only(
-                            left: values[0] ? width * 0.005  : width * 0.02,
-                            right: values[0] ? width * 0.005 : width * 0.02,
-                          ),
-                          width: values[0] ? width * 0.09 : width * 0.3,
-                          child: AspectRatio(
-                            aspectRatio: 1.0,
-                            child: Container(
-                              decoration: BoxDecoration(
-                                  color: Colors.black,
-                                  borderRadius: values[0] ? BorderRadius.circular(width * 0.005) : BorderRadius.circular(width * 0.015),
-                                  image: DecorationImage(
-                                    fit: BoxFit.cover,
-                                    image: Image.memory(widget.controller.imageNotifier.value).image,
-                                  )
-                              ),
-                            ),
-                          ),
-                        ),
-                        if (!values[0])
-                        // Song Details
-                          AnimatedContainer(
-                            duration: const Duration(milliseconds: 500),
-                            curve: Curves.easeInOut,
-                            padding: EdgeInsets.only(
-                              left: width * 0.02,
-                            ),
-                            width: width * 0.25,
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text(
-                                  "Track:",
-                                  textAlign: TextAlign.left,
-                                  style: TextStyle(
-                                    fontSize: normalSize,
-                                    fontWeight: FontWeight.normal,
-                                  ),
-                                ),
-                                SizedBox(
-                                  height: height * 0.005,
-                                ),
-                                Text(
-                                  widget.controller.playingSongs[widget.controller.indexNotifier.value].title.toString(),
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                  textAlign: TextAlign.left,
-                                  style: TextStyle(
-                                    fontSize: boldSize,
-                                    fontWeight: FontWeight.bold
-                                    ,
-                                  ),
-                                ),
-                                SizedBox(
-                                  height: height * 0.03,
-                                ),
-                                Text(
-                                  "Artists:",
-                                  textAlign: TextAlign.left,
-                                  style: TextStyle(
-                                    fontSize: normalSize,
-                                    fontWeight: FontWeight.normal,
-                                  ),
-                                ),
-                                SizedBox(
-                                  height: height * 0.005,
-                                ),
-                                Text(
-                                  widget.controller.playingSongs[widget.controller.indexNotifier.value].artists.toString(),
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(
-                                    fontSize: boldSize,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                SizedBox(
-                                  height: height * 0.03,
-                                ),
-                                Text(
-                                  "Album:",
-                                  textAlign: TextAlign.left,
-                                  style: TextStyle(
-                                    fontSize: normalSize,
-                                    fontWeight: FontWeight.normal,
-                                  ),
-                                ),
-                                SizedBox(
-                                  height: height * 0.005,
-                                ),
-                                Text(
-                                  widget.controller.playingSongs[widget.controller.indexNotifier.value].album.toString(),
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(
-                                    fontSize: boldSize,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                      ],
-                    ),
-                  );
-                }
-              ),
-              //Lyrics
-              if(!values[0])
-                MultiValueListenableBuilder(
-                    valueListenables: [widget.controller.lyricModelNotifier, widget.controller.sliderNotifier, widget.controller.lyricUINotifier, widget.controller.playingNotifier, widget.controller.colorNotifier],
-                    builder: (context, value, child){
+              if (widget.controller.listNotifier.value == true)
+                SizedBox(
+                  height: width * 0.275,
+                  width: width * 0.275 * 2,
+                  child: ListView.builder(
+                    controller: itemScrollController,
+                    itemCount: widget.controller.playingSongsUnShuffled.length,
+                    itemBuilder: (context, int index) {
                       return AnimatedContainer(
                         duration: const Duration(milliseconds: 500),
-                        width: width * 0.3,
-                        height: height * 0.4,
-                        margin: EdgeInsets.only(
-                          top: height * 0.1,
-                        ),
-                        child: LyricsReader(
-                          model: value[0],
-                          position: widget.controller.sliderNotifier.value,
-                          lyricUi: widget.controller.lyricUINotifier.value,
-                          playing: widget.controller.playingNotifier.value,
-                          size: Size.infinite,
-                          padding: EdgeInsets.only(
-                            right: width * 0.02,
-                            left: width * 0.02,
-                          ),
-                          selectLineBuilder: (progress, confirm) {
-                            return Row(
-                              children: [
-                                Icon(FluentIcons.play_12_filled, color: widget.controller.colorNotifier.value),
-                                Expanded(
-                                  child: MouseRegion(
-                                    cursor: SystemMouseCursors.click,
-                                    child: GestureDetector(
-                                      onTap: () {
-                                        confirm.call();
-                                        setState(() {
-                                          widget.controller.seekAudio(Duration(milliseconds: progress));
-                                        });
-                                      },
+                        curve: Curves.easeInOut,
+                        height: height * 0.125,
+                        child: MouseRegion(
+                          cursor: SystemMouseCursors.click,
+                          child: GestureDetector(
+                            behavior: HitTestBehavior.translucent,
+                            onTap: (){
+                              //print(widget.controller.playingSongsUnShuffled[index].title);
+                              widget.controller.indexNotifier.value = widget.controller.playingSongs.indexOf(widget.controller.playingSongsUnShuffled[index]);
+                              widget.controller.indexChange(widget.controller.indexNotifier.value);
+                              widget.controller.playSong();
+                            },
+                            child: FutureBuilder(
+                              future: widget.controller.imageRetrieve(widget.controller.playingSongsUnShuffled[index].path, false),
+                              builder: (context, snapshot){
+                                return HoverWidget(
+                                  hoverChild: Container(
+                                    padding: EdgeInsets.all(width * 0.005),
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(height * 0.01),
+                                      color: const Color(0xFF242424),
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        if(snapshot.hasData)
+                                          AnimatedContainer(
+                                            duration: const Duration(milliseconds: 500),
+                                            height: height * 0.1,
+                                            width: height * 0.1,
+                                            child: AspectRatio(
+                                              aspectRatio: 1.0,
+                                              child: Container(
+                                                decoration: BoxDecoration(
+                                                    color: Colors.black,
+                                                    borderRadius: BorderRadius.circular(height * 0.01),
+                                                    image: DecorationImage(
+                                                      fit: BoxFit.cover,
+                                                      image: Image.memory(snapshot.data!).image,
+                                                    )
+                                                ),
+                                              ),
+                                            ),
+                                          )
+                                        else if (snapshot.hasError)
+                                          SizedBox(
+                                            height: height * 0.1,
+                                            width: height * 0.1,
+                                            child: Center(
+                                              child: Text(
+                                                '${snapshot.error} occurred',
+                                                style: TextStyle(fontSize: normalSize),
+                                              ),
+                                            ),
+                                          )
+                                        else
+                                          AnimatedContainer(
+                                            duration: const Duration(milliseconds: 500),
+                                            height: height * 0.1,
+                                            width: height * 0.1,
+                                            child: AspectRatio(
+                                              aspectRatio: 1.0,
+                                              child: Container(
+                                                decoration: BoxDecoration(
+                                                    color: Colors.black,
+                                                    borderRadius: BorderRadius.circular(height * 0.01),
+                                                    image: DecorationImage(
+                                                      fit: BoxFit.cover,
+                                                      image: Image.memory(File("./assets/bg.png").readAsBytesSync()).image,
+                                                    )
+                                                ),
+                                                child: const Center(
+                                                  child: CircularProgressIndicator(
+                                                    color: Colors.white,
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        SizedBox(
+                                          width: width * 0.01,
+                                        ),
+                                        Column(
+                                            mainAxisAlignment: MainAxisAlignment.center,
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                  widget.controller.playingSongsUnShuffled[index].title.toString().length > 60 ? "${widget.controller.playingSongsUnShuffled[index].title.toString().substring(0, 60)}..." : widget.controller.playingSongsUnShuffled[index].title.toString(),
+                                                  style: TextStyle(
+                                                    color: widget.controller.playingSongsUnShuffled[index] != widget.controller.playingSongs[widget.controller.indexNotifier.value] ? Colors.white : Colors.blue,
+                                                    fontSize: normalSize,
+                                                  )
+                                              ),
+                                              SizedBox(
+                                                height: height * 0.005,
+                                              ),
+                                              Text(widget.controller.playingSongsUnShuffled[index].artists.toString().length > 60 ? "${widget.controller.playingSongsUnShuffled[index].artists.toString().substring(0, 60)}..." : widget.controller.playingSongsUnShuffled[index].artists.toString(),
+                                                  style: TextStyle(
+                                                    color: widget.controller.playingSongsUnShuffled[index] != widget.controller.playingSongs[widget.controller.indexNotifier.value] ? Colors.white : Colors.blue,
+                                                    fontSize: smallSize,
+                                                  )
+                                              ),
+                                            ]
+                                        ),
+                                        const Spacer(),
+                                        Text(
+                                            "${widget.controller.playingSongs[index].duration ~/ 60}:${(widget.controller.playingSongs[index].duration % 60).toString().padLeft(2, '0')}",
+                                            style: TextStyle(
+                                              color: widget.controller.playingSongsUnShuffled[index] != widget.controller.playingSongs[widget.controller.indexNotifier.value] ? Colors.white : Colors.blue,
+                                              fontSize: normalSize,
+                                            )
+                                        ),
+                                        Container(
+                                          width: 35,
+                                        ),
+                                      ],
                                     ),
                                   ),
-                                ),
-                                Text(
-                                  //progress.toString(),
-                                  "${progress ~/ 1000 ~/ 60}:${(progress ~/ 1000 % 60).toString().padLeft(2, '0')}",
-                                  style: TextStyle(color: widget.controller.colorNotifier.value),
-                                )
-                              ],
-                            );
-                          },
-                          // emptyBuilder: () => SingleChildScrollView(
-                          //   scrollDirection: Axis.vertical,
-                          //   physics: const BouncingScrollPhysics(),
-                          //   child: SingleChildScrollView(
-                          //       scrollDirection: Axis.horizontal,
-                          //       child: Text(widget.controller.plainLyricNotifier.value,
-                          //         style: TextStyle(
-                          //           color: widget.controller.colorNotifier.value,
-                          //           fontSize: normalSize,
-                          //           fontFamily: 'Bahnschrift',
-                          //           fontWeight: FontWeight.normal,
-                          //         ),
-                          //       )
-                          //   ),
-                          // ),
-                          emptyBuilder: () => widget.controller.plainLyricNotifier.value.contains("No lyrics") ?
-                          Center(
-                            child: Text(
-                              "No lyrics found",
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: normalSize,
-                                fontFamily: 'Bahnschrift',
-                                fontWeight: FontWeight.normal,
-                              ),
-                            )
-                          ): ScrollConfiguration(
-                            behavior: ScrollConfiguration.of(context).copyWith(
-                              dragDevices: {
-                                PointerDeviceKind.touch,
-                                PointerDeviceKind.mouse,
-                              },
-                            ),
-                            child: SingleChildScrollView(
-                              scrollDirection: Axis.vertical,
-                              physics: const BouncingScrollPhysics(),
-                              child: SingleChildScrollView(
-                                  scrollDirection: Axis.horizontal,
-                                  child: Text(
-                                    widget.controller.plainLyricNotifier.value,
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: normalSize,
-                                      fontFamily: 'Bahnschrift',
-                                      fontWeight: FontWeight.normal,
+                                  onHover: (event){
+                                    return;
+                                    //print("Hovering");
+                                  },
+                                  child: Container(
+                                    padding: EdgeInsets.all(width * 0.005),
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(height * 0.01),
+                                      color: Colors.transparent,
                                     ),
-                                  )
-                              ),
-                            ),
+                                    child: Row(
+                                      children: [
+                                        if(snapshot.hasData)
+                                          AnimatedContainer(
+                                            duration: const Duration(milliseconds: 500),
+                                            height: height * 0.1,
+                                            width: height * 0.1,
+                                            child: AspectRatio(
+                                              aspectRatio: 1.0,
+                                              child: Container(
+                                                decoration: BoxDecoration(
+                                                    color: Colors.black,
+                                                    borderRadius: BorderRadius.circular(height * 0.01),
+                                                    image: DecorationImage(
+                                                      fit: BoxFit.cover,
+                                                      image: Image.memory(snapshot.data!).image,
+                                                    )
+                                                ),
+                                              ),
+                                            ),
+                                          )
+                                        else if (snapshot.hasError)
+                                            SizedBox(
+                                              height: height * 0.1,
+                                              width: height * 0.1,
+                                              child: Center(
+                                                child: Text(
+                                                  '${snapshot.error} occurred',
+                                                  style: TextStyle(fontSize: normalSize),
+                                                ),
+                                              ),
+                                            )
+                                          else
+                                            AnimatedContainer(
+                                              duration: const Duration(milliseconds: 500),
+                                              height: height * 0.1,
+                                              width: height * 0.1,
+                                              child: AspectRatio(
+                                                aspectRatio: 1.0,
+                                                child: Container(
+                                                  decoration: BoxDecoration(
+                                                    borderRadius: BorderRadius.circular(height * 0.01),
+                                                    image: DecorationImage(
+                                                      fit: BoxFit.cover,
+                                                      image: Image.memory(File("assets/bg.png").readAsBytesSync()).image,
+                                                    )
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                        SizedBox(
+                                          width: width * 0.01,
+                                        ),
+                                        Column(
+                                            mainAxisAlignment: MainAxisAlignment.center,
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                  widget.controller.playingSongsUnShuffled[index].title.toString().length > 60 ? "${widget.controller.playingSongsUnShuffled[index].title.toString().substring(0, 60)}..." : widget.controller.playingSongsUnShuffled[index].title.toString(),
+                                                  style: TextStyle(
+                                                    color: widget.controller.playingSongsUnShuffled[index] != widget.controller.playingSongs[widget.controller.indexNotifier.value] ? Colors.white : Colors.blue,
+                                                    fontSize: normalSize,
+                                                  )
+                                              ),
+                                              SizedBox(
+                                                height: height * 0.005,
+                                              ),
+                                              Text(widget.controller.playingSongsUnShuffled[index].artists.toString().length > 60 ? "${widget.controller.playingSongsUnShuffled[index].artists.toString().substring(0, 60)}..." : widget.controller.playingSongsUnShuffled[index].artists.toString(),
+                                                  style: TextStyle(
+                                                    color: widget.controller.playingSongsUnShuffled[index] != widget.controller.playingSongs[widget.controller.indexNotifier.value] ? Colors.white : Colors.blue,
+                                                    fontSize: smallSize,
+                                                  )
+                                              ),
+                                            ]
+                                        ),
+                                        const Spacer(),
+                                        Text(
+                                            "${widget.controller.playingSongs[index].duration ~/ 60}:${(widget.controller.playingSongs[index].duration % 60).toString().padLeft(2, '0')}",
+                                            style: TextStyle(
+                                              color: widget.controller.playingSongsUnShuffled[index] != widget.controller.playingSongs[widget.controller.indexNotifier.value] ? Colors.white : Colors.blue,
+                                              fontSize: normalSize,
+                                            )
+                                        ),
+                                        Container(
+                                          width: 35,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                );
+                              }
+                            )
                           ),
-
                         ),
                       );
-                    }
+
+                    },
+                  )
+                )
+              else
+                AnimatedContainer(
+                  duration: const Duration(milliseconds: 500),
+                  curve: Curves.easeInOut,
+                  height: values[0]? width * 0.075 : width * 0.275,
+                  width: values[0] ? width * 0.075 : width * 0.275,
+                  padding: EdgeInsets.all(width * 0.01),
+                  //color: Colors.red,
+                  child: AspectRatio(
+                    aspectRatio: 1.0,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.black,
+                        borderRadius: values[0] ? BorderRadius.circular(width * 0.1) : BorderRadius.circular(width * 0.03),
+                        image: DecorationImage(
+                          fit: BoxFit.cover,
+                          image: Image.memory(widget.controller.imageNotifier.value).image,
+                        )
+                      ),
+                    ),
+                  ),
+                ),
+              if (!values[0] && !widget.controller.listNotifier.value)
+              // Song Details
+                AnimatedContainer(
+                  duration: const Duration(milliseconds: 500),
+                  curve: Curves.easeInOut,
+                  height: width * 0.275,
+                  width: width * 0.275,
+                  padding: EdgeInsets.symmetric(
+                    horizontal: width * 0.01,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        "Track:",
+                        textAlign: TextAlign.left,
+                        style: TextStyle(
+                          fontSize: normalSize,
+                          fontWeight: FontWeight.normal,
+                        ),
+                      ),
+                      SizedBox(
+                        height: height * 0.005,
+                      ),
+                      Text(
+                        widget.controller.playingSongs[widget.controller.indexNotifier.value].title.toString(),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: boldSize,
+                          fontWeight: FontWeight.bold
+                          ,
+                        ),
+                      ),
+                      SizedBox(
+                        height: height * 0.03,
+                      ),
+                      Text(
+                        "Artists:",
+                        textAlign: TextAlign.left,
+                        style: TextStyle(
+                          fontSize: normalSize,
+                          fontWeight: FontWeight.normal,
+                        ),
+                      ),
+                      SizedBox(
+                        height: height * 0.005,
+                      ),
+                      Text(
+                        widget.controller.playingSongs[widget.controller.indexNotifier.value].artists.toString(),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: boldSize,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      SizedBox(
+                        height: height * 0.03,
+                      ),
+                      Text(
+                        "Album:",
+                        textAlign: TextAlign.left,
+                        style: TextStyle(
+                          fontSize: normalSize,
+                          fontWeight: FontWeight.normal,
+                        ),
+                      ),
+                      SizedBox(
+                        height: height * 0.005,
+                      ),
+                      Text(
+                        widget.controller.playingSongs[widget.controller.indexNotifier.value].album.toString(),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: boldSize,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              if(!values[0])
+                MultiValueListenableBuilder(
+                  valueListenables: [widget.controller.lyricModelNotifier, widget.controller.sliderNotifier, widget.controller.lyricUINotifier, widget.controller.playingNotifier, widget.controller.colorNotifier],
+                  builder: (context, value, child){
+                    return AnimatedContainer(
+                      duration: const Duration(milliseconds: 500),
+                      height: width * 0.275,
+                      padding: EdgeInsets.symmetric(
+                        vertical: width * 0.025,
+                      ),
+                      width: width * 0.275,
+                      child: LyricsReader(
+                        model: value[0],
+                        position: widget.controller.sliderNotifier.value,
+                        lyricUi: widget.controller.lyricUINotifier.value,
+                        playing: widget.controller.playingNotifier.value,
+                        size: Size.infinite,
+                        padding: EdgeInsets.only(
+                          right: width * 0.02,
+                          left: width * 0.02,
+                        ),
+                        selectLineBuilder: (progress, confirm) {
+                          return Row(
+                            children: [
+                              Icon(FluentIcons.play_12_filled, color: widget.controller.colorNotifier.value),
+                              Expanded(
+                                child: MouseRegion(
+                                  cursor: SystemMouseCursors.click,
+                                  child: GestureDetector(
+                                    onTap: () {
+                                      confirm.call();
+                                      setState(() {
+                                        widget.controller.seekAudio(Duration(milliseconds: progress));
+                                      });
+                                    },
+                                  ),
+                                ),
+                              ),
+                              Text(
+                                //progress.toString(),
+                                "${progress ~/ 1000 ~/ 60}:${(progress ~/ 1000 % 60).toString().padLeft(2, '0')}",
+                                style: TextStyle(color: widget.controller.colorNotifier.value),
+                              )
+                            ],
+                          );
+                        },
+                        emptyBuilder: () => widget.controller.plainLyricNotifier.value.contains("No lyrics") || widget.controller.plainLyricNotifier.value.contains("Searching")?
+                        Center(
+                          child: Text(
+                            widget.controller.plainLyricNotifier.value,
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: normalSize,
+                              fontFamily: 'Bahnschrift',
+                              fontWeight: FontWeight.normal,
+                            ),
+                          )
+                        ): ScrollConfiguration(
+                          behavior: ScrollConfiguration.of(context).copyWith(
+                            dragDevices: {
+                              PointerDeviceKind.touch,
+                              PointerDeviceKind.mouse,
+                            },
+                          ),
+                          child: SingleChildScrollView(
+                            scrollDirection: Axis.vertical,
+                            physics: const BouncingScrollPhysics(),
+                            child: SingleChildScrollView(
+                                scrollDirection: Axis.horizontal,
+                                child: Text(
+                                  widget.controller.plainLyricNotifier.value,
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: normalSize,
+                                    fontFamily: 'Bahnschrift',
+                                    fontWeight: FontWeight.normal,
+                                  ),
+                                )
+                            ),
+                          ),
+                        ),
+
+                      ),
+                    );
+                  }
                 ),
 
               if(!values[0])
@@ -551,15 +540,13 @@ class _SongPlayerWidget extends State<SongPlayerWidget> {
               ),
 
               Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   if(values[0])
                   Container(
-                    padding: widget.controller.minimizedNotifier.value ?
-                    EdgeInsets.only(
-                      top: height * 0.02,
-                    ) :
-                    EdgeInsets.only(
-                      top: height * 0.1,
+                    padding: EdgeInsets.symmetric(
+                      vertical: height * 0.01,
                     ),
                     child: Text(
                       // Song Title - Artist with maximum 65 characters
@@ -579,13 +566,10 @@ class _SongPlayerWidget extends State<SongPlayerWidget> {
                         return AnimatedContainer(
                           duration: const Duration(milliseconds: 500),
                           curve: Curves.easeInOut,
-                          width: widget.controller.minimizedNotifier.value ? width * 0.7 : width * 0.9,
-                          padding: widget.controller.minimizedNotifier.value ?
-                          EdgeInsets.only(
-                            top: height * 0.01,
-                          ) :
-                          EdgeInsets.only(
-                            top: height * 0.05,
+                          width: widget.controller.minimizedNotifier.value ? width * 0.775 : width * 0.9,
+                          padding: EdgeInsets.symmetric(
+                            horizontal: width * 0.01,
+                            vertical: widget.controller.minimizedNotifier.value ? 0 : height * 0.03,
                           ),
                           child: ProgressBar(
                             progress: Duration(milliseconds: values[0]),
@@ -603,7 +587,6 @@ class _SongPlayerWidget extends State<SongPlayerWidget> {
                               fontFamily: 'Bahnschrift',
                               fontWeight: FontWeight.normal,
                             ),
-                            timeLabelPadding: 10,
                             onSeek: (duration) {
                               widget.controller.seekAudio(duration);
                             },
@@ -614,9 +597,7 @@ class _SongPlayerWidget extends State<SongPlayerWidget> {
                   AnimatedContainer(
                     duration: const Duration(milliseconds: 500),
                     width: width * 0.7,
-                    padding: EdgeInsets.only(
-                      top : height * 0.01,
-                    ),
+                    height: height * 0.05,
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
@@ -717,7 +698,6 @@ class _SongPlayerWidget extends State<SongPlayerWidget> {
                   ],
                 ),
             ],
-
           ),
         );
       }
