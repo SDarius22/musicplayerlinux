@@ -7,6 +7,7 @@ import 'package:hovering/hovering.dart';
 import 'dart:io';
 
 import '../controller/controller.dart';
+import 'album_screen.dart';
 
 class Tracks extends StatefulWidget{
   final Controller controller;
@@ -142,32 +143,9 @@ class _TracksState extends State<Tracks>{
                                               ),
                                               IconButton(
                                                 onPressed: (){
-
-                                                  /// SOMETHING LIKE NAVIGATE TO ALBUM
-                                                // int indextodisplay = 0;
-                                                // for(int i = 0; i < widget.controller.repo.albums.length; i++){
-                                                //   if(widget.controller.repo.albums[i].name == widget.controller.repo.songs.value[index].album){
-                                                //     indextodisplay = i;
-                                                //     break;
-                                                //   }
-                                                // }
-                                                // artistsforalbum = '';
-                                                // for(int i = widget.controller.repo.albums[indextodisplay].featuredartists.length - 1; i >= 0 ; i--){
-                                                //   if(artistsforalbum.length + widget.controller.repo.albums[indextodisplay].featuredartists[i].name.length < 75) {
-                                                //     artistsforalbum = artistsforalbum + widget.controller.repo.albums[indextodisplay].featuredartists[i].name + ", ";
-                                                //   } else{
-                                                //     artistsforalbum = artistsforalbum.substring(0, artistsforalbum.length - 2);
-                                                //     artistsforalbum = "$artistsforalbum and ${widget.controller.repo.albums[indextodisplay].featuredartists.length - i} more";
-                                                //     break;
-                                                //   }
-                                                // }
-                                                // if(artistsforalbum.endsWith(", ")) {
-                                                //   artistsforalbum = artistsforalbum.substring(0, artistsforalbum.length - 2);
-                                                // }
-                                                // artistsforalbum.replaceAll("  ", " ").replaceAll(" , ", ", ");
-                                                // setState(() {
-                                                //   displayedalbum = indextodisplay;
-                                                // });
+                                                  Navigator.push(context, MaterialPageRoute(builder: (context){
+                                                    return AlbumWidget(controller: widget.controller, album: widget.controller.repo.albums.firstWhere((element) => element.name == widget.controller.repo.songs.value[index].album));
+                                                  }));
                                               },
                                                 padding: const EdgeInsets.all(0),
                                                 icon: Icon(

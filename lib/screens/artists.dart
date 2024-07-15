@@ -5,6 +5,7 @@ import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:hovering/hovering.dart';
 import '../controller/controller.dart';
+import 'artist_screen.dart';
 
 
 class Artists extends StatefulWidget{
@@ -37,7 +38,9 @@ class _ArtistsState extends State<Artists>{
           cursor: SystemMouseCursors.click,
           child: GestureDetector(
             onTap: () {
-              /// Something like navigate to artist page
+              Navigator.push(context, MaterialPageRoute(builder: (context){
+                return ArtistWidget(controller: widget.controller, artist: widget.controller.repo.artists[index]);
+              }));
             },
             child: Column(
               children: [

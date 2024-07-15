@@ -503,7 +503,6 @@ class Controller{
     return metadatavariable;
   }
 
-
   Future<Uint8List> imageRetrieve(String path, bool update) async{
     Uint8List image = File("assets/bg.png").readAsBytesSync();
     var metadatavar = await AudioTags.read(path);

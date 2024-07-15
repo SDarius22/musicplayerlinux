@@ -4,7 +4,7 @@ import 'dart:ui';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:hovering/hovering.dart';
-import 'package:musicplayer/screens/album_widget.dart';
+import 'package:musicplayer/screens/album_screen.dart';
 import '../controller/controller.dart';
 
 
@@ -45,22 +45,6 @@ class _AlbumsState extends State<Albums>{
                 Navigator.push(context, MaterialPageRoute(builder: (context){
                   return AlbumWidget(controller: widget.controller, album: widget.controller.repo.albums[index]);
                 }));
-
-                // for(int i = widget.controller.repo.albums[index].featuredartists.length - 1; i >= 0 ; i--){
-                //   if(artistsforalbum.length + widget.controller.repo.albums[index].featuredartists[i].name.length < 75)
-                //     artistsforalbum = artistsforalbum + widget.controller.repo.albums[index].featuredartists[i].name + ", ";
-                //   else{
-                //     artistsforalbum = artistsforalbum.substring(0, artistsforalbum.length - 2);
-                //     artistsforalbum = artistsforalbum + " and " + (widget.controller.repo.albums[index].featuredartists.length - i).toString() + " more";
-                //     break;
-                //   }
-                // }
-                // if(artistsforalbum.endsWith(", "))
-                //   artistsforalbum = artistsforalbum.substring(0, artistsforalbum.length - 2);
-                // artistsforalbum.replaceAll("  ", " ").replaceAll(" , ", ", ");
-                // setState(() {
-                //   displayedalbum = index;
-                // });
               },
               child: Column(
                 children: [

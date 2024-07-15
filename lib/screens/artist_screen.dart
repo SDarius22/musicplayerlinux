@@ -4,35 +4,35 @@ import 'dart:ui';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:hovering/hovering.dart';
-import 'package:musicplayer/domain/album_type.dart';
+import 'package:musicplayer/domain/artist_type.dart';
 import '../controller/controller.dart';
 import 'settings.dart';
 
-class AlbumWidget extends StatefulWidget {
+class ArtistWidget extends StatefulWidget {
   final Controller controller;
-  final AlbumType album;
-  const AlbumWidget({super.key, required this.controller, required this.album});
+  final ArtistType artist;
+  const ArtistWidget({super.key, required this.controller, required this.artist});
 
   @override
-  _AlbumWidget createState() => _AlbumWidget();
+  _ArtistWidget createState() => _ArtistWidget();
 }
 
-class _AlbumWidget extends State<AlbumWidget> {
+class _ArtistWidget extends State<ArtistWidget> {
   bool _volume = true, search = false;
   final ValueNotifier<bool> _visible = ValueNotifier(false);
   FocusNode searchNode = FocusNode();
-
-  String featuredArtists = "";
+  String duration = "0 seconds";
 
 
   @override
   void initState() {
-    for(int i = 0; i < widget.album.featuredartists.length; i++) {
-      featuredArtists += widget.album.featuredartists[i].name;
-      if(i != widget.album.featuredartists.length - 1) {
-        featuredArtists += ", ";
-      }
+    int totalDuration = 0;
+    for(int i = 0; i < widget.artist.songs.length; i++){
+      totalDuration += widget.artist.songs[i].duration;
     }
+    duration = "${totalDuration ~/ 3600} hours, ${(totalDuration % 3600 ~/ 60)} minutes and ${(totalDuration % 60)} seconds";
+    duration = duration.replaceAll("0 hours, ", "");
+    duration = duration.replaceAll("0 minutes and ", "");
     super.initState();
   }
 
@@ -61,8 +61,7 @@ class _AlbumWidget extends State<AlbumWidget> {
                           child: SizedBox(
                               height: height * 0.05,
                               width: width * 0.1,
-                              child:
-                              MouseRegion(
+                              child: MouseRegion(
                                 onEnter: (event) {
                                   _visible.value = true;
                                 },
@@ -130,7 +129,8 @@ class _AlbumWidget extends State<AlbumWidget> {
                         }, icon: const Icon(FluentIcons.settings_16_filled))//Icon(Icons.more_vert)),
                       ],
                     ),
-              ))
+              )
+          )
         ],
       ),
       body: SafeArea(
@@ -151,171 +151,147 @@ class _AlbumWidget extends State<AlbumWidget> {
                 duration: const Duration(milliseconds: 500),
                 width: width * 0.45,
                 child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children:[
-                    AnimatedContainer(
-                      duration: const Duration(milliseconds: 500),
-                      curve: Curves.easeInOut,
-                      height: height * 0.5,
-                      padding: EdgeInsets.only(
-                        bottom: height * 0.01,
-                      ),
-                      //color: Colors.red,
-                      child: AspectRatio(
-                        aspectRatio: 1.0,
-                        child: FutureBuilder(
-                            future: widget.controller.imageRetrieve(widget.album.songs.first.path, false),
-                            builder: (context, snapshot){
-                              if(snapshot.hasData) {
-                                return DecoratedBox(
-                                  decoration: BoxDecoration(
-                                    color: Colors.black,
-                                    borderRadius: BorderRadius.circular(width * 0.025),
-                                    image: DecorationImage(
-                                      image: Image.memory(snapshot.data!).image,
-                                      fit: BoxFit.cover,
-                                    ),
-                                  ),
-                                );
-                              }
-                              else{
-                                return DecoratedBox(
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(10),
-                                    image: DecorationImage(
-                                      image: Image.memory(File("assets/bg.png").readAsBytesSync()).image,
-                                      fit: BoxFit.cover,
-                                    ),
-                                  ),
-                                );
-                              }
-                            }
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children:[
+                      AnimatedContainer(
+                        duration: const Duration(milliseconds: 500),
+                        curve: Curves.easeInOut,
+                        height: height * 0.5,
+                        padding: EdgeInsets.only(
+                          bottom: height * 0.01,
                         ),
-                      ),
-                    ),
-                    Text(
-                      "Album name:",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: normalSize,
-                        fontWeight: FontWeight.normal,
-                      ),
-                    ),
-                    SizedBox(
-                      height: height * 0.005,
-                    ),
-                    Text(
-                      widget.album.name,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: boldSize,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    SizedBox(
-                      height: height * 0.01,
-                    ),
-                    Text(
-                      "Featured artists:",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: normalSize,
-                        fontWeight: FontWeight.normal,
-                      ),
-                    ),
-                    SizedBox(
-                      height: height * 0.005,
-                    ),
-                    Text(
-                      featuredArtists,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: boldSize,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    SizedBox(
-                      height: height * 0.01,
-                    ),
-                    Text(
-                      "Album duration:",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: normalSize,
-                        fontWeight: FontWeight.normal,
-                      ),
-                    ),
-                    SizedBox(
-                      height: height * 0.005,
-                    ),
-                    Text(
-                      widget.album.duration,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: boldSize,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        IconButton(
-                          onPressed: (){
-                            //print("Playing ${widget.controller.indexNotifier.value}");
-                            widget.controller.playingSongs.clear();
-                            widget.controller.playingSongsUnShuffled.clear();
-
-                            widget.controller.playingSongs.addAll(widget.album.songs);
-                            widget.controller.playingSongsUnShuffled.addAll(widget.album.songs);
-
-                            if(widget.controller.shuffleNotifier.value == true) {
-                              widget.controller.playingSongs.shuffle();
-                            }
-
-                            var file = File("assets/settings.json");
-                            widget.controller.settings.lastPlaying.clear();
-
-                            for(int i = 0; i < widget.controller.playingSongs.length; i++){
-                              widget.controller.settings.lastPlaying.add(widget.controller.playingSongs[i].path);
-                            }
-                            widget.controller.settings.lastPlayingIndex = widget.controller.playingSongs.indexOf(widget.controller.playingSongsUnShuffled[0]);
-                            file.writeAsStringSync(jsonEncode(widget.controller.settings.toJson()));
-                            widget.controller.indexChange(widget.controller.playingSongs.indexOf(widget.controller.playingSongsUnShuffled[0]));
-                            widget.controller.playSong();
-                        },
-                          icon: Icon(
-                            FluentIcons.play_12_filled,
-                            color: Colors.white,
-                            size: height * 0.025,
+                        //color: Colors.red,
+                        child: AspectRatio(
+                          aspectRatio: 1.0,
+                          child: FutureBuilder(
+                              future: widget.controller.imageRetrieve(widget.artist.songs.first.path, false),
+                              builder: (context, snapshot){
+                                if(snapshot.hasData) {
+                                  return DecoratedBox(
+                                    decoration: BoxDecoration(
+                                      color: Colors.black,
+                                      borderRadius: BorderRadius.circular(width * 0.025),
+                                      image: DecorationImage(
+                                        image: Image.memory(snapshot.data!).image,
+                                        fit: BoxFit.cover,
+                                      ),
+                                    ),
+                                  );
+                                }
+                                else{
+                                  return DecoratedBox(
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(10),
+                                      image: DecorationImage(
+                                        image: Image.memory(File("assets/bg.png").readAsBytesSync()).image,
+                                        fit: BoxFit.cover,
+                                      ),
+                                    ),
+                                  );
+                                }
+                              }
                           ),
                         ),
-                        IconButton(
-                          onPressed: (){
-                          print("Add ${widget.album.name}");
-                          // for(metadata1 song in allalbums[displayedalbum].songs) {
-                          //   _songstoadd.add(song);
-                          // }
-                          // setState(() {
-                          //   addelement = true;
-                          // });
-                        },
-                          icon: Icon(
-                            FluentIcons.add_12_filled,
-                            color: Colors.white,
-                            size: height * 0.025,
-                          ),
+                      ),
+                      Text(
+                        "Artist name:",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: normalSize,
+                          fontWeight: FontWeight.normal,
                         ),
-                      ]
-                    ),
-                  ]
+                      ),
+                      SizedBox(
+                        height: height * 0.005,
+                      ),
+                      Text(
+                        widget.artist.name,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: boldSize,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      SizedBox(
+                        height: height * 0.01,
+                      ),
+                      Text(
+                        "Artist's songs duration:",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: normalSize,
+                          fontWeight: FontWeight.normal,
+                        ),
+                      ),
+                      SizedBox(
+                        height: height * 0.005,
+                      ),
+                      Text(
+                        duration,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: boldSize,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            IconButton(
+                              onPressed: (){
+                                //print("Playing ${widget.controller.indexNotifier.value}");
+                                widget.controller.playingSongs.clear();
+                                widget.controller.playingSongsUnShuffled.clear();
+
+                                widget.controller.playingSongs.addAll(widget.artist.songs);
+                                widget.controller.playingSongsUnShuffled.addAll(widget.artist.songs);
+
+                                if(widget.controller.shuffleNotifier.value == true) {
+                                  widget.controller.playingSongs.shuffle();
+                                }
+
+                                var file = File("assets/settings.json");
+                                widget.controller.settings.lastPlaying.clear();
+
+                                for(int i = 0; i < widget.controller.playingSongs.length; i++){
+                                  widget.controller.settings.lastPlaying.add(widget.controller.playingSongs[i].path);
+                                }
+                                widget.controller.settings.lastPlayingIndex = widget.controller.playingSongs.indexOf(widget.controller.playingSongsUnShuffled[0]);
+                                file.writeAsStringSync(jsonEncode(widget.controller.settings.toJson()));
+                                widget.controller.indexChange(widget.controller.playingSongs.indexOf(widget.controller.playingSongsUnShuffled[0]));
+                                widget.controller.playSong();
+                              },
+                              icon: Icon(
+                                FluentIcons.play_12_filled,
+                                color: Colors.white,
+                                size: height * 0.025,
+                              ),
+                            ),
+                            IconButton(
+                              onPressed: (){
+                                print("Add ${widget.artist.name}");
+                                // for(metadata1 song in allalbums[displayedalbum].songs) {
+                                //   _songstoadd.add(song);
+                                // }
+                                // setState(() {
+                                //   addelement = true;
+                                // });
+                              },
+                              icon: Icon(
+                                FluentIcons.add_12_filled,
+                                color: Colors.white,
+                                size: height * 0.025,
+                              ),
+                            ),
+                          ]
+                      ),
+                    ]
                 ),
               ),
               AnimatedContainer(
@@ -327,7 +303,7 @@ class _AlbumWidget extends State<AlbumWidget> {
                   bottom: height * 0.05,
                 ),
                 child: ListView.builder(
-                  itemCount: widget.album.songs.length,
+                  itemCount: widget.artist.songs.length,
                   itemBuilder: (context, int index) {
                     return AnimatedContainer(
                       duration: const Duration(milliseconds: 500),
@@ -347,7 +323,7 @@ class _AlbumWidget extends State<AlbumWidget> {
                               widget.controller.playSong();
                             },
                             child: FutureBuilder(
-                                future: widget.controller.imageRetrieve(widget.album.songs[index].path, false),
+                                future: widget.controller.imageRetrieve(widget.artist.songs[index].path, false),
                                 builder: (context, snapshot){
                                   return HoverWidget(
                                     hoverChild: Container(
@@ -372,36 +348,12 @@ class _AlbumWidget extends State<AlbumWidget> {
                                                 aspectRatio: 1.0,
                                                 child: Container(
                                                   decoration: BoxDecoration(
-                                                    color: Colors.black,
-                                                    borderRadius: BorderRadius.circular(height * 0.02),
-                                                    image: DecorationImage(
-                                                      fit: BoxFit.cover,
-                                                      image: Image.memory(snapshot.data!).image,
-                                                    )
-                                                  ),
-                                                  child: ClipRRect(
-                                                    // Clip it cleanly.
-                                                    child: BackdropFilter(
-                                                      filter: ImageFilter.blur(
-                                                          sigmaX: 1, sigmaY: 1
-                                                      ),
-                                                      child: Container(
-                                                        alignment: Alignment.center,
-                                                        decoration: BoxDecoration(
-                                                          color: Colors.black.withOpacity(0.3),
-                                                          borderRadius: BorderRadius.circular(height * 0.02),
-                                                        ),
-                                                        child: Text(
-                                                          widget.album.songs[index].trackNumber.toString(),
-                                                          style: TextStyle(
-                                                            color: Colors.white,
-                                                            fontSize: boldSize,
-                                                            fontWeight: FontWeight.normal,
-                                                          ),
-                                                          textAlign: TextAlign.center,
-                                                        ),
-                                                      ),
-                                                    ),
+                                                      color: Colors.black,
+                                                      borderRadius: BorderRadius.circular(height * 0.02),
+                                                      image: DecorationImage(
+                                                        fit: BoxFit.cover,
+                                                        image: Image.memory(snapshot.data!).image,
+                                                      )
                                                   ),
                                                 ),
                                               ),
@@ -449,7 +401,7 @@ class _AlbumWidget extends State<AlbumWidget> {
                                               crossAxisAlignment: CrossAxisAlignment.start,
                                               children: [
                                                 Text(
-                                                    widget.album.songs[index].title.toString().length > 60 ? "${widget.album.songs[index].title.toString().substring(0, 60)}..." : widget.album.songs[index].title.toString(),
+                                                    widget.artist.songs[index].title.toString().length > 60 ? "${widget.artist.songs[index].title.toString().substring(0, 60)}..." : widget.artist.songs[index].title.toString(),
                                                     style: TextStyle(
                                                       color: Colors.white,
                                                       fontSize: normalSize,
@@ -458,7 +410,8 @@ class _AlbumWidget extends State<AlbumWidget> {
                                                 SizedBox(
                                                   height: height * 0.005,
                                                 ),
-                                                Text(widget.album.songs[index].artists.toString().length > 60 ? "${widget.album.songs[index].artists.toString().substring(0, 60)}..." : widget.album.songs[index].artists.toString(),
+                                                Text(
+                                                    widget.artist.songs[index].artists.toString().length > 60 ? "${widget.artist.songs[index].artists.toString().substring(0, 60)}..." : widget.artist.songs[index].artists.toString(),
                                                     style: TextStyle(
                                                       color: Colors.white,
                                                       fontSize: smallSize,
@@ -468,7 +421,7 @@ class _AlbumWidget extends State<AlbumWidget> {
                                           ),
                                           const Spacer(),
                                           Text(
-                                              "${widget.album.songs[index].duration ~/ 60}:${(widget.album.songs[index].duration % 60).toString().padLeft(2, '0')}",
+                                              "${widget.artist.songs[index].duration ~/ 60}:${(widget.artist.songs[index].duration % 60).toString().padLeft(2, '0')}",
                                               style: TextStyle(
                                                 color: Colors.white,
                                                 fontSize: normalSize,
@@ -500,38 +453,17 @@ class _AlbumWidget extends State<AlbumWidget> {
                                               height: height * 0.1,
                                               width: height * 0.1,
                                               child: AspectRatio(
-                                                aspectRatio: 1.0,
-                                                child: Container(
-                                                  decoration: BoxDecoration(
-                                                      color: Colors.black,
-                                                      borderRadius: BorderRadius.circular(height * 0.02),
-                                                      image: DecorationImage(
-                                                        fit: BoxFit.cover,
-                                                        image: Image.memory(snapshot.data!).image,
-                                                      )
-                                                  ),
-                                                  child: ClipRRect(
-                                                    // Clip it cleanly.
-                                                    child: BackdropFilter(
-                                                      filter: ImageFilter.blur(
-                                                          sigmaX: 1, sigmaY: 1
-                                                      ),
-                                                      child: Container(
-                                                        color: Colors.black.withOpacity(0.3),
-                                                        alignment: Alignment.center,
-                                                        child: Text(
-                                                          widget.album.songs[index].trackNumber.toString(),
-                                                          style: TextStyle(
-                                                            color: Colors.white,
-                                                            fontSize: boldSize,
-                                                            fontWeight: FontWeight.normal,
-                                                          ),
-                                                          textAlign: TextAlign.center,
-                                                        ),
-                                                      ),
-                                                ),
-                                              ),
-                                            )
+                                                  aspectRatio: 1.0,
+                                                  child: Container(
+                                                    decoration: BoxDecoration(
+                                                        color: Colors.black,
+                                                        borderRadius: BorderRadius.circular(height * 0.02),
+                                                        image: DecorationImage(
+                                                          fit: BoxFit.cover,
+                                                          image: Image.memory(snapshot.data!).image,
+                                                        )
+                                                    ),
+                                                  )
                                               ),
                                             )
                                           else if (snapshot.hasError)
@@ -571,7 +503,7 @@ class _AlbumWidget extends State<AlbumWidget> {
                                               crossAxisAlignment: CrossAxisAlignment.start,
                                               children: [
                                                 Text(
-                                                    widget.album.songs[index].title.toString().length > 60 ? "${widget.album.songs[index].title.toString().substring(0, 60)}..." : widget.album.songs[index].title.toString(),
+                                                    widget.artist.songs[index].title.toString().length > 60 ? "${widget.artist.songs[index].title.toString().substring(0, 60)}..." : widget.artist.songs[index].title.toString(),
                                                     style: TextStyle(
                                                       color: Colors.white,
                                                       fontSize: normalSize,
@@ -580,7 +512,8 @@ class _AlbumWidget extends State<AlbumWidget> {
                                                 SizedBox(
                                                   height: height * 0.005,
                                                 ),
-                                                Text(widget.album.songs[index].artists.toString().length > 60 ? "${widget.album.songs[index].artists.toString().substring(0, 60)}..." : widget.album.songs[index].artists.toString(),
+                                                Text(
+                                                    widget.artist.songs[index].artists.toString().length > 60 ? "${widget.artist.songs[index].artists.toString().substring(0, 60)}..." : widget.artist.songs[index].artists.toString(),
                                                     style: TextStyle(
                                                       color: Colors.white,
                                                       fontSize: smallSize,
@@ -590,7 +523,7 @@ class _AlbumWidget extends State<AlbumWidget> {
                                           ),
                                           const Spacer(),
                                           Text(
-                                              "${widget.album.songs[index].duration ~/ 60}:${(widget.album.songs[index].duration % 60).toString().padLeft(2, '0')}",
+                                              "${widget.artist.songs[index].duration ~/ 60}:${(widget.artist.songs[index].duration % 60).toString().padLeft(2, '0')}",
                                               style: TextStyle(
                                                 color: Colors.white,
                                                 fontSize: normalSize,

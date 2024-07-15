@@ -4,6 +4,7 @@ import 'dart:ui';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:hovering/hovering.dart';
+import 'package:musicplayer/screens/playlist_screen.dart';
 import '../controller/controller.dart';
 
 class Playlists extends StatefulWidget{
@@ -90,22 +91,9 @@ class _PlaylistsState extends State<Playlists>{
           cursor: SystemMouseCursors.click,
           child: GestureDetector(
             onTap: () {
-              /// Navigate to the playlist page
-              // for(int i = widget.controller.repo.playlists[index-1].featuredartists.length - 1; i >= 0 ; i--){
-              //   if(artistsforalbum.length + widget.controller.repo.playlists[index-1].featuredartists[i].name.length < 75)
-              //     artistsforalbum = artistsforalbum + widget.controller.repo.playlists[index-1].featuredartists[i].name + ", ";
-              //   else{
-              //     artistsforalbum = artistsforalbum.substring(0, artistsforalbum.length - 2);
-              //     artistsforalbum = artistsforalbum + " and " + (widget.controller.repo.playlists[index-1].featuredartists.length - i).toString() + " more";
-              //     break;
-              //   }
-              // }
-              // if(artistsforalbum.endsWith(", "))
-              //   artistsforalbum = artistsforalbum.substring(0, artistsforalbum.length - 2);
-              // artistsforalbum.replaceAll("  ", " ").replaceAll(" , ", ", ");
-              // setState(() {
-              //   displayedalbum = index;
-              // });
+              Navigator.push(context, MaterialPageRoute(builder: (context){
+                return PlaylistWidget(controller: widget.controller, playlist: widget.controller.repo.playlists[index]);
+              }));
             },
             child: Column(
               children: [
