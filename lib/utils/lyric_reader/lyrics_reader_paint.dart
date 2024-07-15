@@ -235,7 +235,7 @@ class LyricsReaderPaint extends ChangeNotifier implements CustomPainter {
     }
     paint.paint(canvas, offset);
     if (isEnableLight) {
-      drawHighlight(element!, canvas, paint, offset);
+      drawHighlight(element, canvas, paint, offset);
       canvas.restore();
     }
     return lineHeight;

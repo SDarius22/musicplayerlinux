@@ -42,9 +42,9 @@ class _HomePageState extends State<HomePage>{
   FocusNode myFocusNode = FocusNode();
   FocusNode searchNode = FocusNode();
 
-  ValueNotifier<bool> _visible = ValueNotifier(false);
+  final ValueNotifier<bool> _visible = ValueNotifier(false);
 
-  ScrollController _scrollController = ScrollController(initialScrollOffset: 0.0);
+  final ScrollController _scrollController = ScrollController(initialScrollOffset: 0.0);
 
   MetadataType songtoadd = MetadataType();
 

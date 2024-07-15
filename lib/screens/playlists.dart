@@ -63,7 +63,7 @@ class _PlaylistsState extends State<Playlists>{
                       ),
                     ),
                     ClipRRect(
-                      // Clip it cleanly.
+                      borderRadius: BorderRadius.circular(height * 0.01),
                       child: BackdropFilter(
                         filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
                         child: Container(
@@ -131,7 +131,7 @@ class _PlaylistsState extends State<Playlists>{
                                     ),
                                   ),
                                   ClipRRect(
-                                    // Clip it cleanly.
+                                    borderRadius: BorderRadius.circular(height * 0.01),
                                     child: BackdropFilter(
                                       filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
                                       child: Container(

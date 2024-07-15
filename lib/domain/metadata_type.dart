@@ -1,5 +1,3 @@
-import 'package:flutter/material.dart';
-
 class MetadataType{
   String title = "Unknown Song";
   String artists = "Unknown artist";

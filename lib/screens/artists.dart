@@ -65,7 +65,7 @@ class _ArtistsState extends State<Artists>{
                                   ),
                                 ),
                                 ClipRRect(
-                                  // Clip it cleanly.
+                                  borderRadius: BorderRadius.circular(height * 0.01),
                                   child: BackdropFilter(
                                     filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
                                     child: Container(

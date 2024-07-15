@@ -1,5 +1,5 @@
 import 'dart:io';
-import 'dart:convert';
+import 'dart:ui';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:hovering/hovering.dart';
@@ -320,6 +320,7 @@ class _SongPlayerWidget extends State<SongPlayerWidget> {
                             padding: EdgeInsets.only(
                               left: width * 0.02,
                             ),
+                            width: width * 0.25,
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               mainAxisAlignment: MainAxisAlignment.center,
@@ -336,7 +337,9 @@ class _SongPlayerWidget extends State<SongPlayerWidget> {
                                   height: height * 0.005,
                                 ),
                                 Text(
-                                  widget.controller.playingSongs[widget.controller.indexNotifier.value].title.toString().length > 50 ? "${widget.controller.playingSongs[widget.controller.indexNotifier.value].title.toString().substring(0, 50)}..." : widget.controller.playingSongs[widget.controller.indexNotifier.value].title.toString(),
+                                  widget.controller.playingSongs[widget.controller.indexNotifier.value].title.toString(),
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
                                   textAlign: TextAlign.left,
                                   style: TextStyle(
                                     fontSize: boldSize,
@@ -359,7 +362,9 @@ class _SongPlayerWidget extends State<SongPlayerWidget> {
                                   height: height * 0.005,
                                 ),
                                 Text(
-                                  widget.controller.playingSongs[widget.controller.indexNotifier.value].artists.toString().length > 60 ? "${widget.controller.playingSongs[widget.controller.indexNotifier.value].artists.toString().substring(0, 60)}..." : widget.controller.playingSongs[widget.controller.indexNotifier.value].artists.toString(),
+                                  widget.controller.playingSongs[widget.controller.indexNotifier.value].artists.toString(),
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
                                   style: TextStyle(
                                     fontSize: boldSize,
                                     fontWeight: FontWeight.bold,
@@ -379,9 +384,10 @@ class _SongPlayerWidget extends State<SongPlayerWidget> {
                                 SizedBox(
                                   height: height * 0.005,
                                 ),
-
                                 Text(
-                                  widget.controller.playingSongs[widget.controller.indexNotifier.value].album.toString().length > 60 ? "${widget.controller.playingSongs[widget.controller.indexNotifier.value].album.toString().substring(0, 60)}..." : widget.controller.playingSongs[widget.controller.indexNotifier.value].album.toString(),
+                                  widget.controller.playingSongs[widget.controller.indexNotifier.value].album.toString(),
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
                                   style: TextStyle(
                                     fontSize: boldSize,
                                     fontWeight: FontWeight.bold,
@@ -408,7 +414,7 @@ class _SongPlayerWidget extends State<SongPlayerWidget> {
                           top: height * 0.1,
                         ),
                         child: LyricsReader(
-                          model: widget.controller.lyricModelNotifier.value,
+                          model: value[0],
                           position: widget.controller.sliderNotifier.value,
                           lyricUi: widget.controller.lyricUINotifier.value,
                           playing: widget.controller.playingNotifier.value,
@@ -442,12 +448,57 @@ class _SongPlayerWidget extends State<SongPlayerWidget> {
                               ],
                             );
                           },
-                          emptyBuilder: () => const Center(
+                          // emptyBuilder: () => SingleChildScrollView(
+                          //   scrollDirection: Axis.vertical,
+                          //   physics: const BouncingScrollPhysics(),
+                          //   child: SingleChildScrollView(
+                          //       scrollDirection: Axis.horizontal,
+                          //       child: Text(widget.controller.plainLyricNotifier.value,
+                          //         style: TextStyle(
+                          //           color: widget.controller.colorNotifier.value,
+                          //           fontSize: normalSize,
+                          //           fontFamily: 'Bahnschrift',
+                          //           fontWeight: FontWeight.normal,
+                          //         ),
+                          //       )
+                          //   ),
+                          // ),
+                          emptyBuilder: () => widget.controller.plainLyricNotifier.value.contains("No lyrics") ?
+                          Center(
                             child: Text(
-                              "No lyrics",
-                              style: TextStyle(color: Colors.white, fontFamily: 'Bahnschrift', fontSize: 20),
+                              "No lyrics found",
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: normalSize,
+                                fontFamily: 'Bahnschrift',
+                                fontWeight: FontWeight.normal,
+                              ),
+                            )
+                          ): ScrollConfiguration(
+                            behavior: ScrollConfiguration.of(context).copyWith(
+                              dragDevices: {
+                                PointerDeviceKind.touch,
+                                PointerDeviceKind.mouse,
+                              },
+                            ),
+                            child: SingleChildScrollView(
+                              scrollDirection: Axis.vertical,
+                              physics: const BouncingScrollPhysics(),
+                              child: SingleChildScrollView(
+                                  scrollDirection: Axis.horizontal,
+                                  child: Text(
+                                    widget.controller.plainLyricNotifier.value,
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: normalSize,
+                                      fontFamily: 'Bahnschrift',
+                                      fontWeight: FontWeight.normal,
+                                    ),
+                                  )
+                              ),
                             ),
                           ),
+
                         ),
                       );
                     }
@@ -486,7 +537,14 @@ class _SongPlayerWidget extends State<SongPlayerWidget> {
                           }
                         },
                         padding: const EdgeInsets.all(0),
-                        icon: Icon(FluentIcons.list_20_filled, size: width * 0.01)),
+                        icon: Icon(FluentIcons.list_20_filled, size: width * 0.01)
+                    ),
+                  IconButton(
+                      onPressed: () async {
+                        await widget.controller.searchLyrics();
+                      },
+                      icon: Icon(FluentIcons.search_sparkle_24_filled, size: width * 0.01)
+                  ),
 
 
                 ],

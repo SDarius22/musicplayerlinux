@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:http/http.dart' as http;
 
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/foundation.dart';
@@ -43,6 +44,7 @@ class Controller{
   ValueNotifier<bool> finishedRetrievingNotifier = ValueNotifier<bool>(false);
   ValueNotifier<LyricsReaderModel> lyricModelNotifier = ValueNotifier<LyricsReaderModel>(LyricsReaderModel());
   ValueNotifier<LyricUI> lyricUINotifier = ValueNotifier<LyricUI>(UINetease());
+  ValueNotifier<String> plainLyricNotifier = ValueNotifier<String>('');
   ValueNotifier<List<MetadataType>> found = ValueNotifier<List<MetadataType>>([]);
   ValueNotifier<Color> colorNotifier = ValueNotifier<Color>(Colors.deepPurpleAccent.shade400);
   ValueNotifier<Uint8List> imageNotifier = ValueNotifier<Uint8List>(File("./assets/bg.png").readAsBytesSync());
@@ -52,6 +54,134 @@ class Controller{
   void updateContext(BuildContext context){
     this.context = context;
     lyricModelReset();
+  }
+
+  Future<void> searchLyrics() async {
+    final Map<String, String> cookies = {'arl': '8436641c809f643da885ce7eb45e39e6a9514f882b1541a05282a33485f6f96fc56ddb724424ec3518e25bbaa08de4e7521e5f289a14c512dd65dc2ec0ad10b83138e5d02c1531a5bf5766ecfd492d0157815bafa5f08b90dcfe51a1eba1bbbf'};
+    final Map<String, String> params = {'jo': 'p', 'rto': 'c', 'i': 'c'};
+    const String loginUrl = 'https://auth.deezer.com/login/arl';
+    const String deezerApiUrl = 'https://pipe.deezer.com/api';
+    String title = playingSongs[indexNotifier.value].title;
+    String artist = playingSongs[indexNotifier.value].artists;
+    String searchUrl = 'https://api.deezer.com/search?q=$title-$artist&limit=1&index=0&output=json';
+    print(searchUrl);
+
+    final Uri uri = Uri.parse(loginUrl).replace(queryParameters: params);
+    final http.Request postRequest = http.Request('POST', uri);
+    postRequest.headers.addAll({
+      'Content-Type': 'application/json',
+      'Cookie': 'arl=${cookies['arl']}'
+    });
+    final http.StreamedResponse streamedResponse = await postRequest.send();
+    final String postResponseString = await streamedResponse.stream.bytesToString();
+    final Map<String, dynamic> postResponseJson = jsonDecode(postResponseString);
+
+    //print(postResponseJson);
+    final String jwt = postResponseJson['jwt'];
+    //print(jwt);
+
+    final http.Response getResponse = await http.get(Uri.parse(searchUrl), headers: {
+      'Cookie': 'arl=${cookies['arl']}',
+    });
+
+    final Map<String, dynamic> getResponseJson = jsonDecode(getResponse.body);
+    //print(getResponseJson['data'][0]['id']);
+
+    final String trackId = getResponseJson['data'][0]['id'].toString();
+
+
+
+    final Map<String, dynamic> jsonData = {
+      'operationName': 'SynchronizedTrackLyrics',
+      'variables': {
+        'trackId': trackId,
+      },
+      'query': '''query SynchronizedTrackLyrics(\$trackId: String!) {
+                            track(trackId: \$trackId) {
+                              ...SynchronizedTrackLyrics
+                              __typename
+                            }
+                          }
+                      
+                          fragment SynchronizedTrackLyrics on Track {
+                            id
+                            lyrics {
+                              ...Lyrics
+                              __typename
+                            }
+                            album {
+                              cover {
+                                small: urls(pictureRequest: {width: 100, height: 100})
+                                medium: urls(pictureRequest: {width: 264, height: 264})
+                                large: urls(pictureRequest: {width: 800, height: 800})
+                              explicitStatus
+                              __typename
+                            }
+                            __typename
+                          }
+                          __typename
+                          }
+                      
+                          fragment Lyrics on Lyrics {
+                            id
+                            copyright
+                            text
+                            writers
+                            synchronizedLines {
+                              ...LyricsSynchronizedLines
+                              __typename
+                            }
+                            __typename
+                          }
+                      
+                          fragment LyricsSynchronizedLines on LyricsSynchronizedLine {
+                            lrcTimestamp
+                            line
+                            lineTranslated
+                            milliseconds
+                            duration
+                            __typename
+                          }'''
+    };
+
+    final http.Response lyricResponse = await http.post(
+      Uri.parse(deezerApiUrl),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $jwt',
+      },
+      body: jsonEncode(jsonData),
+    );
+
+    final Map<String, dynamic> lyricResponseJson = jsonDecode(lyricResponse.body);
+    //print(lyricResponseJson);
+
+    String plainLyric = '';
+    String syncedLyric = '';
+    try{
+      plainLyric += lyricResponseJson['data']['track']['lyrics']['text'] + "\n";
+      plainLyric += "${"\nWriters: " + lyricResponseJson['data']['track']['lyrics']['writers']}\nCopyright: " + lyricResponseJson['data']['track']['lyrics']['copyright'];
+    }
+    catch(e){
+      print(e);
+      plainLyric = 'No lyrics found';
+    }
+
+    try {
+      for (var line in lyricResponseJson['data']['track']['lyrics']['synchronizedLines']) {
+        syncedLyric += "${line['lrcTimestamp']} ${line['line']}\n";
+      }
+      syncedLyric += "${"\nWriters: " + lyricResponseJson['data']['track']['lyrics']['writers']}\nCopyright: " + lyricResponseJson['data']['track']['lyrics']['copyright'];
+    } catch (e) {
+      print(e);
+      syncedLyric = 'No lyrics found';
+    }
+    //print(plainLyric);
+
+    lyricModelNotifier.value = LyricsModelBuilder.create().bindLyricToMain(syncedLyric).getModel();
+    plainLyricNotifier.value = plainLyric;
+    // lyricModelNotifier.value = LyricsModelBuilder.create().bindLyricToMain("No lyrs").getModel();
+    // print(lyricModelNotifier.value.lyrics.length);
   }
 
 
@@ -74,6 +204,7 @@ class Controller{
     }
     else {
       lyricModelNotifier.value = LyricsModelBuilder.create().bindLyricToMain("No lyrics").getModel();
+      plainLyricNotifier.value = "No lyrics";
     }
   }
 
@@ -407,7 +538,6 @@ class Controller{
   }
 
   void makeAlbumsArtists() {
-
     for(int i = 0; i < repo.songs.value.length; i++){
       if (settings.firstTime){
         settings.lastPlaying.add(repo.songs.value[i].path);
@@ -487,56 +617,11 @@ class Controller{
       for(int k = 0; k < repo.albums[j].songs.length; k++) {
         albumduration += repo.albums[j].songs[k].duration;
       }
-      //print(albumduration);
-      //print(repo.albums[j].name);
-      // print("\n");
-      int shours = Duration(milliseconds: albumduration).inHours;
-      int sminutes = Duration(milliseconds: albumduration).inMinutes;
-      //print(sminutes);
-      int sseconds = Duration(milliseconds: albumduration).inSeconds;
-      int rhours = shours;
-      int rminutes = sminutes - (shours * 60);
-      //print(rminutes);
-      int rseconds = sseconds - (sminutes * 60);
-
-      if(rhours == 0){
-        if(rminutes == 0){
-          repo.albums[j].duration = "$rseconds seconds";
-        }
-        else if(rseconds == 0){
-          repo.albums[j].duration = "$rminutes minutes";
-        }
-        else{
-          repo.albums[j].duration = "$rminutes minutes and $rseconds seconds";
-        }
-      }
-      else{
-        if(rhours != 1) {
-          if (rminutes == 0) {
-            repo.albums[j].duration = "$rhours hours and $rseconds seconds";
-          }
-          else if (rseconds == 0) {
-            repo.albums[j].duration = "$rhours hours and $rminutes minutes";
-          }
-          else {
-            repo.albums[j].duration =
-            "$rhours hours, $rminutes minutes and $rseconds seconds";
-          }
-        }
-        else{
-          if (rminutes == 0) {
-            repo.albums[j].duration = "$rhours hour and $rseconds seconds";
-          }
-          else if (rseconds == 0) {
-            repo.albums[j].duration = "$rhours hour and $rminutes minutes";
-          }
-          else {
-            repo.albums[j].duration =
-            "$rhours hour, $rminutes minutes and $rseconds seconds";
-          }
-        }
-      }
-
+      //"${widget.controller.playingSongs[index].duration ~/ 60}:${(widget.controller.playingSongs[index].duration % 60).toString().padLeft(2, '0')}",
+      // duration string but in hours, minutes, seconds
+      repo.albums[j].duration = "${albumduration ~/ 3600} hours, ${(albumduration % 3600 ~/ 60)} minutes and ${(albumduration % 60)} seconds";
+      repo.albums[j].duration = repo.albums[j].duration.replaceAll("0 hours, ", "");
+      repo.albums[j].duration = repo.albums[j].duration.replaceAll("0 minutes and ", "");
 
 
 

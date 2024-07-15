@@ -4,6 +4,7 @@ import 'dart:ui';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:hovering/hovering.dart';
+import 'package:musicplayer/screens/album_widget.dart';
 import '../controller/controller.dart';
 
 
@@ -41,6 +42,10 @@ class _AlbumsState extends State<Albums>{
             child: GestureDetector(
               onTap: () {
                 /// Something like navigate to album
+                Navigator.push(context, MaterialPageRoute(builder: (context){
+                  return AlbumWidget(controller: widget.controller, album: widget.controller.repo.albums[index]);
+                }));
+
                 // for(int i = widget.controller.repo.albums[index].featuredartists.length - 1; i >= 0 ; i--){
                 //   if(artistsforalbum.length + widget.controller.repo.albums[index].featuredartists[i].name.length < 75)
                 //     artistsforalbum = artistsforalbum + widget.controller.repo.albums[index].featuredartists[i].name + ", ";
@@ -82,7 +87,7 @@ class _AlbumsState extends State<Albums>{
                                       ),
                                     ),
                                     ClipRRect(
-                                      // Clip it cleanly.
+                                      borderRadius: BorderRadius.circular(height * 0.01),
                                       child: BackdropFilter(
                                         filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
                                         child: Container(
@@ -171,66 +176,6 @@ class _AlbumsState extends State<Albums>{
                           }
                         },
                       ),
-                      // child: Stack(
-                      //   children: [
-                      //     if (_hovereditem == sindex)
-                      //       ClipRRect(
-                      //         // Clip it cleanly.
-                      //         child: BackdropFilter(
-                      //           filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                      //           child: Container(
-                      //             color: Colors.black.withOpacity(0.3),
-                      //             alignment: Alignment.center,
-                      //             child: Row(
-                      //               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      //               crossAxisAlignment: CrossAxisAlignment.center,
-                      //               children: [
-                      //                 IconButton(onPressed: (){
-                      //                   print("Add ${sindex}");
-                      //                   // _songstoadd.add(widget.controller.allmetadata[sindex]);
-                      //                   // setState(() {
-                      //                   //   addelement = true;
-                      //                   // });
-                      //                 },
-                      //                   padding: EdgeInsets.all(0),
-                      //                   icon:
-                      //                   Icon(FluentIcons.add_12_filled, color: Colors.white, size: 40,),
-                      //                 ),
-                      //
-                      //                 Icon(FluentIcons.open_16_filled, size: 110, color: Colors.white,),
-                      //
-                      //                 IconButton(onPressed: (){
-                      //                   widget.controller.playingsongs.clear();
-                      //                   widget.controller.playingsongs_unshuffled.clear();
-                      //
-                      //                   widget.controller.playingsongs.addAll(widget.controller.repo.albums[sindex].songs);
-                      //                   widget.controller.playingsongs_unshuffled.addAll(widget.controller.repo.albums[sindex].songs);
-                      //
-                      //                   if(widget.controller.shuffle == true)
-                      //                     widget.controller.playingsongs.shuffle();
-                      //
-                      //                   var file = File("assets/settings.json");
-                      //                   widget.controller.settings1.lastplaying.clear();
-                      //
-                      //                   for(int i = 0; i < widget.controller.playingsongs.length; i++){
-                      //                     widget.controller.settings1.lastplaying.add(widget.controller.playingsongs[i].path);
-                      //                   }
-                      //                   widget.controller.settings1.lastplayingindex = widget.controller.playingsongs.indexOf(widget.controller.playingsongs_unshuffled[0]);
-                      //                   file.writeAsStringSync(jsonEncode(widget.controller.settings1.toJson()));
-                      //
-                      //                   widget.controller.index = widget.controller.settings1.lastplayingindex;
-                      //                   widget.controller.playSong();
-                      //                 },
-                      //                   padding: EdgeInsets.all(0),
-                      //                   icon: Icon(FluentIcons.play_12_filled, color: Colors.white, size: 40,),
-                      //                 ),
-                      //               ],
-                      //             ),
-                      //           ),
-                      //         ),
-                      //       ),
-                      //   ],
-                      // ),
                     ),
                   ),
                   Text(

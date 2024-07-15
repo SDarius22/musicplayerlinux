@@ -91,6 +91,7 @@ class _TracksState extends State<Tracks>{
                             if (snapshot.hasData) {
                               return HoverWidget(
                                 hoverChild: Stack(
+                                  alignment: Alignment.center,
                                   children: [
                                     Container(
                                       decoration: BoxDecoration(
@@ -103,7 +104,7 @@ class _TracksState extends State<Tracks>{
                                       ),
                                     ),
                                     ClipRRect(
-                                      // Clip it cleanly.
+                                      borderRadius: BorderRadius.circular(height * 0.01),
                                       child: BackdropFilter(
                                         filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
                                         child: Container(
