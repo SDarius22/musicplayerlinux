@@ -8,8 +8,8 @@ import 'welcome_screen.dart';
 
 
 class MyApp extends StatefulWidget {
-  Controller controller;
-  MyApp({Key? key, required this.controller}) : super(key: key);
+  final Controller controller;
+  const MyApp({super.key, required this.controller});
   @override
   _MyAppState createState() => _MyAppState();
 }

@@ -24,7 +24,7 @@ import '../utils/lyric_reader/lyrics_reader_model.dart';
 class Controller{
   Settings settings = Settings.fromJson(jsonDecode(File("assets/settings.json").readAsStringSync()));
   Repository repo = Repository();
-  AudioPlayer audioPlayer = AudioPlayer();
+  AudioPlayer? audioPlayer;
   BuildContext? context;
 
   List<MetadataType> playingSongs = [];
@@ -41,15 +41,18 @@ class Controller{
   ValueNotifier<bool> playingNotifier = ValueNotifier<bool>(false);
   ValueNotifier<bool> repeatNotifier = ValueNotifier<bool>(false);
   ValueNotifier<bool> shuffleNotifier = ValueNotifier<bool>(false);
+  ValueNotifier<bool> searchNotifier = ValueNotifier<bool>(false);
   ValueNotifier<bool> finishedRetrievingNotifier = ValueNotifier<bool>(false);
   ValueNotifier<LyricsReaderModel> lyricModelNotifier = ValueNotifier<LyricsReaderModel>(LyricsReaderModel());
   ValueNotifier<LyricUI> lyricUINotifier = ValueNotifier<LyricUI>(UINetease());
   ValueNotifier<String> plainLyricNotifier = ValueNotifier<String>('');
   ValueNotifier<List<MetadataType>> found = ValueNotifier<List<MetadataType>>([]);
   ValueNotifier<Color> colorNotifier = ValueNotifier<Color>(Colors.deepPurpleAccent.shade400);
+  ValueNotifier<Color> colorNotifier2 = ValueNotifier<Color>(Colors.blueAccent.shade400);
   ValueNotifier<Uint8List> imageNotifier = ValueNotifier<Uint8List>(File("./assets/bg.png").readAsBytesSync());
 
   int currentPosition = 0;
+  bool changed = false;
 
   void updateContext(BuildContext context){
     this.context = context;
@@ -64,6 +67,7 @@ class Controller{
     const String deezerApiUrl = 'https://pipe.deezer.com/api';
     String title = playingSongs[indexNotifier.value].title;
     String artist = playingSongs[indexNotifier.value].artists;
+    String path = playingSongs[indexNotifier.value].path;
     String searchUrl = 'https://api.deezer.com/search?q=$title-$artist&limit=1&index=0&output=json';
     print(searchUrl);
 
@@ -181,27 +185,51 @@ class Controller{
 
     lyricModelNotifier.value = LyricsModelBuilder.create().bindLyricToMain(syncedLyric).getModel();
     plainLyricNotifier.value = plainLyric;
-    // lyricModelNotifier.value = LyricsModelBuilder.create().bindLyricToMain("No lyrs").getModel();
-    // print(lyricModelNotifier.value.lyrics.length);
-  }
 
+    if(syncedLyric != 'No lyrics found'){
+      var lyrPath = path.replaceAll(".mp3", ".lrc")
+          .replaceAll(
+          ".flac", ".lrc").replaceAll(".wav", ".lrc")
+          .replaceAll(
+          ".m4a", ".lrc");
+      File lyrFile = File(lyrPath);
+      lyrFile.writeAsStringSync(syncedLyric);
+      playingSongs[indexNotifier.value].lyricsPath = lyrFile.path;
+    }
+    else if (plainLyric != 'No lyrics found'){
+      var lyrPath = path.replaceAll(".mp3", ".lrc")
+          .replaceAll(
+          ".flac", ".lrc").replaceAll(".wav", ".lrc")
+          .replaceAll(
+          ".m4a", ".lrc");
+      File lyrFile = File(lyrPath);
+      lyrFile.writeAsStringSync(plainLyric);
+      playingSongs[indexNotifier.value].lyricsPath = lyrFile.path;
+    }
+
+  }
 
   void lyricModelReset() {
     lyricUINotifier.value = UINetease(
-        defaultSize : MediaQuery.of(context!).size.height * 0.025,
+        defaultSize : MediaQuery.of(context!).size.height * 0.024,
         defaultExtSize : MediaQuery.of(context!).size.height * 0.02,
         otherMainSize : MediaQuery.of(context!).size.height * 0.02,
         bias : 0.5,
         lineGap : 5,
         inlineGap : 5,
-        highlightColor: colorNotifier.value,
+        highlightColor: colorNotifier2.value,
         lyricAlign : LyricAlign.LEFT,
         lyricBaseLine : LyricBaseLine.CENTER,
         highlight : false
     );
+    //print(playingSongs[indexNotifier.value].lyricsPath);
     if (playingSongs[indexNotifier.value].lyricsPath.contains(".lrc")) {
-      File lyrfile = File(playingSongs[indexNotifier.value].lyricsPath);
-      lyricModelNotifier.value = LyricsModelBuilder.create().bindLyricToMain(lyrfile.readAsStringSync()).getModel();
+      File lyrFile = File(playingSongs[indexNotifier.value].lyricsPath);
+      lyricModelNotifier.value = LyricsModelBuilder.create().bindLyricToMain(lyrFile.readAsStringSync()).getModel();
+      if (lyricModelNotifier.value.lyrics.isEmpty) {
+        lyricModelNotifier.value = LyricsModelBuilder.create().bindLyricToMain("No lyrics").getModel();
+        plainLyricNotifier.value = lyrFile.readAsStringSync();
+      }
     }
     else {
       lyricModelNotifier.value = LyricsModelBuilder.create().bindLyricToMain("No lyrics").getModel();
@@ -210,33 +238,51 @@ class Controller{
   }
 
   Future<void> indexChange(int newIndex) async {
+    changed = true;
     indexNotifier.value = newIndex;
     var file = File("assets/settings.json");
     settings.lastPlayingIndex = newIndex;
     file.writeAsStringSync(jsonEncode(settings.toJson()));
-    sliderNotifier.value = 0;
-    playingNotifier.value = false;
     await imageRetrieve(playingSongs[newIndex].path, true);
     DominantColors extractor = DominantColors(bytes: imageNotifier.value, dominantColorsCount: 2);
-    colorNotifier.value = extractor.extractDominantColors().first;
+    var colors = extractor.extractDominantColors();
+    colorNotifier.value = colors.first;
+    colorNotifier2.value = colors.last;
     lyricModelReset();
   }
 
   void playSong() async {
-    if (playingNotifier.value == true){
-      audioPlayer.pause();
+    if (audioPlayer == null) {
+      audioPlayer = AudioPlayer()..play(DeviceFileSource(playingSongs[indexNotifier.value].path), volume: volumeNotifier.value);
     }
     else{
-      audioPlayer.play(DeviceFileSource(playingSongs[indexNotifier.value].path));
+      if(changed){
+        audioPlayer = AudioPlayer()..play(DeviceFileSource(playingSongs[indexNotifier.value].path), volume: volumeNotifier.value, position: const Duration(milliseconds: 0));
+        playingNotifier.value = true;
+        changed = false;
+      }
+      else{
+        if (playingNotifier.value){
+          audioPlayer?.pause();
+          playingNotifier.value = false;
+        }
+        else{
+          audioPlayer?.resume();
+          playingNotifier.value = true;
+        }
+      }
     }
-
-    audioPlayer.onPositionChanged.listen((Duration event) async {
+    audioPlayer?.onPositionChanged.listen((Duration event){
       //print(playingSongs[indexNotifier.value].duration);
-      int tduration = playingSongs[indexNotifier.value].duration;
-      if(event.inSeconds.toInt() == tduration){
+      int duration = playingSongs[indexNotifier.value].duration;
+      //print(event.inMilliseconds.toInt() ~/ 1000);
+      if(event.inMilliseconds.toInt() ~/ 1000 == duration){
         if(repeatNotifier.value){
           print("repeat");
+          audioPlayer?.stop();
           sliderNotifier.value = 0;
+          playingNotifier.value = false;
+          changed = true;
           playSong();
         }
         else {
@@ -250,7 +296,7 @@ class Controller{
       }
     });
 
-    audioPlayer.onPlayerStateChanged.listen((PlayerState state) {
+    audioPlayer?.onPlayerStateChanged.listen((PlayerState state) {
       playingNotifier.value = state == PlayerState.playing;
     });
   }
@@ -266,6 +312,9 @@ class Controller{
       } else {
         newIndex = indexNotifier.value - 1;
       }
+      audioPlayer?.stop();
+      sliderNotifier.value = 0;
+      playingNotifier.value = false;
       await indexChange(newIndex);
       playSong();
     }
@@ -278,17 +327,16 @@ class Controller{
     } else {
       newIndex = indexNotifier.value + 1;
     }
+    audioPlayer?.stop();
+    sliderNotifier.value = 0;
+    playingNotifier.value = false;
     await indexChange(newIndex);
     playSong();
-
   }
-
-
-
 
   Future<void> retrieveSongs() async {
     var file = File("assets/songs.json");
-    List<dynamic> towrite = [];
+    List<dynamic> toWrite = [];
     List<MetadataType> songs = [];
     List<String> paths = [];
     if (!settings.firstTime){
@@ -301,58 +349,57 @@ class Controller{
         songs.add(song);
       }
     }
-
-    List<FileSystemEntity> entities = [];
-    List<FileSystemEntity> entitiesbig = [];
+    
+    List<FileSystemEntity> allEntities = [];
     final dir = Directory(settings.directory);
-    entitiesbig = await dir.list().toList();
-    for(int i = 0; i < entitiesbig.length; i++){
-      if(entitiesbig[i] is Directory){
-        entitiesbig.addAll(await Directory(entitiesbig[i].path).list().toList());
+    allEntities = await dir.list().toList();
+    for(int i = 0; i < allEntities.length; i++){
+      if(allEntities[i] is Directory){
+        allEntities.addAll(await Directory(allEntities[i].path).list().toList());
       }
     }
-    for(int i = 0; i < entitiesbig.length; i++){
-      if(entitiesbig[i] is File){
-        String path = entitiesbig[i].path.replaceAll("\\", "/");
+    for(int i = 0; i < allEntities.length; i++){
+      if(allEntities[i] is File){
+        String path = allEntities[i].path.replaceAll("\\", "/");
         //print(path);
         if (path.endsWith(".flac") || path.endsWith(".mp3") || path.endsWith(".wav") || path.endsWith(".m4a")) {
-          entities.add(entitiesbig[i]);
           if(paths.contains(path)){
             repo.songs.value.add(songs[paths.indexOf(path)]);
           }
           else{
             //print(path);
-            paths.add(entitiesbig[i].path);
-            repo.songs.value.add(await retrieveSong(entitiesbig[i].path, entitiesbig));
+            paths.add(allEntities[i].path);
+            repo.songs.value.add(await retrieveSong(allEntities[i].path, allEntities));
           }
           if (i % 25 == 0){
             repo.songs.value = List.from(repo.songs.value)..sort((a, b) => a.title.replaceAll(RegExp('[^A-Za-z0-9]'), '').toLowerCase().compareTo(b.title.replaceAll(RegExp('[^A-Za-z0-9]'), '').toLowerCase()));
           }
-          towrite.add(repo.songs.value.last.toJson());
+          toWrite.add(repo.songs.value.last.toJson());
         }
       }
-      progressNotifier.value = i / entitiesbig.length;
+      progressNotifier.value = i / allEntities.length;
 
     }
-    file.writeAsStringSync(jsonEncode(towrite));
+    file.writeAsStringSync(jsonEncode(toWrite));
     repo.songs.value = List.from(repo.songs.value)..sort((a, b) => a.title.replaceAll(RegExp('[^A-Za-z0-9]'), '').toLowerCase().compareTo(b.title.replaceAll(RegExp('[^A-Za-z0-9]'), '').toLowerCase()));
     makeAlbumsArtists();
     getPlaylists();
     await imageRetrieve(playingSongs[indexNotifier.value].path, true);
     DominantColors extractor = DominantColors(bytes: imageNotifier.value, dominantColorsCount: 2);
-    colorNotifier.value = extractor.extractDominantColors().first;
+    var colors = extractor.extractDominantColors();
+    colorNotifier.value = colors.first;
+    colorNotifier2.value = colors.last;
     lyricModelReset();
     finishedRetrievingNotifier.value = true;
   }
 
-  Future<MetadataType> retrieveSong(String path, List<FileSystemEntity> entitiesbig) async {
-    MetadataType metadatavariable = MetadataType();
+  Future<MetadataType> retrieveSong(String path, List<FileSystemEntity> allEntities) async {
+    MetadataType metadataVariable = MetadataType();
 
-    metadatavariable.artists = '';
+    metadataVariable.artists = '';
 
-    var metadatavar = await AudioTags.read(path);
-    //print(metadatavar);
-    if( metadatavar == null || metadatavar.pictures.isEmpty == true){
+    var metadataVar = await AudioTags.read(path);
+    if( metadataVar == null || metadataVar.pictures.isEmpty == true){
       //print(path);
       if(path.endsWith(".flac")) {
         var flac = FlacInfo(File(path));
@@ -364,25 +411,24 @@ class Controller{
         //print(metadata2);
         for (var metadate2 in metadata2) {
           if (metadate2.contains("TITLE=")) {
-            metadatavariable.title = metadate2.substring(6);
+            metadataVariable.title = metadate2.substring(6);
           }
           if (metadate2.contains("ARTIST=") &&
               !metadate2.contains("ALBUMARTIST=")) {
-            metadatavariable.artists += metadate2.substring(8);
-            metadatavariable.artists += "; ";
+            metadataVariable.artists += metadate2.substring(8);
+            metadataVariable.artists += "; ";
           }
           if (metadate2.contains("trackNumber=")) {
-            metadatavariable.trackNumber = int.parse(metadate2.substring(13));
+            metadataVariable.trackNumber = int.parse(metadate2.substring(13));
           }
           if(metadate2.contains("discNumber=")){
-            metadatavariable.discNumber = int.parse(metadate2.substring(12));
-            //print(metadatavariable.discNumber);
+            metadataVariable.discNumber = int.parse(metadate2.substring(12));
           }
           if (metadate2.contains("ALBUM=")) {
-            metadatavariable.album = metadate2.substring(7);
+            metadataVariable.album = metadate2.substring(7);
           }
           if (metadate2.contains("LENGTH=")) {
-            metadatavariable.duration = int.parse(metadate2.substring(8));
+            metadataVariable.duration = int.parse(metadate2.substring(8));
           }
         }
       }
@@ -390,42 +436,39 @@ class Controller{
         //print(path);
         var parser = ID3TagReader.path(path);
         var tags = parser.readTagSync();
-        metadatavariable.title = tags.title ?? path.replaceAll("\\", "/").split("/").last;
-        metadatavariable.artists = tags.artist ?? "Unknown Artist";
-        metadatavariable.album = tags.album ?? 'Unknown Album';
-        metadatavariable.discNumber = int.parse(tags.trackNumber ?? "0");
-        metadatavariable.trackNumber = int.parse(tags.track ?? "0");
-        String durationfromtag = tags.duration?.inMilliseconds.toString() ?? "0";
-        metadatavariable.duration = int.parse(durationfromtag);
+        metadataVariable.title = tags.title ?? path.replaceAll("\\", "/").split("/").last;
+        metadataVariable.artists = tags.artist ?? "Unknown Artist";
+        metadataVariable.album = tags.album ?? 'Unknown Album';
+        metadataVariable.discNumber = int.parse(tags.trackNumber ?? "0");
+        metadataVariable.trackNumber = int.parse(tags.track ?? "0");
+        String durationFromTag = tags.duration?.inMilliseconds.toString() ?? "0";
+        metadataVariable.duration = int.parse(durationFromTag);
       }
     }
     else {
-      metadatavariable.title = metadatavar.title ?? "Unknown Song";
-      metadatavariable.album = metadatavar.album ?? "Unknown Album";
-      //print(metadatavar.duration);
-      metadatavariable.duration = metadatavar.duration ?? 0;
-      metadatavariable.trackNumber = metadatavar.trackNumber ?? 0;
-      metadatavariable.artists = metadatavar.trackArtist ?? "Unknown Artist";
-      metadatavariable.discNumber = metadatavar.discNumber ?? 0;
-      //print(metadatavariable.durationString);
+      metadataVariable.title = metadataVar.title ?? "Unknown Song";
+      metadataVariable.album = metadataVar.album ?? "Unknown Album";
+      metadataVariable.duration = metadataVar.duration ?? 0;
+      metadataVariable.trackNumber = metadataVar.trackNumber ?? 0;
+      metadataVariable.artists = metadataVar.trackArtist ?? "Unknown Artist";
+      metadataVariable.discNumber = metadataVar.discNumber ?? 0;
     }
-    var lyrpath = path.replaceAll(".mp3", ".lrc")
+    var lyrPath = path.replaceAll(".mp3", ".lrc")
         .replaceAll(
         ".flac", ".lrc").replaceAll(".wav", ".lrc")
         .replaceAll(
         ".m4a", ".lrc");
     bool exists = false;
-    for (FileSystemEntity entity in entitiesbig) {
-      if (entity.path == lyrpath) {
-        //print(lyrpath);
-        metadatavariable.lyricsPath = lyrpath;
+    for (FileSystemEntity entity in allEntities) {
+      if (entity.path == lyrPath) {
+        metadataVariable.lyricsPath = lyrPath;
         exists = true;
         break;
       }
     }
     if (!exists) {
       //print("lyrics not found");
-      bool lyricsfound = false;
+      bool lyricsFound = false;
       if(path.endsWith(".flac")) {
         //print("flac");
         var flac = FlacInfo(File(path));
@@ -437,11 +480,10 @@ class Controller{
 
         for (var metadate2 in metadata2) {
           if (metadate2.contains("LYRICS=")) {
-            File lyrfile = File(path.replaceAll(".flac", ".lrc"));
-            //print(lyrfile.path);
-            lyrfile.writeAsStringSync(metadate2.substring(7));
-            metadatavariable.lyricsPath = lyrfile.path;
-            lyricsfound = true;
+            File lyrFile = File(path.replaceAll(".flac", ".lrc"));
+            lyrFile.writeAsStringSync(metadate2.substring(7));
+            metadataVariable.lyricsPath = lyrFile.path;
+            lyricsFound = true;
           }
         }
       }
@@ -450,18 +492,17 @@ class Controller{
         var parser = ID3TagReader.path(path);
         var tags = parser.readTagSync();
         if (tags.lyrics.isEmpty == false) {
-          File lyrfile = File(path.replaceAll(".mp3", ".lrc"));
-          //print(lyrfile.path);
-          lyrfile.writeAsStringSync(tags.lyrics.first.toString());
-          metadatavariable.lyricsPath = lyrfile.path;
-          lyricsfound = true;
+          File lyrFile = File(path.replaceAll(".mp3", ".lrc"));
+          lyrFile.writeAsStringSync(tags.lyrics.first.toString());
+          metadataVariable.lyricsPath = lyrFile.path;
+          lyricsFound = true;
         }
       }
-      if(!lyricsfound){
-        metadatavariable.lyricsPath = "No Lyrics";
+      if(!lyricsFound){
+        metadataVariable.lyricsPath = "No Lyrics";
       }
     }
-    metadatavariable.path = path;
+    metadataVariable.path = path;
 
     // if(path.endsWith(".flac")) {
     //   //print(path);
@@ -474,8 +515,8 @@ class Controller{
     //   //print(metadata2);
     //   for (var metadate2 in metadata2) {
     //     if(metadate2.contains("discNumber=")){
-    //       metadatavariable.discNumber = int.parse(metadate2.substring(12));
-    //       //print(metadatavariable.discNumber);
+    //       metadataVariable.discNumber = int.parse(metadate2.substring(12));
+    //       //print(metadataVariable.discNumber);
     //     }
     //   }
     // }
@@ -483,51 +524,50 @@ class Controller{
     //   //print(path);
     //   var parser = ID3TagReader.path(path);
     //   var tags = parser.readTagSync();
-    //   metadatavariable.discNumber = int.parse(tags.trackNumber ?? "0");
+    //   metadataVariable.discNumber = int.parse(tags.trackNumber ?? "0");
     // }
 
 
-    if(metadatavariable.duration == 0){
+    if(metadataVariable.duration == 0){
       //print("duration is 0");
-      var metadatavar2 = await AudioTags.read(path);
-      if (metadatavar2?.duration != null) {
-        metadatavariable.duration = metadatavar2!.duration!;
+      var metadataVar2 = await AudioTags.read(path);
+      if (metadataVar2?.duration != null) {
+        metadataVariable.duration = metadataVar2!.duration!;
       }
 
 
     }
-    //print(metadatavariable.duration);
-    //print (metadatavariable.durationString);
-    //print("song: ${metadatavariable.title} discNumber: ${metadatavariable.discNumber}");
+    //print(metadataVariable.duration);
+    //print (metadataVariable.durationString);
+    //print("song: ${metadataVariable.title} discNumber: ${metadataVariable.discNumber}");
 
-    return metadatavariable;
+    return metadataVariable;
   }
 
   Future<Uint8List> imageRetrieve(String path, bool update) async{
     Uint8List image = File("assets/bg.png").readAsBytesSync();
-    var metadatavar = await AudioTags.read(path);
-    // print(metadatavar?.pictures[0].bytes);
-    if(metadatavar?.pictures.isEmpty == true){
+    var metadataVar = await AudioTags.read(path);
+    if(metadataVar?.pictures.isEmpty == true){
       if(path.endsWith(".flac")) {
         var flac = FlacInfo(File(path));
         var metadatas = await flac.readMetadatas();
-        List<String> imagebytes = metadatas[3].toString().substring(
+        List<String> imageBytes = metadatas[3].toString().substring(
             1, metadatas[3]
             .toString()
             .length - 1).split(", ");
         image = Uint8List.fromList(
-            imagebytes.map(int.parse).toList());
+            imageBytes.map(int.parse).toList());
       }
       else if(path.endsWith(".mp3")) {
         //print(path);
         var parser = ID3TagReader.path(path);
         var tags = parser.readTagSync();
-        List<String> imagebytes = tags.pictures.isEmpty ? [] : tags.pictures[0].toString().substring(21, tags.pictures.first.toString().length - 3).split(", ");
-        image = imagebytes.isEmpty? File("./assets//bg.png").readAsBytesSync() : Uint8List.fromList(imagebytes.map(int.parse).toList());
+        List<String> imageBytes = tags.pictures.isEmpty ? [] : tags.pictures[0].toString().substring(21, tags.pictures.first.toString().length - 3).split(", ");
+        image = imageBytes.isEmpty? File("./assets//bg.png").readAsBytesSync() : Uint8List.fromList(imageBytes.map(int.parse).toList());
       }
     }
     else{
-      image = metadatavar?.pictures[0].bytes ?? File("assets/bg.png").readAsBytesSync();
+      image = metadataVar?.pictures[0].bytes ?? File("assets/bg.png").readAsBytesSync();
     }
     if (update){
       print("image changed");
@@ -541,65 +581,63 @@ class Controller{
       if (settings.firstTime){
         settings.lastPlaying.add(repo.songs.value[i].path);
       }
-      bool albumexists = false;
+      bool albumExists = false;
       for(AlbumType album1 in repo.albums){
         if(album1.name == repo.songs.value[i].album){
           album1.songs.add(repo.songs.value[i]);
-          List<String> songartists = repo.songs.value[i].artists.split("; ");
+          List<String> songArtists = repo.songs.value[i].artists.split("; ");
 
-          for(int j = 0; j < songartists.length; j++)
+          for(int j = 0; j < songArtists.length; j++)
           {
-            bool artistinalbum = false;
+            bool artistInAlbum = false;
             for(int k = 0; k < album1.featuredartists.length; k++)
             {
-              if(songartists[j].replaceAll(RegExp('[^A-Za-z0-9]'), '').toLowerCase() == album1.featuredartists[k].name.replaceAll(RegExp('[^A-Za-z0-9]'), '').toLowerCase())
+              if(songArtists[j].replaceAll(RegExp('[^A-Za-z0-9]'), '').toLowerCase() == album1.featuredartists[k].name.replaceAll(RegExp('[^A-Za-z0-9]'), '').toLowerCase())
               {
-                artistinalbum = true;
+                artistInAlbum = true;
                 album1.featuredartists[k].appearances++;
                 break;
               }
             }
-            if(!artistinalbum){
+            if(!artistInAlbum){
               album1.featuredartists.add(FeaturedArtistType());
-              album1.featuredartists[album1.featuredartists.length - 1].name = songartists[j];
+              album1.featuredartists[album1.featuredartists.length - 1].name = songArtists[j];
               album1.featuredartists[album1.featuredartists.length - 1].appearances++;
             }
           }
-          //album1.featuredartists.addAll(repo.songs.value[i].artists.split("; "));
-          albumexists = true;
+          albumExists = true;
           break;
         }
       }
-      if(!albumexists){
+      if(!albumExists){
         repo.albums.add(AlbumType());
         repo.albums[repo.albums.length - 1].name = repo.songs.value[i].album;
         repo.albums[repo.albums.length - 1].songs.add(repo.songs.value[i]);
-        List<String> songartists = repo.songs.value[i].artists.split("; ");
+        List<String> songArtists = repo.songs.value[i].artists.split("; ");
 
-        for(int j = 0; j < songartists.length; j++)
+        for(int j = 0; j < songArtists.length; j++)
         {
           repo.albums[repo.albums.length - 1].featuredartists.add(FeaturedArtistType());
-          repo.albums[repo.albums.length - 1].featuredartists[repo.albums[repo.albums.length - 1].featuredartists.length - 1].name = songartists[j];
+          repo.albums[repo.albums.length - 1].featuredartists[repo.albums[repo.albums.length - 1].featuredartists.length - 1].name = songArtists[j];
           repo.albums[repo.albums.length - 1].featuredartists[repo.albums[repo.albums.length - 1].featuredartists.length - 1].appearances++;
         }
-        //repo.albums[repo.albums.length - 1].featuredartists.addAll(repo.songs.value[i].artists.split("; "));
       }
 
       if(repo.songs.value[i].artists.endsWith("; ")){
         repo.songs.value[i].artists = repo.songs.value[i].artists.substring(0, repo.songs.value[i].artists.length - 2);
       }
-      List<String> songartists = repo.songs.value[i].artists.split("; ");
+      List<String> songArtists = repo.songs.value[i].artists.split("; ");
 
-      for(String artist2 in songartists){
-        bool artistexists = false;
+      for(String artist2 in songArtists){
+        bool artistExists = false;
         for(ArtistType artist1 in repo.artists){
           if(artist1.name.replaceAll(RegExp('[^A-Za-z0-9]'), '').toLowerCase() == artist2.replaceAll(RegExp('[^A-Za-z0-9]'), '').toLowerCase()){
             artist1.songs.add(repo.songs.value[i]);
-            artistexists = true;
+            artistExists = true;
             break;
           }
         }
-        if(!artistexists){
+        if(!artistExists){
           repo.artists.add(ArtistType());
           repo.artists[repo.artists.length - 1].name = artist2.replaceAll("\"", "");
           repo.artists[repo.artists.length - 1].songs.add(repo.songs.value[i]);
@@ -612,13 +650,13 @@ class Controller{
       repo.artists[j].songs.sort((a, b) => a.album.compareTo(b.album));
     }
     for(int j = 0; j < repo.albums.length; j++){
-      int albumduration = 0;
+      int albumDuration = 0;
       for(int k = 0; k < repo.albums[j].songs.length; k++) {
-        albumduration += repo.albums[j].songs[k].duration;
+        albumDuration += repo.albums[j].songs[k].duration;
       }
       //"${widget.controller.playingSongs[index].duration ~/ 60}:${(widget.controller.playingSongs[index].duration % 60).toString().padLeft(2, '0')}",
       // duration string but in hours, minutes, seconds
-      repo.albums[j].duration = "${albumduration ~/ 3600} hours, ${(albumduration % 3600 ~/ 60)} minutes and ${(albumduration % 60)} seconds";
+      repo.albums[j].duration = "${albumDuration ~/ 3600} hours, ${(albumDuration % 3600 ~/ 60)} minutes and ${(albumDuration % 60)} seconds";
       repo.albums[j].duration = repo.albums[j].duration.replaceAll("0 hours, ", "");
       repo.albums[j].duration = repo.albums[j].duration.replaceAll("0 minutes and ", "");
 
@@ -660,9 +698,6 @@ class Controller{
         playingSongs[playingSongs.length - 1] = repo.songs.value[i];
       }
     }
-    // playingSongs[indexNotifier.value].imageNotifier.value = await imageretrieve(playingSongs[indexNotifier.value].path);
-    // repo.songs.value[repo.songs.value.indexOf(playingSongs[indexNotifier.value])].imageNotifier.value = playingSongs[indexNotifier.value].imageNotifier.value;
-    // repo.songs.value[repo.songs.value.indexOf(playingSongs[indexNotifier.value])].imageloaded = true;
 
     playingSongsUnShuffled.clear();
     playingSongsUnShuffled.addAll(playingSongs);
@@ -672,12 +707,12 @@ class Controller{
     int length = data.length;
     for(int i = 0; i < length; i++){
       List<MetadataType> songs = [];
-      List<FeaturedArtistType> featuredartists = [];
+      List<FeaturedArtistType> featuredArtists = [];
       List<String> paths = [];
       for(int j = 0; j < data[i]["paths"].length; j++){
-        String repath = data[i]["paths"][j];
+        String rePath = data[i]["paths"][j];
         for (var element in repo.songs.value) {
-          if(element.path.replaceAll("/", "\\") == repath.replaceAll("/", "\\")){
+          if(element.path.replaceAll("/", "\\") == rePath.replaceAll("/", "\\")){
             songs.add(element);
           }
         }
@@ -685,16 +720,16 @@ class Controller{
         paths.add(data[i]["paths"][j]);
       }
       //print(paths);
-      for(int j = 0; j < data[i]["featuredartists"].length; j++){
-        featuredartists.add(FeaturedArtistType());
-        featuredartists[j].name = data[i]["featuredartists"][j]["name"];
-        featuredartists[j].appearances = data[i]["featuredartists"][j]["appearances"];
+      for(int j = 0; j < data[i]["featuredArtists"].length; j++){
+        featuredArtists.add(FeaturedArtistType());
+        featuredArtists[j].name = data[i]["featuredArtists"][j]["name"];
+        featuredArtists[j].appearances = data[i]["featuredArtists"][j]["appearances"];
       }
       repo.playlists.add(PlaylistType());
       repo.playlists[repo.playlists.length - 1].name = data[i]["name"];
       repo.playlists[repo.playlists.length - 1].songs.addAll(songs);
       repo.playlists[repo.playlists.length - 1].duration = data[i]["duration"];
-      repo.playlists[repo.playlists.length - 1].featuredartists.addAll(featuredartists);
+      repo.playlists[repo.playlists.length - 1].featuredArtists.addAll(featuredArtists);
       repo.playlists[repo.playlists.length - 1].paths.addAll(paths);
     }
 
@@ -705,8 +740,6 @@ class Controller{
     }
 
   }
-
-
 
   void filter(String enteredKeyword) {
     List<MetadataType> results = [];
@@ -726,19 +759,15 @@ class Controller{
     found.value = results;
   }
 
-
   void setSpeed(double speed){
-    audioPlayer.setPlaybackRate(speed);
+    audioPlayer?.setPlaybackRate(speed);
   }
 
   void setVolume(double volume){
-    audioPlayer.setVolume(volume);
+    audioPlayer?.setVolume(volume);
   }
 
   void seekAudio(Duration duration){
-    audioPlayer.seek(duration);
+    audioPlayer?.seek(duration);
   }
-
-
-
 }

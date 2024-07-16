@@ -49,9 +49,10 @@ class _SongPlayerWidget extends State<SongPlayerWidget> {
           height: values[0] ? height * 0.15 : height,
           width: values[0] ? width * 0.9 : width,
           alignment: values[0] ? Alignment.centerLeft : Alignment.topCenter,
-          padding: EdgeInsets.symmetric(
-            horizontal: values[0] ? height * 0.005 : height * 0.1,
-            vertical: values[0] ? height * 0.005 : height * 0.1,
+          padding: EdgeInsets.only(
+            left: values[0] ? width * 0.002 : width * 0.01,
+            right: values[0] ? width * 0.002 : width * 0.01,
+            top: values[0] ? height * 0.001 : height * 0.15,
           ),
           decoration: BoxDecoration(
             color: values[0] ? widget.controller.colorNotifier.value : const Color(0xFF0E0E0E),
@@ -408,7 +409,7 @@ class _SongPlayerWidget extends State<SongPlayerWidget> {
                 ),
               if(!values[0])
                 MultiValueListenableBuilder(
-                  valueListenables: [widget.controller.lyricModelNotifier, widget.controller.sliderNotifier, widget.controller.lyricUINotifier, widget.controller.playingNotifier, widget.controller.colorNotifier],
+                  valueListenables: [widget.controller.lyricModelNotifier, widget.controller.sliderNotifier, widget.controller.lyricUINotifier, widget.controller.playingNotifier, widget.controller.colorNotifier, widget.controller.colorNotifier2],
                   builder: (context, value, child){
                     return AnimatedContainer(
                       duration: const Duration(milliseconds: 500),
@@ -430,7 +431,7 @@ class _SongPlayerWidget extends State<SongPlayerWidget> {
                         selectLineBuilder: (progress, confirm) {
                           return Row(
                             children: [
-                              Icon(FluentIcons.play_12_filled, color: widget.controller.colorNotifier.value),
+                              Icon(FluentIcons.play_12_filled, color: widget.controller.colorNotifier2.value),
                               Expanded(
                                 child: MouseRegion(
                                   cursor: SystemMouseCursors.click,
@@ -447,7 +448,7 @@ class _SongPlayerWidget extends State<SongPlayerWidget> {
                               Text(
                                 //progress.toString(),
                                 "${progress ~/ 1000 ~/ 60}:${(progress ~/ 1000 % 60).toString().padLeft(2, '0')}",
-                                style: TextStyle(color: widget.controller.colorNotifier.value),
+                                style: TextStyle(color: widget.controller.colorNotifier2.value),
                               )
                             ],
                           );
@@ -561,7 +562,7 @@ class _SongPlayerWidget extends State<SongPlayerWidget> {
                   ),
                   //ProgressBar
                   MultiValueListenableBuilder(
-                      valueListenables: [widget.controller.sliderNotifier, widget.controller.colorNotifier],
+                      valueListenables: [widget.controller.sliderNotifier, widget.controller.colorNotifier2],
                       builder: (context, values, child){
                         return AnimatedContainer(
                           duration: const Duration(milliseconds: 500),

@@ -4,10 +4,9 @@ import 'dart:ui';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
+import 'package:musicplayer/screens/search_widget.dart';
 import 'package:musicplayer/screens/song_player_widget.dart';
-import '../domain/featured_artist_type.dart';
-import '../domain/metadata_type.dart';
-import '../domain/playlist_type.dart';
+import 'package:window_manager/window_manager.dart';
 import '../controller/controller.dart';
 import 'albums.dart';
 import 'artists.dart';
@@ -18,41 +17,18 @@ import 'playlists.dart';
 
 class HomePage extends StatefulWidget {
   final Controller controller;
-  const HomePage(
-      {super.key,
-        required this.controller,
-      });
+  const HomePage({super.key, required this.controller});
   @override
   _HomePageState createState() => _HomePageState();
 }
 
 class _HomePageState extends State<HomePage>{
-  bool isTap = false, isTapped = false;
-  bool _volume = true;
-  bool create = false, search = false, addelement = false;
-  bool _queueinatp = false;
-
-  int _hovereditem3 = -1;
-  int displayedalbum = -1, currentPage = 3;
-  int _hovereditem = -1;
-
-  String  artistsforalbum = "", playlistname = "New playlist";
-  String _usermessage = "No message";
-
-  FocusNode myFocusNode = FocusNode();
-  FocusNode searchNode = FocusNode();
-
+  bool volume = true;
+  
+  int currentPage = 3;
+  String userMessage = "No message";
   final ValueNotifier<bool> _visible = ValueNotifier(false);
-
   final ScrollController _scrollController = ScrollController(initialScrollOffset: 0.0);
-
-  MetadataType songtoadd = MetadataType();
-
-  List<PlaylistType> addtoplaylists = [];
-  List<MetadataType> _songstoadd = [];
-
-
-  late Timer timer1;
   final PageController _pageController = PageController(initialPage: 4);
 
 
@@ -63,19 +39,6 @@ class _HomePageState extends State<HomePage>{
     widget.controller.found.value = widget.controller.repo.songs.value;
     widget.controller.indexNotifier.value= widget.controller.settings.lastPlayingIndex;
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-      searchNode.addListener(() {
-        if(searchNode.hasFocus == false){
-          Future.delayed(const Duration(seconds: 2)).then((value) {
-            setState(() {
-              if(searchNode.hasFocus == false) {
-                search = false;
-              }
-            });
-          });
-        }
-      });
-    });
   }
 
   @override
@@ -86,99 +49,188 @@ class _HomePageState extends State<HomePage>{
     var normalSize = height * 0.02;
     var smallSize = height * 0.015;
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Music Player'),
-        actions: [
-          Container(
-              padding: const EdgeInsets.only(right: 25),
-              child: ValueListenableBuilder(
-                valueListenable: _visible,
-                builder: (context, value, child) =>
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                      Visibility(
-                        visible: _visible.value,
-                        child: SizedBox(
-                          height: height * 0.05,
-                          width: width * 0.1,
-                          child:
-                          MouseRegion(
-                            onEnter: (event) {
-                              _visible.value = true;
-                            },
-                            onExit: (event) {
-                              _visible.value = false;
-                            },
-                            child: Slider(
-                              min: 0.0,
-                              max: 1.0,
-                              value: widget.controller.volumeNotifier.value,
-                              activeColor: widget.controller.colorNotifier.value,
-                              thumbColor: Colors.white,
-                              inactiveColor: Colors.white,
-                              onChanged: (double value) {
-                                setState(() {
-                                  widget.controller.volumeNotifier.value = value;
-                                  widget.controller.setVolume(widget.controller.volumeNotifier.value);
-                                });
-                              },
-                            ),
-                          )
-                      ),
+      appBar: PreferredSize(
+        preferredSize: Size(
+            double.maxFinite,
+            height * 0.04,
+        ),
+        child: DragToMoveArea(
+          child: ValueListenableBuilder(
+            valueListenable: widget.controller.colorNotifier,
+            builder: (context, value, child){
+              return AppBar(
+                title: Text(
+                    'Music Player',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: normalSize,
                     ),
-                    MouseRegion(
-                      onEnter: (event) {
-                        _visible.value = true;
-                      },
-                      onExit: (event) {
-                        _visible.value = false;
-                      },
-                      child: IconButton(
-                        icon: _volume ? const Icon(FluentIcons.speaker_2_16_filled) : const Icon(FluentIcons.speaker_mute_16_filled),
-                        onPressed: () {
-                          if(_volume) {
-                            widget.controller.volumeNotifier.value = 0;
-                          }
-                          else {
-                            widget.controller.volumeNotifier.value = 0.1;
-                          }
-                          _volume = !_volume;
-                          setState(() {
-                            widget.controller.setVolume(widget.controller.volumeNotifier.value);
-                          });
-                        },
-                      ),
-                    ),
-                    const SizedBox(
-                      width: 20,
-                    ),
-                    IconButton(onPressed: (){
-                      print("Search");
-                      setState(() {
-                        search = !search;
-                      });
-                      searchNode.requestFocus();
-                    }, icon: const Icon(FluentIcons.search_16_filled)),
-                    Container(
-                      width: 20,
-                    ),
-                    IconButton(onPressed: (){
-                      print("Tapped settings");
-                      Navigator.push(context, MaterialPageRoute(builder: (BuildContext context){
-                        return Settings(controller: widget.controller,);
-                      }));
-                    }, icon: const Icon(FluentIcons.settings_16_filled))//Icon(Icons.more_vert)),
-                  ],
                 ),
-              ))
-        ],
+                backgroundColor: widget.controller.colorNotifier.value,
+                actions: [
+                  Container(
+                      alignment: Alignment.center,
+                      child: ValueListenableBuilder(
+                        valueListenable: _visible,
+                        builder: (context, value, child) =>
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: [
+                                Visibility(
+                                  visible: _visible.value,
+                                  child: SizedBox(
+                                    height: height * 0.05,
+                                    width: width * 0.1,
+                                    child:
+                                    MouseRegion(
+                                      onEnter: (event) {
+                                        _visible.value = true;
+                                      },
+                                      onExit: (event) {
+                                        _visible.value = false;
+                                      },
+                                      child: ValueListenableBuilder(
+                                          valueListenable: widget.controller.volumeNotifier,
+                                          builder: (context, value, child){
+                                            return SliderTheme(
+                                                data: SliderThemeData(
+                                                  trackHeight: 2,
+                                                  thumbShape: RoundSliderThumbShape(enabledThumbRadius: height * 0.0075),
+                                                ),
+                                                child: Slider(
+                                                  min: 0.0,
+                                                  max: 1.0,
+                                                  mouseCursor: SystemMouseCursors.click,
+                                                  value: value,
+                                                  activeColor: widget.controller.colorNotifier.value,
+                                                  thumbColor: Colors.white,
+                                                  inactiveColor: Colors.white,
+                                                  onChanged: (double value) {
+                                                    widget.controller.volumeNotifier.value = value;
+                                                    widget.controller.setVolume(widget.controller.volumeNotifier.value);
+                                                  },
+                                                ),
+                                            );
+                                          }
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                MouseRegion(
+                                  onEnter: (event) {
+                                    _visible.value = true;
+                                  },
+                                  onExit: (event) {
+                                    _visible.value = false;
+                                  },
+                                  child: ValueListenableBuilder(
+                                      valueListenable: widget.controller.volumeNotifier,
+                                      builder: (context, value, child) {
+                                        return IconButton(
+                                          icon: volume ? Icon(
+                                              FluentIcons.speaker_2_16_filled,
+                                            size: height * 0.02,
+                                            color: Colors.white,
+                                          ) :
+                                          Icon(
+                                              FluentIcons.speaker_mute_16_filled,
+                                            size: height * 0.02,
+                                            color: Colors.white,
+                                          ),
+                                          onPressed: () {
+                                            if(volume) {
+                                              widget.controller.volumeNotifier.value = 0;
+                                            }
+                                            else {
+                                              widget.controller.volumeNotifier.value = 0.1;
+                                            }
+                                            volume = !volume;
+                                            widget.controller.setVolume(widget.controller.volumeNotifier.value);
+                                          },
+                                        );
+                                      }
+                                  ),
+                                ),
+                                IconButton(onPressed: (){
+                                  print("Search");
+                                  widget.controller.searchNotifier.value = !widget.controller.searchNotifier.value;
+                                }, icon: Icon(
+                                    FluentIcons.search_16_filled,
+                                  size: height * 0.02,
+                                  color: Colors.white,
+                                  )
+                                ),
+                                IconButton(onPressed: (){
+                                  print("Tapped settings");
+                                  Navigator.push(context, MaterialPageRoute(builder: (BuildContext context){
+                                    return Settings(controller: widget.controller,);
+                                  }));
+                                }, icon: Icon(
+                                    FluentIcons.settings_16_filled,
+                                  size: height * 0.02,
+                                  color: Colors.white,
+                                  )
+                                )//Icon(Icons.more_vert)),
+                              ],
+                            ),
+                      )),
+                  Icon(
+                      FluentIcons.divider_tall_16_regular,
+                    size: height * 0.02,
+                    color: Colors.white,
+                  ),
+                  IconButton(
+                    onPressed: () => windowManager.minimize(),
+                    icon: Icon(
+                        FluentIcons.spacebar_20_filled,
+                      size: height * 0.02,
+                      color: Colors.white,
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: () async {
+                      if (await windowManager.isMaximized()) {
+                        //print("Restoring");
+                        await windowManager.unmaximize();
+                        //await windowManager.setSize(Size(width * 0.6, height * 0.6));
+                      } else {
+                        await windowManager.maximize();
+                      }
+
+                    },
+                    icon: Icon(
+                      FluentIcons.maximize_16_regular,
+                      size: height * 0.02,
+                      color: Colors.white,
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: () => windowManager.close(),
+                    icon: Icon(
+                        Icons.close_outlined,
+                      size: height * 0.02,
+                      color: Colors.white,
+
+                    ),
+                  ),
+                ],
+              );
+            }
+          ),
+
+        ),
       ),
       body: SafeArea(
         child: Container(
           width: width,
           height: height,
-          padding: EdgeInsets.all(height * 0.01),
+          padding: EdgeInsets.only(
+            top: height * 0.005,
+            left: width * 0.005,
+            right: width * 0.005,
+            bottom: height * 0.005,
+          ),
           child: Stack(
             alignment: Alignment.center,
             children: [
@@ -201,9 +253,6 @@ class _HomePageState extends State<HomePage>{
                                   curve: Curves.easeIn
                               );
                               setState(() {
-                                create = false;
-                                playlistname = "New playlist";
-                                artistsforalbum = "";
                                 if(_scrollController.positions.isNotEmpty) {
                                   _scrollController.jumpTo(_scrollController.position.minScrollExtent);
                                 }
@@ -237,9 +286,6 @@ class _HomePageState extends State<HomePage>{
                                         curve: Curves.easeIn
                                     );
                                     setState(() {
-                                      create = false;
-                                      playlistname = "New playlist";
-                                      artistsforalbum = "";
                                       if(_scrollController.positions.isNotEmpty) {
                                         _scrollController.jumpTo(_scrollController.position.minScrollExtent);
                                       }
@@ -273,9 +319,6 @@ class _HomePageState extends State<HomePage>{
                                         curve: Curves.easeIn
                                     );
                                     setState(() {
-                                      create = false;
-                                      playlistname = "New playlist";
-                                      artistsforalbum = "";
                                       if(_scrollController.positions.isNotEmpty) {
                                         _scrollController.jumpTo(_scrollController.position.minScrollExtent);
                                       }
@@ -309,9 +352,6 @@ class _HomePageState extends State<HomePage>{
                                         curve: Curves.easeIn
                                     );
                                     setState(() {
-                                      create = false;
-                                      playlistname = "New playlist";
-                                      artistsforalbum = "";
                                       if(_scrollController.positions.isNotEmpty) {
                                         _scrollController.jumpTo(_scrollController.position.minScrollExtent);
                                       }
@@ -374,11 +414,15 @@ class _HomePageState extends State<HomePage>{
                     duration: const Duration(milliseconds: 500),
                     alignment: Alignment.bottomCenter,
                     child: value ?
-                    SongPlayerWidget(controller: widget.controller) :
+                      SongPlayerWidget(controller: widget.controller) :
                       AnimatedContainer(
                         duration: const Duration(milliseconds: 500),
+                        padding: EdgeInsets.only(
+                          left: width * 0.01,
+                          right: width * 0.01,
+                          bottom: height * 0.01,
+                        ),
                         decoration: BoxDecoration(
-                          color: Colors.black,
                           borderRadius: BorderRadius.circular(height * 0.1),
                         ),
                         child: ValueListenableBuilder(
@@ -395,7 +439,26 @@ class _HomePageState extends State<HomePage>{
                   );
                 }
               ),
-              // Container(
+              ValueListenableBuilder(
+                  valueListenable: widget.controller.searchNotifier,
+                  builder: (context, value, child){
+                    return Visibility(
+                      visible: value,
+                      child: GestureDetector(
+                        onTap: (){
+                          widget.controller.searchNotifier.value = false;
+                        },
+                        child: Container(
+                          width: width,
+                          height: height,
+                          color: Colors.black.withOpacity(0.3),
+                          child: SearchWidget(controller: widget.controller),
+                        ),
+                      ),
+                    );
+                  }
+              ),
+                // Container(
               //   padding: EdgeInsets.all(width * 0.01),
               //   child: Stack(
               //     alignment: Alignment.bottomCenter,
@@ -1081,281 +1144,14 @@ class _HomePageState extends State<HomePage>{
               //       ]
               //   )
               // ),
-              Visibility(
-                visible: search,
-                child: Container(
-                  width: 400,
-                  height: 500,
-                  color: Colors.black,
-                  padding: EdgeInsets.only(left: 10, right: 10, top: 10),
-                  child:  Column(
-                    children: [
-                      TextFormField(
-                        focusNode: searchNode,
-                        onChanged: (value) => widget.controller.filter(value),
-                        cursorColor: Colors.white,
-                        style: TextStyle(color: Colors.white, fontSize: 20),
-                        decoration: const InputDecoration(
-                            labelStyle: TextStyle(color: Colors.white, fontSize: 18),
-                            labelText: 'Search', suffixIcon: Icon(FluentIcons.search_16_filled, color: Colors.white,)),
-                      ),
-                      const SizedBox(
-                        height: 20,
-                      ),
-                      Expanded(
-                        child: widget.controller.found.value.isNotEmpty ?
-                        ListView.builder(
-                          itemCount: widget.controller.found.value.length+1,
-                          itemBuilder: (context, int _index) {
-                            return _index < widget.controller.found.value.length ?
-                            Container(
-                              height: 85,
-                              padding: EdgeInsets.only(bottom: 10),
-                              child: ElevatedButton(
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Color(0xFF0E0E0E),
-                                ),
-                                onPressed: () {
-                                  widget.controller.playingSongs.clear();
-                                  widget.controller.playingSongsUnShuffled.clear();
-
-                                  widget.controller.playingSongs.addAll(widget.controller.found.value);
-                                  widget.controller.playingSongsUnShuffled.addAll(widget.controller.found.value);
-
-                                  if(widget.controller.shuffleNotifier.value == true)
-                                    widget.controller.playingSongs.shuffle();
-
-                                  var file = File("assets/settings.json");
-                                  widget.controller.settings.lastPlaying.clear();
-
-                                  for(int i = 0; i < widget.controller.playingSongs.length; i++){
-                                    widget.controller.settings.lastPlaying.add(widget.controller.playingSongs[i].path);
-                                  }
-                                  widget.controller.settings.lastPlayingIndex = widget.controller.playingSongs.indexOf(widget.controller.playingSongsUnShuffled[_index]);
-                                  file.writeAsStringSync(jsonEncode(widget.controller.settings.toJson()));
-
-                                  widget.controller.indexNotifier.value = widget.controller.settings.lastPlayingIndex;
-                                  widget.controller.playSong();
-                                },
-                                child: Row(
-                                  children: [
-                                    Stack(
-                                      // children: [
-                                      //   widget.controller.found.value[_index].imageloaded ?
-                                      //   Container(
-                                      //     height: 75,
-                                      //     width: 75,
-                                      //     child: DecoratedBox(
-                                      //       decoration: BoxDecoration(
-                                      //         borderRadius: BorderRadius.circular(10),
-                                      //         image: DecorationImage(
-                                      //           image: Image.memory(widget.controller.found.value[_index].image).image,
-                                      //           fit: BoxFit.cover,
-                                      //         ),
-                                      //       ),
-                                      //     ),
-                                      //   ) :
-                                      //   loading?
-                                      //   Container(
-                                      //     height: 75,
-                                      //     width: 75,
-                                      //     child: DecoratedBox(
-                                      //       decoration: BoxDecoration(
-                                      //         borderRadius: BorderRadius.circular(10),
-                                      //         image: DecorationImage(
-                                      //           image: Image.memory(File("./assets/bg.png").readAsBytesSync()).image,
-                                      //           fit: BoxFit.cover,
-                                      //         ),
-                                      //       ),
-                                      //       child:
-                                      //       Center(
-                                      //         child: CircularProgressIndicator(
-                                      //           color: Colors.white,
-                                      //         ),
-                                      //       ),
-                                      //     ),
-                                      //   )
-                                      //       : FutureBuilder(
-                                      //     future: widget.controller.imageretrieve(widget.controller.found.value[_index].path),
-                                      //     builder: (ctx, snapshot) {
-                                      //       if (snapshot.hasData) {
-                                      //         return
-                                      //           Container(
-                                      //             height: 75,
-                                      //             width: 75,
-                                      //             padding: EdgeInsets.only(left: 10),
-                                      //             child: DecoratedBox(
-                                      //               decoration: BoxDecoration(
-                                      //                 borderRadius: BorderRadius.circular(10),
-                                      //                 image: DecorationImage(
-                                      //                   image: Image.memory(snapshot.data!).image,
-                                      //                   fit: BoxFit.cover,
-                                      //                 ),
-                                      //               ),
-                                      //             ),
-                                      //           );
-                                      //       }
-                                      //       else if (snapshot.hasError) {
-                                      //         return Center(
-                                      //           child: Text(
-                                      //             '${snapshot.error} occurred',
-                                      //             style: TextStyle(fontSize: 18),
-                                      //           ),
-                                      //         );
-                                      //       } else{
-                                      //         return
-                                      //           Container(
-                                      //             height: 75,
-                                      //             width: 75,
-                                      //             child: DecoratedBox(
-                                      //               decoration: BoxDecoration(
-                                      //                 borderRadius: BorderRadius.circular(10),
-                                      //                 image: DecorationImage(
-                                      //                   image: Image.memory(File("./assets/bg.png").readAsBytesSync()).image,
-                                      //                   fit: BoxFit.cover,
-                                      //                 ),
-                                      //               ),
-                                      //               child:
-                                      //               Center(
-                                      //                 child: CircularProgressIndicator(
-                                      //                   color: Colors.white,
-                                      //                 ),
-                                      //               ),
-                                      //             ),
-                                      //           );
-                                      //       }
-                                      //     },
-                                      //   ),
-                                      //   ClipRRect(
-                                      //     // Clip it cleanly.
-                                      //     child: BackdropFilter(
-                                      //       filter: ImageFilter.blur(sigmaX: 1, sigmaY: 1),
-                                      //       child: Container(
-                                      //         width: 75,
-                                      //         height: 75,
-                                      //         color: Colors.black.withOpacity(0.3),
-                                      //         alignment: Alignment.center,
-                                      //         child: Row(
-                                      //           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                                      //           crossAxisAlignment: CrossAxisAlignment.center,
-                                      //           children: [
-                                      //             Container(
-                                      //               width: 5,
-                                      //             ),
-                                      //             Container(
-                                      //               width: 25,
-                                      //               height: 100,
-                                      //               child: IconButton(
-                                      //                 padding: EdgeInsets.all(0),
-                                      //                 onPressed: () {
-                                      //                   setState(() {
-                                      //                     if(_songstoadd.contains(widget.controller.found.value[_index])){
-                                      //                       _songstoadd.remove(widget.controller.found.value[_index]);
-                                      //                     }
-                                      //                     else{
-                                      //                       _songstoadd.add(widget.controller.found.value[_index]);
-                                      //                     }
-                                      //                     addelement = true;
-                                      //                   });
-                                      //                 },
-                                      //                 icon: Icon(FluentIcons.add_16_filled, color: Colors.white, size: 30,),
-                                      //               ),
-                                      //             ),
-                                      //             Container(
-                                      //               width: 5,
-                                      //             ),
-                                      //             Container(
-                                      //               height: 100,
-                                      //               width: 15,
-                                      //               child: IconButton(
-                                      //                 padding: EdgeInsets.all(0),
-                                      //                 onPressed: () {
-                                      //                   widget.controller.playingSongs.clear();
-                                      //                   widget.controller.playingSongsUnShuffled.clear();
-                                      //
-                                      //                   widget.controller.playingSongs.addAll(widget.controller.found.value);
-                                      //                   widget.controller.playingSongsUnShuffled.addAll(widget.controller.found.value);
-                                      //
-                                      //                   if(widget.controller.shuffleNotifier.value == true)
-                                      //                     widget.controller.playingSongs.shuffle();
-                                      //
-                                      //                   var file = File("assets/settings.json");
-                                      //                   widget.controller.settings.lastplaying.clear();
-                                      //
-                                      //                   for(int i = 0; i < widget.controller.playingSongs.length; i++){
-                                      //                     widget.controller.settings.lastplaying.add(widget.controller.playingSongs[i].path);
-                                      //                   }
-                                      //                   widget.controller.settings.lastplayingindex = widget.controller.playingSongs.indexOf(widget.controller.playingSongsUnShuffled[_index]);
-                                      //                   file.writeAsStringSync(jsonEncode(widget.controller.settings.toJson()));
-                                      //
-                                      //                   widget.controller.indexNotifier.value = widget.controller.settings.lastplayingindex;
-                                      //                   widget.controller.playSong();
-                                      //                 },
-                                      //                 icon: Icon(FluentIcons.play_12_filled, color: Colors.white, size: 30,),
-                                      //               ),
-                                      //             ),
-                                      //             Container(
-                                      //               width: 20,
-                                      //             ),
-                                      //           ],
-                                      //         ),
-                                      //       ),
-                                      //     ),
-                                      //   ),
-                                      // ],
-                                    ),
-
-                                    Container(
-                                      width: 15,
-                                    ),
-                                    Column(
-                                        mainAxisAlignment: MainAxisAlignment.center,
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                              widget.controller.found.value[_index].title.toString().length > 25 ? widget.controller.found.value[_index].title.toString().substring(0, 25) + "..." : widget.controller.found.value[_index].title.toString(),
-                                              style: widget.controller.found.value[_index] != widget.controller.playingSongs[widget.controller.indexNotifier.value] ? TextStyle(
-                                                color: Colors.white,
-                                                fontSize: 18,
-                                              ) : TextStyle(
-                                                color: Colors.blue,
-                                                fontSize: 18,
-                                              )
-                                          ),
-                                          Container(
-                                            height: 5,
-                                          ),
-                                          Text(
-                                              widget.controller.found.value[_index].artists.toString().length > 30 ? widget.controller.found.value[_index].artists.toString().substring(0, 30) + "..." : widget.controller.found.value[_index].artists.toString(),
-                                              style: widget.controller.found.value[_index] != widget.controller.playingSongs[widget.controller.indexNotifier.value] ? TextStyle(
-                                                color: Colors.white,
-                                                fontSize: 16,
-                                              ) : TextStyle(
-                                                color: Colors.blue,
-                                                fontSize: 16,
-                                              )
-                                          ),
-                                        ]
-                                    ),
-                                  ],
-                                ),
-                              ),
-
-                            ) :
-                            Container(
-                              height:100,
-                            );
-                          },
-                        )
-
-                            : const Text(
-                          'No results found',
-                          style: TextStyle(fontSize: 22),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+              ValueListenableBuilder(
+                valueListenable: widget.controller.searchNotifier,
+                builder: (context, value, child){
+                  return Visibility(
+                    visible: value,
+                    child: SearchWidget(controller: widget.controller),
+                  );
+                }
               ),
             ],
           ),
@@ -1363,13 +1159,6 @@ class _HomePageState extends State<HomePage>{
       ),
     );
   }
-
-  void _incrementExit3(PointerEvent details) {
-    setState(() {
-      _hovereditem3 = -1;
-    });
-  }
-
 }
 
 

@@ -6,14 +6,14 @@ class PlaylistType{
   List<String> paths = [];
   List<MetadataType> songs = [];
   String duration = "Unknown duration";
-  List<FeaturedArtistType> featuredartists = [];
+  List<FeaturedArtistType> featuredArtists = [];
 
   Map<String, dynamic> toJson() {
     return {
       'name': name,
       'paths': paths,
       'duration': duration,
-      'featuredartists': featuredartists,
+      'featuredArtists': featuredArtists,
     };
   }
 }

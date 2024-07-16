@@ -91,6 +91,38 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
             //   width: 1000,
             //   height: 150,
             // ) :
+            Container(
+              width: 1000,
+              height: 150,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      padding: EdgeInsets.all(0),
+                      foregroundColor: Colors.white, backgroundColor: Colors.grey.shade900,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10.0),
+                      ),
+                    ),
+                    onPressed: () async {
+                      print("Pressed");
+                      var file = File("./assets/settings.json");
+                      file.writeAsStringSync(jsonEncode(widget.controller.settings.toJson()));
+                      // insert in navigator without back
+                      Navigator.pushReplacement(context, MaterialPageRoute(builder: (BuildContext context){
+                        return HomePage(controller: widget.controller);
+                      }));
+
+                      // Navigator.push(context, MaterialPageRoute(builder: (BuildContext context){
+                      //   return HomePage(controller: widget.controller);
+                      // }));
+                    },
+                    child: Icon(FluentIcons.arrow_right_12_filled, color: Colors.white, size: 30,),
+                  ),
+                ],
+              ),
+            ),
           ],
         ),
       ),

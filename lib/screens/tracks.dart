@@ -39,7 +39,7 @@ class _TracksState extends State<Tracks>{
           padding: EdgeInsets.all(width * 0.01),
           itemCount: widget.controller.repo.songs.value.length + 7,
           gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
-            childAspectRatio: 0.85,
+            childAspectRatio: 0.825,
             maxCrossAxisExtent: width * 0.125,
             crossAxisSpacing: width * 0.0125,
             mainAxisSpacing: width * 0.0125,
@@ -51,12 +51,19 @@ class _TracksState extends State<Tracks>{
               child: GestureDetector(
                 onTap: () {
                   print("Playing ${widget.controller.indexNotifier.value}");
-                  if (widget.controller.playingNotifier.value && widget.controller.playingSongs[widget.controller.indexNotifier.value].path == widget.controller.repo.songs.value[index].path) {
-                    print("Pausing");
-                    widget.controller.audioPlayer.pause();
-                    widget.controller.playingNotifier.value = false;
+                  if (widget.controller.playingSongs[widget.controller.indexNotifier.value].path == widget.controller.repo.songs.value[index].path) {
+                    if (widget.controller.playingNotifier.value == true) {
+                      print("Pausing");
+                      widget.controller.audioPlayer?.pause();
+                      widget.controller.playingNotifier.value = false;
+                    }
+                    else {
+                      widget.controller.audioPlayer?.resume();
+                      widget.controller.playingNotifier.value = true;
+                    }
                   }
                   else {
+                    widget.controller.audioPlayer?.stop();
                     widget.controller.playingSongs.clear();
                     widget.controller.playingSongsUnShuffled.clear();
 
@@ -208,15 +215,15 @@ class _TracksState extends State<Tracks>{
                       valueListenable: widget.controller.indexNotifier,
                       builder: (context, value, child){
                         return Text(
-                          widget.controller.repo.songs.value[index].title.length > 25 ?
-                          "${widget.controller.repo.songs.value[index].title.substring(0, 25)}..." :
                           widget.controller.repo.songs.value[index].title,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          textAlign: TextAlign.center,
                           style: TextStyle(
                             color: widget.controller.playingSongs.isNotEmpty && widget.controller.playingSongs[widget.controller.indexNotifier.value] == widget.controller.repo.songs.value[index] ? Colors.blue : Colors.white,
                             fontSize: smallSize,
                             fontWeight: FontWeight.normal,
                           ),
-                          textAlign: TextAlign.center,
                         );
                       }
                     ),

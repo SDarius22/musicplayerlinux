@@ -3,8 +3,6 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
-import 'package:musicplayer/screens/main_screen.dart';
-
 import '../controller/controller.dart';
 
 
@@ -19,7 +17,7 @@ class _SettingsState extends State<Settings> {
   bool _volume = true, search = false;
   final ValueNotifier<bool> _visible = ValueNotifier(false);
   FocusNode searchNode = FocusNode();
-  String dropdownvalue = "Off";
+  String dropDownValue = "Off";
 
   @override
   Widget build(BuildContext context) {

@@ -30,7 +30,7 @@ class _AlbumsState extends State<Albums>{
         padding: EdgeInsets.all(width * 0.01),
         itemCount: widget.controller.repo.albums.length + 7,
         gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
-          childAspectRatio: 0.85,
+          childAspectRatio: 0.825,
           maxCrossAxisExtent: width * 0.125,
           crossAxisSpacing: width * 0.0125,
           mainAxisSpacing: width * 0.0125,
@@ -163,15 +163,15 @@ class _AlbumsState extends State<Albums>{
                     ),
                   ),
                   Text(
-                    widget.controller.repo.albums[index].name.length > 25 ?
-                    "${widget.controller.repo.albums[index].name.substring(0, 25)}..." :
                     widget.controller.repo.albums[index].name,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.center,
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: smallSize,
                       fontWeight: FontWeight.normal,
                     ),
-                    textAlign: TextAlign.center,
                   ),
                 ],
               ),
