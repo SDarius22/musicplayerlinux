@@ -1,7 +1,4 @@
-import 'dart:async';
-import 'dart:io';
 import 'dart:ui';
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:musicplayer/screens/search_widget.dart';
@@ -24,7 +21,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage>{
   bool volume = true;
-  
+
   int currentPage = 3;
   String userMessage = "No message";
   final ValueNotifier<bool> _visible = ValueNotifier(false);
@@ -47,7 +44,6 @@ class _HomePageState extends State<HomePage>{
     var height = MediaQuery.of(context).size.height;
     var boldSize = height * 0.025;
     var normalSize = height * 0.02;
-    var smallSize = height * 0.015;
     return Scaffold(
       appBar: PreferredSize(
         preferredSize: Size(
@@ -66,7 +62,7 @@ class _HomePageState extends State<HomePage>{
                       fontSize: normalSize,
                     ),
                 ),
-                backgroundColor: widget.controller.colorNotifier.value,
+                backgroundColor: widget.controller.colorNotifier2.value,
                 actions: [
                   Container(
                       alignment: Alignment.center,
@@ -448,10 +444,11 @@ class _HomePageState extends State<HomePage>{
                         onTap: (){
                           widget.controller.searchNotifier.value = false;
                         },
-                        child: Container(
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 500),
                           width: width,
                           height: height,
-                          color: Colors.black.withOpacity(0.3),
+                          color: value ? Colors.black.withOpacity(0.3) : Colors.transparent,
                           child: SearchWidget(controller: widget.controller),
                         ),
                       ),
@@ -1144,15 +1141,6 @@ class _HomePageState extends State<HomePage>{
               //       ]
               //   )
               // ),
-              ValueListenableBuilder(
-                valueListenable: widget.controller.searchNotifier,
-                builder: (context, value, child){
-                  return Visibility(
-                    visible: value,
-                    child: SearchWidget(controller: widget.controller),
-                  );
-                }
-              ),
             ],
           ),
         ),

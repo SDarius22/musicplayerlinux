@@ -47,8 +47,8 @@ class Controller{
   ValueNotifier<LyricUI> lyricUINotifier = ValueNotifier<LyricUI>(UINetease());
   ValueNotifier<String> plainLyricNotifier = ValueNotifier<String>('');
   ValueNotifier<List<MetadataType>> found = ValueNotifier<List<MetadataType>>([]);
-  ValueNotifier<Color> colorNotifier = ValueNotifier<Color>(Colors.deepPurpleAccent.shade400);
-  ValueNotifier<Color> colorNotifier2 = ValueNotifier<Color>(Colors.blueAccent.shade400);
+  ValueNotifier<Color> colorNotifier = ValueNotifier<Color>(Colors.deepPurpleAccent.shade400); // Light color, for lyrics and sliders
+  ValueNotifier<Color> colorNotifier2 = ValueNotifier<Color>(Colors.blueAccent.shade400); // Dark color, for background of player and window bar
   ValueNotifier<Uint8List> imageNotifier = ValueNotifier<Uint8List>(File("./assets/bg.png").readAsBytesSync());
 
   int currentPosition = 0;
@@ -211,14 +211,14 @@ class Controller{
 
   void lyricModelReset() {
     lyricUINotifier.value = UINetease(
-        defaultSize : MediaQuery.of(context!).size.height * 0.024,
+        defaultSize : MediaQuery.of(context!).size.height * 0.023,
         defaultExtSize : MediaQuery.of(context!).size.height * 0.02,
         otherMainSize : MediaQuery.of(context!).size.height * 0.02,
         bias : 0.5,
         lineGap : 5,
         inlineGap : 5,
-        highlightColor: colorNotifier2.value,
-        lyricAlign : LyricAlign.LEFT,
+        highlightColor: colorNotifier.value,
+        lyricAlign : LyricAlign.CENTER,
         lyricBaseLine : LyricBaseLine.CENTER,
         highlight : false
     );
@@ -246,8 +246,24 @@ class Controller{
     await imageRetrieve(playingSongs[newIndex].path, true);
     DominantColors extractor = DominantColors(bytes: imageNotifier.value, dominantColorsCount: 2);
     var colors = extractor.extractDominantColors();
-    colorNotifier.value = colors.first;
-    colorNotifier2.value = colors.last;
+    if(colors.first.computeLuminance() > 0.179 && colors.last.computeLuminance() > 0.179){
+      colorNotifier.value = colors.first;
+      colorNotifier2.value = Colors.black;
+    }
+    else if (colors.first.computeLuminance() < 0.179 && colors.last.computeLuminance() < 0.179){
+      colorNotifier.value = Colors.blue;
+      colorNotifier2.value = colors.first;
+    }
+    else{
+      if(colors.first.computeLuminance() > 0.179){
+        colorNotifier.value = colors.first;
+        colorNotifier2.value = colors.last;
+      }
+      else{
+        colorNotifier.value = colors.last;
+        colorNotifier2.value = colors.first;
+      }
+    }
     lyricModelReset();
   }
 

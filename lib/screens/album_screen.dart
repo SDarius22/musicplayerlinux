@@ -53,7 +53,7 @@ class _AlbumWidget extends State<AlbumWidget> {
         ),
         child: DragToMoveArea(
           child: ValueListenableBuilder(
-              valueListenable: widget.controller.colorNotifier,
+              valueListenable: widget.controller.colorNotifier2,
               builder: (context, value, child){
                 return AppBar(
                   title: Text(
@@ -63,7 +63,7 @@ class _AlbumWidget extends State<AlbumWidget> {
                       fontSize: normalSize,
                     ),
                   ),
-                  backgroundColor: widget.controller.colorNotifier.value,
+                  backgroundColor: widget.controller.colorNotifier2.value,
                   leading: IconButton(
                     onPressed: () {
                       print("Back");
@@ -362,6 +362,9 @@ class _AlbumWidget extends State<AlbumWidget> {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
+                    SizedBox(
+                      height: height * 0.01,
+                    ),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.center,
@@ -369,6 +372,7 @@ class _AlbumWidget extends State<AlbumWidget> {
                         IconButton(
                           onPressed: (){
                             //print("Playing ${widget.controller.indexNotifier.value}");
+                            widget.controller.audioPlayer?.stop();
                             widget.controller.playingSongs.clear();
                             widget.controller.playingSongsUnShuffled.clear();
 
@@ -440,6 +444,7 @@ class _AlbumWidget extends State<AlbumWidget> {
                         child: GestureDetector(
                           behavior: HitTestBehavior.translucent,
                           onTap: (){
+                            widget.controller.audioPlayer?.stop();
                             widget.controller.playingSongs.clear();
                             widget.controller.playingSongsUnShuffled.clear();
 
@@ -460,10 +465,6 @@ class _AlbumWidget extends State<AlbumWidget> {
 
                             widget.controller.indexChange(widget.controller.playingSongs.indexOf(widget.controller.playingSongsUnShuffled[index]));
                             widget.controller.playSong();
-                            //print(widget.controller.playingSongsUnShuffled[index].title);
-                            // widget.controller.indexNotifier.value = widget.controller.playingSongs.indexOf(widget.controller.playingSongsUnShuffled[index]);
-                            // widget.controller.indexChange(widget.controller.indexNotifier.value);
-                            // widget.controller.playSong();
                           },
                           child: FutureBuilder(
                             future: widget.controller.imageRetrieve(widget.album.songs[index].path, false),

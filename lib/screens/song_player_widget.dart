@@ -55,7 +55,7 @@ class _SongPlayerWidget extends State<SongPlayerWidget> {
             top: values[0] ? height * 0.001 : height * 0.15,
           ),
           decoration: BoxDecoration(
-            color: values[0] ? widget.controller.colorNotifier.value : const Color(0xFF0E0E0E),
+            color: values[0] ? widget.controller.colorNotifier2.value : const Color(0xFF0E0E0E),
             borderRadius: values[0] ? BorderRadius.circular(height * 0.1) : BorderRadius.circular(0),
           ),
           child: Wrap(
@@ -80,6 +80,7 @@ class _SongPlayerWidget extends State<SongPlayerWidget> {
                             behavior: HitTestBehavior.translucent,
                             onTap: (){
                               //print(widget.controller.playingSongsUnShuffled[index].title);
+                              widget.controller.audioPlayer?.stop();
                               widget.controller.indexNotifier.value = widget.controller.playingSongs.indexOf(widget.controller.playingSongsUnShuffled[index]);
                               widget.controller.indexChange(widget.controller.indexNotifier.value);
                               widget.controller.playSong();
@@ -431,7 +432,7 @@ class _SongPlayerWidget extends State<SongPlayerWidget> {
                         selectLineBuilder: (progress, confirm) {
                           return Row(
                             children: [
-                              Icon(FluentIcons.play_12_filled, color: widget.controller.colorNotifier2.value),
+                              Icon(FluentIcons.play_12_filled, color: widget.controller.colorNotifier.value),
                               Expanded(
                                 child: MouseRegion(
                                   cursor: SystemMouseCursors.click,
@@ -448,7 +449,7 @@ class _SongPlayerWidget extends State<SongPlayerWidget> {
                               Text(
                                 //progress.toString(),
                                 "${progress ~/ 1000 ~/ 60}:${(progress ~/ 1000 % 60).toString().padLeft(2, '0')}",
-                                style: TextStyle(color: widget.controller.colorNotifier2.value),
+                                style: TextStyle(color: widget.controller.colorNotifier.value),
                               )
                             ],
                           );
@@ -562,7 +563,7 @@ class _SongPlayerWidget extends State<SongPlayerWidget> {
                   ),
                   //ProgressBar
                   MultiValueListenableBuilder(
-                      valueListenables: [widget.controller.sliderNotifier, widget.controller.colorNotifier2],
+                      valueListenables: [widget.controller.sliderNotifier, widget.controller.colorNotifier],
                       builder: (context, values, child){
                         return AnimatedContainer(
                           duration: const Duration(milliseconds: 500),

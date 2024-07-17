@@ -53,7 +53,7 @@ class _ArtistWidget extends State<ArtistWidget> {
         ),
         child: DragToMoveArea(
           child: ValueListenableBuilder(
-              valueListenable: widget.controller.colorNotifier,
+              valueListenable: widget.controller.colorNotifier2,
               builder: (context, value, child){
                 return AppBar(
                   title: Text(
@@ -63,7 +63,7 @@ class _ArtistWidget extends State<ArtistWidget> {
                       fontSize: normalSize,
                     ),
                   ),
-                  backgroundColor: widget.controller.colorNotifier.value,
+                  backgroundColor: widget.controller.colorNotifier2.value,
                   leading: IconButton(
                     onPressed: () {
                       //print("Back");
@@ -338,6 +338,9 @@ class _ArtistWidget extends State<ArtistWidget> {
                           fontWeight: FontWeight.bold,
                         ),
                       ),
+                      SizedBox(
+                        height: height * 0.01,
+                      ),
                       Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           crossAxisAlignment: CrossAxisAlignment.center,
@@ -345,6 +348,7 @@ class _ArtistWidget extends State<ArtistWidget> {
                             IconButton(
                               onPressed: (){
                                 //print("Playing ${widget.controller.indexNotifier.value}");
+                                widget.controller.audioPlayer?.stop();
                                 widget.controller.playingSongs.clear();
                                 widget.controller.playingSongsUnShuffled.clear();
 
@@ -415,10 +419,28 @@ class _ArtistWidget extends State<ArtistWidget> {
                         cursor: SystemMouseCursors.click,
                         child: GestureDetector(
                             behavior: HitTestBehavior.translucent,
-                            onTap: (){
+                            onTap: () async {
                               //print(widget.controller.playingSongsUnShuffled[index].title);
-                              widget.controller.indexNotifier.value = widget.controller.playingSongs.indexOf(widget.controller.playingSongsUnShuffled[index]);
-                              widget.controller.indexChange(widget.controller.indexNotifier.value);
+                              widget.controller.audioPlayer?.stop();
+                              widget.controller.playingSongs.clear();
+                              widget.controller.playingSongsUnShuffled.clear();
+
+                              widget.controller.playingSongs.addAll(widget.artist.songs);
+                              widget.controller.playingSongsUnShuffled.addAll(widget.artist.songs);
+
+                              if(widget.controller.shuffleNotifier.value == true) {
+                                widget.controller.playingSongs.shuffle();
+                              }
+
+                              var file = File("assets/settings.json");
+                              widget.controller.settings.lastPlaying.clear();
+
+                              for(int i = 0; i < widget.controller.playingSongs.length; i++){
+                                widget.controller.settings.lastPlaying.add(widget.controller.playingSongs[i].path);
+                              }
+                              file.writeAsStringSync(jsonEncode(widget.controller.settings.toJson()));
+
+                              await widget.controller.indexChange(widget.controller.playingSongs.indexOf(widget.controller.playingSongsUnShuffled[index]));
                               widget.controller.playSong();
                             },
                             child: FutureBuilder(
