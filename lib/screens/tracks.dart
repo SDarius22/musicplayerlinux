@@ -50,20 +50,21 @@ class _TracksState extends State<Tracks>{
               cursor: SystemMouseCursors.click,
               child: GestureDetector(
                 onTap: () {
-                  print("Playing ${widget.controller.indexNotifier.value}");
+                  //print("Playing ${widget.controller.indexNotifier.value}");
                   if (widget.controller.playingSongs[widget.controller.indexNotifier.value].path == widget.controller.repo.songs.value[index].path) {
+                    //print("path match");
                     if (widget.controller.playingNotifier.value == true) {
-                      print("Pausing");
-                      widget.controller.audioPlayer?.pause();
+                      //print("Pausing");
+                      widget.controller.audioPlayer.pause();
                       widget.controller.playingNotifier.value = false;
                     }
                     else {
-                      widget.controller.audioPlayer?.resume();
+                      widget.controller.audioPlayer.resume();
                       widget.controller.playingNotifier.value = true;
                     }
                   }
                   else {
-                    widget.controller.audioPlayer?.stop();
+                    widget.controller.audioPlayer.stop();
                     widget.controller.playingSongs.clear();
                     widget.controller.playingSongsUnShuffled.clear();
 

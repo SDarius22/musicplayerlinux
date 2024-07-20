@@ -372,7 +372,7 @@ class _AlbumWidget extends State<AlbumWidget> {
                         IconButton(
                           onPressed: (){
                             //print("Playing ${widget.controller.indexNotifier.value}");
-                            widget.controller.audioPlayer?.stop();
+                            widget.controller.audioPlayer.stop();
                             widget.controller.playingSongs.clear();
                             widget.controller.playingSongsUnShuffled.clear();
 
@@ -444,7 +444,7 @@ class _AlbumWidget extends State<AlbumWidget> {
                         child: GestureDetector(
                           behavior: HitTestBehavior.translucent,
                           onTap: (){
-                            widget.controller.audioPlayer?.stop();
+                            widget.controller.audioPlayer.stop();
                             widget.controller.playingSongs.clear();
                             widget.controller.playingSongsUnShuffled.clear();
 

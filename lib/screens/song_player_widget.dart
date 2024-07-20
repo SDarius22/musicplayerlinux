@@ -80,7 +80,7 @@ class _SongPlayerWidget extends State<SongPlayerWidget> {
                             behavior: HitTestBehavior.translucent,
                             onTap: (){
                               //print(widget.controller.playingSongsUnShuffled[index].title);
-                              widget.controller.audioPlayer?.stop();
+                              widget.controller.audioPlayer.stop();
                               widget.controller.indexNotifier.value = widget.controller.playingSongs.indexOf(widget.controller.playingSongsUnShuffled[index]);
                               widget.controller.indexChange(widget.controller.indexNotifier.value);
                               widget.controller.playSong();
@@ -645,7 +645,7 @@ class _SongPlayerWidget extends State<SongPlayerWidget> {
                             builder: (context, value, child){
                               return IconButton(
                                 onPressed: () async {
-                                  //print("pressed");
+                                  print("pressed pause play");
                                   widget.controller.playSong();
                                 },
                                 icon: widget.controller.playingNotifier.value ?

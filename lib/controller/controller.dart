@@ -24,7 +24,7 @@ import '../utils/lyric_reader/lyrics_reader_model.dart';
 class Controller{
   Settings settings = Settings.fromJson(jsonDecode(File("assets/settings.json").readAsStringSync()));
   Repository repo = Repository();
-  AudioPlayer? audioPlayer;
+  AudioPlayer audioPlayer = AudioPlayer();
   BuildContext? context;
 
   List<MetadataType> playingSongs = [];
@@ -268,34 +268,31 @@ class Controller{
   }
 
   void playSong() async {
-    if (audioPlayer == null) {
-      audioPlayer = AudioPlayer()..play(DeviceFileSource(playingSongs[indexNotifier.value].path), volume: volumeNotifier.value);
+    if(changed){
+      audioPlayer = AudioPlayer()..play(DeviceFileSource(playingSongs[indexNotifier.value].path), volume: volumeNotifier.value, position: const Duration(milliseconds: 0));
+      playingNotifier.value = true;
+      changed = false;
     }
     else{
-      if(changed){
-        audioPlayer = AudioPlayer()..play(DeviceFileSource(playingSongs[indexNotifier.value].path), volume: volumeNotifier.value, position: const Duration(milliseconds: 0));
-        playingNotifier.value = true;
-        changed = false;
+      if (playingNotifier.value){
+        print("pause");
+        audioPlayer.pause();
+        playingNotifier.value = false;
       }
       else{
-        if (playingNotifier.value){
-          audioPlayer?.pause();
-          playingNotifier.value = false;
-        }
-        else{
-          audioPlayer?.resume();
-          playingNotifier.value = true;
-        }
+        print("resume");
+        audioPlayer.resume();
+        playingNotifier.value = true;
       }
     }
-    audioPlayer?.onPositionChanged.listen((Duration event){
+    audioPlayer.onPositionChanged.listen((Duration event){
       //print(playingSongs[indexNotifier.value].duration);
       int duration = playingSongs[indexNotifier.value].duration;
       //print(event.inMilliseconds.toInt() ~/ 1000);
       if(event.inMilliseconds.toInt() ~/ 1000 == duration){
         if(repeatNotifier.value){
           print("repeat");
-          audioPlayer?.stop();
+          audioPlayer.stop();
           sliderNotifier.value = 0;
           playingNotifier.value = false;
           changed = true;
@@ -312,7 +309,7 @@ class Controller{
       }
     });
 
-    audioPlayer?.onPlayerStateChanged.listen((PlayerState state) {
+    audioPlayer.onPlayerStateChanged.listen((PlayerState state) {
       playingNotifier.value = state == PlayerState.playing;
     });
   }
@@ -328,7 +325,7 @@ class Controller{
       } else {
         newIndex = indexNotifier.value - 1;
       }
-      audioPlayer?.stop();
+      audioPlayer.stop();
       sliderNotifier.value = 0;
       playingNotifier.value = false;
       await indexChange(newIndex);
@@ -343,7 +340,7 @@ class Controller{
     } else {
       newIndex = indexNotifier.value + 1;
     }
-    audioPlayer?.stop();
+    audioPlayer.stop();
     sliderNotifier.value = 0;
     playingNotifier.value = false;
     await indexChange(newIndex);
@@ -403,8 +400,24 @@ class Controller{
     await imageRetrieve(playingSongs[indexNotifier.value].path, true);
     DominantColors extractor = DominantColors(bytes: imageNotifier.value, dominantColorsCount: 2);
     var colors = extractor.extractDominantColors();
-    colorNotifier.value = colors.first;
-    colorNotifier2.value = colors.last;
+    if(colors.first.computeLuminance() > 0.179 && colors.last.computeLuminance() > 0.179){
+      colorNotifier.value = colors.first;
+      colorNotifier2.value = Colors.black;
+    }
+    else if (colors.first.computeLuminance() < 0.179 && colors.last.computeLuminance() < 0.179){
+      colorNotifier.value = Colors.blue;
+      colorNotifier2.value = colors.first;
+    }
+    else{
+      if(colors.first.computeLuminance() > 0.179){
+        colorNotifier.value = colors.first;
+        colorNotifier2.value = colors.last;
+      }
+      else{
+        colorNotifier.value = colors.last;
+        colorNotifier2.value = colors.first;
+      }
+    }
     lyricModelReset();
     finishedRetrievingNotifier.value = true;
   }
@@ -776,14 +789,14 @@ class Controller{
   }
 
   void setSpeed(double speed){
-    audioPlayer?.setPlaybackRate(speed);
+    audioPlayer.setPlaybackRate(speed);
   }
 
   void setVolume(double volume){
-    audioPlayer?.setVolume(volume);
+    audioPlayer.setVolume(volume);
   }
 
   void seekAudio(Duration duration){
-    audioPlayer?.seek(duration);
+    audioPlayer.seek(duration);
   }
 }

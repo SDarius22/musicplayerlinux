@@ -348,7 +348,7 @@ class _ArtistWidget extends State<ArtistWidget> {
                             IconButton(
                               onPressed: (){
                                 //print("Playing ${widget.controller.indexNotifier.value}");
-                                widget.controller.audioPlayer?.stop();
+                                widget.controller.audioPlayer.stop();
                                 widget.controller.playingSongs.clear();
                                 widget.controller.playingSongsUnShuffled.clear();
 
@@ -421,7 +421,7 @@ class _ArtistWidget extends State<ArtistWidget> {
                             behavior: HitTestBehavior.translucent,
                             onTap: () async {
                               //print(widget.controller.playingSongsUnShuffled[index].title);
-                              widget.controller.audioPlayer?.stop();
+                              widget.controller.audioPlayer.stop();
                               widget.controller.playingSongs.clear();
                               widget.controller.playingSongsUnShuffled.clear();
 
