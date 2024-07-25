@@ -1,13 +1,10 @@
 import 'metadata_type.dart';
+import 'package:objectbox/objectbox.dart';
 
+@Entity()
 class ArtistType{
+  @Id()
+  int id = 0;
   String name = "Unknown artist";
-  List<MetadataType> songs = [];
-
-  Map<String, dynamic> toJson() {
-    return {
-      'name': name,
-      'songs': songs,
-    };
-  }
+  final songs = ToMany<MetadataType>();
 }

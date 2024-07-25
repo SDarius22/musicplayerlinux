@@ -1,10 +1,11 @@
-import 'dart:convert';
 import 'dart:io';
 import 'dart:ui';
+import 'package:collection/collection.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:hovering/hovering.dart';
 import 'package:musicplayer/domain/album_type.dart';
+import 'package:musicplayer/domain/artist_type.dart';
 import 'package:window_manager/window_manager.dart';
 import '../controller/controller.dart';
 import 'settings.dart';
@@ -28,9 +29,9 @@ class _AlbumWidget extends State<AlbumWidget> {
 
   @override
   void initState() {
-    for(int i = 0; i < widget.album.featuredartists.length; i++) {
-      featuredArtists += widget.album.featuredartists[i].name;
-      if(i != widget.album.featuredartists.length - 1) {
+    for (ArtistType artist in widget.album.artists){
+      featuredArtists += artist.name;
+      if(artist != widget.album.artists.last) {
         featuredArtists += ", ";
       }
     }
@@ -116,7 +117,7 @@ class _AlbumWidget extends State<AlbumWidget> {
                                                   inactiveColor: Colors.white,
                                                   onChanged: (double value) {
                                                     widget.controller.volumeNotifier.value = value;
-                                                    widget.controller.setVolume(widget.controller.volumeNotifier.value);
+                                                    widget.controller.audioPlayer.setVolume(widget.controller.volumeNotifier.value);
                                                   },
                                                 ),
                                               );
@@ -154,7 +155,7 @@ class _AlbumWidget extends State<AlbumWidget> {
                                                 widget.controller.volumeNotifier.value = 0.1;
                                               }
                                               volume = !volume;
-                                              widget.controller.setVolume(widget.controller.volumeNotifier.value);
+                                              widget.controller.audioPlayer.setVolume(widget.controller.volumeNotifier.value);
                                             },
                                           );
                                         }
@@ -373,25 +374,21 @@ class _AlbumWidget extends State<AlbumWidget> {
                           onPressed: (){
                             //print("Playing ${widget.controller.indexNotifier.value}");
                             widget.controller.audioPlayer.stop();
-                            widget.controller.playingSongs.clear();
-                            widget.controller.playingSongsUnShuffled.clear();
+                            if(widget.controller.settings.playingSongs != widget.album.songs){
+                              widget.controller.settings.playingSongs.clear();
+                              widget.controller.settings.playingSongsUnShuffled.clear();
 
-                            widget.controller.playingSongs.addAll(widget.album.songs);
-                            widget.controller.playingSongsUnShuffled.addAll(widget.album.songs);
+                              widget.controller.settings.playingSongs.addAll(widget.album.songs);
+                              widget.controller.settings.playingSongsUnShuffled.addAll(widget.album.songs);
 
-                            if(widget.controller.shuffleNotifier.value == true) {
-                              widget.controller.playingSongs.shuffle();
+                              if(widget.controller.shuffleNotifier.value == true) {
+                                widget.controller.settings.playingSongs.shuffle();
+                              }
+
+                              widget.controller.settingsBox.put(widget.controller.settings);
+
                             }
-
-                            var file = File("assets/settings.json");
-                            widget.controller.settings.lastPlaying.clear();
-
-                            for(int i = 0; i < widget.controller.playingSongs.length; i++){
-                              widget.controller.settings.lastPlaying.add(widget.controller.playingSongs[i].path);
-                            }
-                            widget.controller.settings.lastPlayingIndex = widget.controller.playingSongs.indexOf(widget.controller.playingSongsUnShuffled[0]);
-                            file.writeAsStringSync(jsonEncode(widget.controller.settings.toJson()));
-                            widget.controller.indexChange(widget.controller.playingSongs.indexOf(widget.controller.playingSongsUnShuffled[0]));
+                            widget.controller.indexChange(widget.controller.settings.playingSongs.indexOf(widget.controller.settings.playingSongsUnShuffled[0]));
                             widget.controller.playSong();
                         },
                           icon: Icon(
@@ -443,27 +440,13 @@ class _AlbumWidget extends State<AlbumWidget> {
                         cursor: SystemMouseCursors.click,
                         child: GestureDetector(
                           behavior: HitTestBehavior.translucent,
-                          onTap: (){
+                          onTap: () async {
                             widget.controller.audioPlayer.stop();
-                            widget.controller.playingSongs.clear();
-                            widget.controller.playingSongsUnShuffled.clear();
-
-                            widget.controller.playingSongs.addAll(widget.album.songs);
-                            widget.controller.playingSongsUnShuffled.addAll(widget.album.songs);
-
-                            if(widget.controller.shuffleNotifier.value == true) {
-                              widget.controller.playingSongs.shuffle();
+                            if(widget.controller.settings.playingSongs.equals(widget.album.songs) == false){
+                              widget.controller.updatePlaying(widget.album.songs);
                             }
 
-                            var file = File("assets/settings.json");
-                            widget.controller.settings.lastPlaying.clear();
-
-                            for(int i = 0; i < widget.controller.playingSongs.length; i++){
-                              widget.controller.settings.lastPlaying.add(widget.controller.playingSongs[i].path);
-                            }
-                            file.writeAsStringSync(jsonEncode(widget.controller.settings.toJson()));
-
-                            widget.controller.indexChange(widget.controller.playingSongs.indexOf(widget.controller.playingSongsUnShuffled[index]));
+                            await widget.controller.indexChange(widget.controller.settings.playingSongs.indexOf(widget.controller.settings.playingSongsUnShuffled[index]));
                             widget.controller.playSong();
                           },
                           child: FutureBuilder(

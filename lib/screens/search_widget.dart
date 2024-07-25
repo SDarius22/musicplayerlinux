@@ -297,22 +297,15 @@ class _SearchWidget extends State<SearchWidget> {
                         child: GestureDetector(
                           behavior: HitTestBehavior.translucent,
                           onTap: (){
-                            widget.controller.playingSongs.clear();
-                            widget.controller.playingSongsUnShuffled.clear();
-                            widget.controller.playingSongs.addAll(widget.controller.found.value);
-                            widget.controller.playingSongsUnShuffled.addAll(widget.controller.found.value);
+                            widget.controller.settings.playingSongs.clear();
+                            widget.controller.settings.playingSongsUnShuffled.clear();
+                            widget.controller.settings.playingSongs.addAll(widget.controller.found.value);
+                            widget.controller.settings.playingSongsUnShuffled.addAll(widget.controller.found.value);
                             if (widget.controller.shuffleNotifier.value) {
-                              widget.controller.playingSongs.shuffle();
+                              widget.controller.settings.playingSongs.shuffle();
                             }
-                            var file = File("assets/settings.json");
-                            widget.controller.settings.lastPlaying.clear();
-
-                            for(int i = 0; i < widget.controller.playingSongs.length; i++){
-                              widget.controller.settings.lastPlaying.add(widget.controller.playingSongs[i].path);
-                            }
-                            file.writeAsStringSync(jsonEncode(widget.controller.settings.toJson()));
-                            widget.controller.indexNotifier.value = widget.controller.playingSongs.indexOf(widget.controller.playingSongsUnShuffled[index]);
-                            widget.controller.indexChange(widget.controller.indexNotifier.value);
+                            widget.controller.settingsBox.put(widget.controller.settings);
+                            widget.controller.indexChange(widget.controller.settings.playingSongs.indexOf(widget.controller.found.value[index]));
                             widget.controller.playSong();
                           },
                           child: FutureBuilder(

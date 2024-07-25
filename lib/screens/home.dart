@@ -33,8 +33,8 @@ class _HomePageState extends State<HomePage>{
   @override
   void initState(){
     widget.controller.retrieveSongs();
-    widget.controller.found.value = widget.controller.repo.songs.value;
-    widget.controller.indexNotifier.value= widget.controller.settings.lastPlayingIndex;
+    widget.controller.found.value = widget.controller.songBox.getAll();
+    // widget.controller.indexNotifier.value= widget.controller.settings.lastPlayingIndex;
     super.initState();
   }
 
@@ -104,7 +104,7 @@ class _HomePageState extends State<HomePage>{
                                                   inactiveColor: Colors.white,
                                                   onChanged: (double value) {
                                                     widget.controller.volumeNotifier.value = value;
-                                                    widget.controller.setVolume(widget.controller.volumeNotifier.value);
+                                                    widget.controller.audioPlayer.setVolume(widget.controller.volumeNotifier.value);
                                                   },
                                                 ),
                                             );
@@ -142,7 +142,7 @@ class _HomePageState extends State<HomePage>{
                                               widget.controller.volumeNotifier.value = 0.1;
                                             }
                                             volume = !volume;
-                                            widget.controller.setVolume(widget.controller.volumeNotifier.value);
+                                            widget.controller.audioPlayer.setVolume(widget.controller.volumeNotifier.value);
                                           },
                                         );
                                       }
@@ -421,15 +421,8 @@ class _HomePageState extends State<HomePage>{
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(height * 0.1),
                         ),
-                        child: ValueListenableBuilder(
-                          valueListenable: widget.controller.progressNotifier,
-                          builder: (context, value, child) {
-                            return LinearProgressIndicator(
-                              backgroundColor: Colors.grey,
-                              valueColor: const AlwaysStoppedAnimation<Color>(Colors.deepPurpleAccent),
-                              value: widget.controller.progressNotifier.value,
-                            );
-                          }
+                        child: const CircularProgressIndicator(
+                          color: Colors.white,
                         ),
                       ),
                   );

@@ -1,22 +1,13 @@
+import 'package:objectbox/objectbox.dart';
+import 'metadata_type.dart';
+
+@Entity()
 class Settings{
-  String directory;
-  List<String> lastPlaying;
-  int lastPlayingIndex;
-  bool firstTime;
-
-  Settings.fromJson(Map<String, dynamic> json):
-        firstTime = json['firstTime'],
-        directory = json['directory'],
-        lastPlayingIndex = json['lastPlayingIndex'],
-        lastPlaying = json['lastPlaying'].cast<String>();
-
-
-  Map<String, dynamic> toJson() {
-    return {
-      'firstTime': firstTime,
-      'directory': directory,
-      'lastPlayingIndex': lastPlayingIndex,
-      'lastPlaying': lastPlaying,
-    };
-  }
+  @Id()
+  int id = 0;
+  String directory = '/';
+  int lastPlayingIndex = 0;
+  bool firstTime = true;
+  final playingSongs = ToMany<MetadataType>();
+  final playingSongsUnShuffled = ToMany<MetadataType>();
 }

@@ -6,6 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:hovering/hovering.dart';
 import 'package:musicplayer/screens/playlist_screen.dart';
 import '../controller/controller.dart';
+import '../domain/playlist_type.dart';
+import '../utils/objectbox.g.dart';
 
 class Playlists extends StatefulWidget{
   final Controller controller;
@@ -17,11 +19,6 @@ class Playlists extends StatefulWidget{
 
 
 class _PlaylistsState extends State<Playlists>{
-  bool loading = false;
-  int displayedalbum = -1;
-  String artistsforalbum = "", playlistname = "New playlist";
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -30,7 +27,7 @@ class _PlaylistsState extends State<Playlists>{
     var smallSize = height * 0.015;
     return GridView.builder(
       padding: EdgeInsets.all(width * 0.01),
-      itemCount: widget.controller.repo.playlists.length + 8,
+      itemCount: widget.controller.playlistBox.query().order(PlaylistType_.name).build().find().length + 8,
       gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
         childAspectRatio: 0.825,
         maxCrossAxisExtent: width * 0.125,
@@ -38,17 +35,16 @@ class _PlaylistsState extends State<Playlists>{
         mainAxisSpacing: width * 0.0125,
       ),
       itemBuilder: (BuildContext context, int index) {
+        PlaylistType playlist = PlaylistType();
+        if (index > 0 && index < widget.controller.playlistBox.query().order(PlaylistType_.name).build().find().length + 1){
+          playlist = widget.controller.playlistBox.query().order(PlaylistType_.name).build().find()[index-1];
+        }
         return index == 0 ?
         MouseRegion(
           cursor: SystemMouseCursors.click,
           child: GestureDetector(
             onTap: (){
-              widget.controller.found.value = widget.controller.repo.songs.value;
-              // setState(() {
-              //   found = repo.songs;
-              //   create = true;
-              //   myFocusNode.requestFocus();
-              // });
+              widget.controller.found.value = widget.controller.songBox.getAll();
             },
             child: AspectRatio(
               aspectRatio: 1.0,
@@ -86,13 +82,13 @@ class _PlaylistsState extends State<Playlists>{
           ),
 
         ) :
-        index < widget.controller.repo.playlists.length?
+        index < widget.controller.playlistBox.query().order(PlaylistType_.name).build().find().length + 1?
         MouseRegion(
           cursor: SystemMouseCursors.click,
           child: GestureDetector(
             onTap: () {
               Navigator.push(context, MaterialPageRoute(builder: (context){
-                return PlaylistWidget(controller: widget.controller, playlist: widget.controller.repo.playlists[index]);
+                return PlaylistWidget(controller: widget.controller, playlist: playlist);
               }));
             },
             child: Column(
@@ -102,7 +98,7 @@ class _PlaylistsState extends State<Playlists>{
                   child: Container(
                     margin: EdgeInsets.only(bottom: width * 0.005),
                     child: FutureBuilder(
-                      future: widget.controller.imageRetrieve(widget.controller.repo.playlists[index].songs.first.path, false),
+                      future: widget.controller.imageRetrieve(playlist.songs.first.path, false),
                       builder: (ctx, snapshot) {
                         if (snapshot.hasData) {
                           return HoverWidget(
@@ -211,7 +207,7 @@ class _PlaylistsState extends State<Playlists>{
                   ),
                 ),
                 Text(
-                  widget.controller.repo.playlists[index].name,
+                  playlist.name,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   textAlign: TextAlign.center,

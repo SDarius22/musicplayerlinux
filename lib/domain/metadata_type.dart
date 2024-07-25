@@ -1,4 +1,11 @@
+import 'package:objectbox/objectbox.dart';
+
+@Entity()
 class MetadataType{
+  @Id()
+  int id = 0;
+  int orderPosition = 0;
+
   String title = "Unknown Song";
   String artists = "Unknown artist";
   String album = "Unknown album";
@@ -8,28 +15,11 @@ class MetadataType{
   int trackNumber = 0;
   int discNumber = 0;
 
-  Map<String, dynamic> toJson() {
-    return {
-        "title": title,
-        "artists": artists,
-        "album": album,
-        "duration": duration,
-        "path": path,
-        "lyricsPath": lyricsPath,
-        "trackNumber": trackNumber,
-        "discNumber": discNumber,
-    };
-  }
+  @override
+  bool operator ==(Object other) =>
+    other is MetadataType && other.runtimeType == runtimeType && other.path == path;
 
-  MetadataType();
+  @override
+  int get hashCode => path.hashCode;
 
-  MetadataType.fromJson(Map<String, dynamic> json)
-      : title = json['title'],
-        artists = json['artists'],
-        album = json['album'],
-        duration = json['duration'],
-        path = json['path'],
-        lyricsPath = json['lyricsPath'],
-        trackNumber = json['trackNumber'],
-        discNumber = json['discNumber'];
 }

@@ -116,7 +116,7 @@ class _ArtistWidget extends State<ArtistWidget> {
                                                   inactiveColor: Colors.white,
                                                   onChanged: (double value) {
                                                     widget.controller.volumeNotifier.value = value;
-                                                    widget.controller.setVolume(widget.controller.volumeNotifier.value);
+                                                    widget.controller.audioPlayer.setVolume(widget.controller.volumeNotifier.value);
                                                   },
                                                 ),
                                               );
@@ -154,7 +154,7 @@ class _ArtistWidget extends State<ArtistWidget> {
                                                 widget.controller.volumeNotifier.value = 0.1;
                                               }
                                               volume = !volume;
-                                              widget.controller.setVolume(widget.controller.volumeNotifier.value);
+                                              widget.controller.audioPlayer.setVolume(widget.controller.volumeNotifier.value);
                                             },
                                           );
                                         }
@@ -349,25 +349,22 @@ class _ArtistWidget extends State<ArtistWidget> {
                               onPressed: (){
                                 //print("Playing ${widget.controller.indexNotifier.value}");
                                 widget.controller.audioPlayer.stop();
-                                widget.controller.playingSongs.clear();
-                                widget.controller.playingSongsUnShuffled.clear();
+                                if(widget.controller.settings.playingSongs != widget.artist.songs){
+                                  widget.controller.settings.playingSongs.clear();
+                                  widget.controller.settings.playingSongsUnShuffled.clear();
 
-                                widget.controller.playingSongs.addAll(widget.artist.songs);
-                                widget.controller.playingSongsUnShuffled.addAll(widget.artist.songs);
+                                  widget.controller.settings.playingSongs.addAll(widget.artist.songs);
+                                  widget.controller.settings.playingSongsUnShuffled.addAll(widget.artist.songs);
 
-                                if(widget.controller.shuffleNotifier.value == true) {
-                                  widget.controller.playingSongs.shuffle();
+                                  if(widget.controller.shuffleNotifier.value == true) {
+                                    widget.controller.settings.playingSongs.shuffle();
+                                  }
+
+
+                                  widget.controller.settingsBox.put(widget.controller.settings);
+
                                 }
-
-                                var file = File("assets/settings.json");
-                                widget.controller.settings.lastPlaying.clear();
-
-                                for(int i = 0; i < widget.controller.playingSongs.length; i++){
-                                  widget.controller.settings.lastPlaying.add(widget.controller.playingSongs[i].path);
-                                }
-                                widget.controller.settings.lastPlayingIndex = widget.controller.playingSongs.indexOf(widget.controller.playingSongsUnShuffled[0]);
-                                file.writeAsStringSync(jsonEncode(widget.controller.settings.toJson()));
-                                widget.controller.indexChange(widget.controller.playingSongs.indexOf(widget.controller.playingSongsUnShuffled[0]));
+                                widget.controller.indexChange(widget.controller.settings.playingSongs.indexOf(widget.controller.settings.playingSongsUnShuffled[0]));
                                 widget.controller.playSong();
                               },
                               icon: Icon(
@@ -422,25 +419,19 @@ class _ArtistWidget extends State<ArtistWidget> {
                             onTap: () async {
                               //print(widget.controller.playingSongsUnShuffled[index].title);
                               widget.controller.audioPlayer.stop();
-                              widget.controller.playingSongs.clear();
-                              widget.controller.playingSongsUnShuffled.clear();
+                              widget.controller.settings.playingSongs.clear();
+                              widget.controller.settings.playingSongsUnShuffled.clear();
 
-                              widget.controller.playingSongs.addAll(widget.artist.songs);
-                              widget.controller.playingSongsUnShuffled.addAll(widget.artist.songs);
+                              widget.controller.settings.playingSongs.addAll(widget.artist.songs);
+                              widget.controller.settings.playingSongsUnShuffled.addAll(widget.artist.songs);
 
                               if(widget.controller.shuffleNotifier.value == true) {
-                                widget.controller.playingSongs.shuffle();
+                                widget.controller.settings.playingSongs.shuffle();
                               }
 
-                              var file = File("assets/settings.json");
-                              widget.controller.settings.lastPlaying.clear();
+                              widget.controller.settingsBox.put(widget.controller.settings);
 
-                              for(int i = 0; i < widget.controller.playingSongs.length; i++){
-                                widget.controller.settings.lastPlaying.add(widget.controller.playingSongs[i].path);
-                              }
-                              file.writeAsStringSync(jsonEncode(widget.controller.settings.toJson()));
-
-                              await widget.controller.indexChange(widget.controller.playingSongs.indexOf(widget.controller.playingSongsUnShuffled[index]));
+                              await widget.controller.indexChange(widget.controller.settings.playingSongs.indexOf(widget.controller.settings.playingSongsUnShuffled[index]));
                               widget.controller.playSong();
                             },
                             child: FutureBuilder(

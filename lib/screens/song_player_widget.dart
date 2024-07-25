@@ -22,12 +22,40 @@ class SongPlayerWidget extends StatefulWidget {
 
 class _SongPlayerWidget extends State<SongPlayerWidget> {
   late ScrollController itemScrollController;
+  var lyricUI = UINetease(
+      defaultSize : 20,
+      defaultExtSize : 20,
+      otherMainSize : 20,
+      bias : 0.5,
+      lineGap : 5,
+      inlineGap : 5,
+      highlightColor: Colors.blue,
+      lyricAlign : LyricAlign.CENTER,
+      lyricBaseLine : LyricBaseLine.CENTER,
+      highlight : false
+  );
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       itemScrollController = ScrollController();
+    });
+    widget.controller.colorNotifier.addListener(() {
+      setState(() {
+        lyricUI = UINetease(
+            defaultSize : MediaQuery.of(context).size.height * 0.023,
+            defaultExtSize : MediaQuery.of(context).size.height * 0.02,
+            otherMainSize : MediaQuery.of(context).size.height * 0.02,
+            bias : 0.5,
+            lineGap : 5,
+            inlineGap : 5,
+            highlightColor: widget.controller.colorNotifier.value,
+            lyricAlign : LyricAlign.CENTER,
+            lyricBaseLine : LyricBaseLine.CENTER,
+            highlight : false
+        );
+      });
     });
   }
 
@@ -39,7 +67,18 @@ class _SongPlayerWidget extends State<SongPlayerWidget> {
     var boldSize = height * 0.025;
     var normalSize = height * 0.02;
     var smallSize = height * 0.015;
-    widget.controller.updateContext(context);
+    lyricUI = UINetease(
+        defaultSize : MediaQuery.of(context).size.height * 0.023,
+        defaultExtSize : MediaQuery.of(context).size.height * 0.02,
+        otherMainSize : MediaQuery.of(context).size.height * 0.02,
+        bias : 0.5,
+        lineGap : 5,
+        inlineGap : 5,
+        highlightColor: widget.controller.colorNotifier.value,
+        lyricAlign : LyricAlign.CENTER,
+        lyricBaseLine : LyricBaseLine.CENTER,
+        highlight : false
+    );
     return MultiValueListenableBuilder(
       valueListenables: [widget.controller.minimizedNotifier, widget.controller.indexNotifier, widget.controller.imageNotifier],
       builder: (context, values, child){
@@ -68,7 +107,7 @@ class _SongPlayerWidget extends State<SongPlayerWidget> {
                   width: width * 0.275 * 2,
                   child: ListView.builder(
                     controller: itemScrollController,
-                    itemCount: widget.controller.playingSongsUnShuffled.length,
+                    itemCount: widget.controller.settings.playingSongsUnShuffled.length,
                     itemBuilder: (context, int index) {
                       return AnimatedContainer(
                         duration: const Duration(milliseconds: 500),
@@ -79,14 +118,14 @@ class _SongPlayerWidget extends State<SongPlayerWidget> {
                           child: GestureDetector(
                             behavior: HitTestBehavior.translucent,
                             onTap: (){
-                              //print(widget.controller.playingSongsUnShuffled[index].title);
+                              //print(widget.controller.settings.playingSongsUnShuffled[index].title);
                               widget.controller.audioPlayer.stop();
-                              widget.controller.indexNotifier.value = widget.controller.playingSongs.indexOf(widget.controller.playingSongsUnShuffled[index]);
+                              widget.controller.indexNotifier.value = widget.controller.settings.playingSongs.indexOf(widget.controller.settings.playingSongsUnShuffled[index]);
                               widget.controller.indexChange(widget.controller.indexNotifier.value);
                               widget.controller.playSong();
                             },
                             child: FutureBuilder(
-                              future: widget.controller.imageRetrieve(widget.controller.playingSongsUnShuffled[index].path, false),
+                              future: widget.controller.imageRetrieve(widget.controller.settings.playingSongsUnShuffled[index].path, false),
                               builder: (context, snapshot){
                                 return HoverWidget(
                                   hoverChild: Container(
@@ -159,18 +198,18 @@ class _SongPlayerWidget extends State<SongPlayerWidget> {
                                             crossAxisAlignment: CrossAxisAlignment.start,
                                             children: [
                                               Text(
-                                                  widget.controller.playingSongsUnShuffled[index].title.toString().length > 60 ? "${widget.controller.playingSongsUnShuffled[index].title.toString().substring(0, 60)}..." : widget.controller.playingSongsUnShuffled[index].title.toString(),
+                                                  widget.controller.settings.playingSongsUnShuffled[index].title.toString().length > 60 ? "${widget.controller.settings.playingSongsUnShuffled[index].title.toString().substring(0, 60)}..." : widget.controller.settings.playingSongsUnShuffled[index].title.toString(),
                                                   style: TextStyle(
-                                                    color: widget.controller.playingSongsUnShuffled[index] != widget.controller.playingSongs[widget.controller.indexNotifier.value] ? Colors.white : Colors.blue,
+                                                    color: widget.controller.settings.playingSongsUnShuffled[index] != widget.controller.settings.playingSongs[widget.controller.indexNotifier.value] ? Colors.white : Colors.blue,
                                                     fontSize: normalSize,
                                                   )
                                               ),
                                               SizedBox(
                                                 height: height * 0.005,
                                               ),
-                                              Text(widget.controller.playingSongsUnShuffled[index].artists.toString().length > 60 ? "${widget.controller.playingSongsUnShuffled[index].artists.toString().substring(0, 60)}..." : widget.controller.playingSongsUnShuffled[index].artists.toString(),
+                                              Text(widget.controller.settings.playingSongsUnShuffled[index].artists.toString().length > 60 ? "${widget.controller.settings.playingSongsUnShuffled[index].artists.toString().substring(0, 60)}..." : widget.controller.settings.playingSongsUnShuffled[index].artists.toString(),
                                                   style: TextStyle(
-                                                    color: widget.controller.playingSongsUnShuffled[index] != widget.controller.playingSongs[widget.controller.indexNotifier.value] ? Colors.white : Colors.blue,
+                                                    color: widget.controller.settings.playingSongsUnShuffled[index] != widget.controller.settings.playingSongs[widget.controller.indexNotifier.value] ? Colors.white : Colors.blue,
                                                     fontSize: smallSize,
                                                   )
                                               ),
@@ -178,9 +217,9 @@ class _SongPlayerWidget extends State<SongPlayerWidget> {
                                         ),
                                         const Spacer(),
                                         Text(
-                                            "${widget.controller.playingSongs[index].duration ~/ 60}:${(widget.controller.playingSongs[index].duration % 60).toString().padLeft(2, '0')}",
+                                            "${widget.controller.settings.playingSongs[index].duration ~/ 60}:${(widget.controller.settings.playingSongs[index].duration % 60).toString().padLeft(2, '0')}",
                                             style: TextStyle(
-                                              color: widget.controller.playingSongsUnShuffled[index] != widget.controller.playingSongs[widget.controller.indexNotifier.value] ? Colors.white : Colors.blue,
+                                              color: widget.controller.settings.playingSongsUnShuffled[index] != widget.controller.settings.playingSongs[widget.controller.indexNotifier.value] ? Colors.white : Colors.blue,
                                               fontSize: normalSize,
                                             )
                                         ),
@@ -258,18 +297,18 @@ class _SongPlayerWidget extends State<SongPlayerWidget> {
                                             crossAxisAlignment: CrossAxisAlignment.start,
                                             children: [
                                               Text(
-                                                  widget.controller.playingSongsUnShuffled[index].title.toString().length > 60 ? "${widget.controller.playingSongsUnShuffled[index].title.toString().substring(0, 60)}..." : widget.controller.playingSongsUnShuffled[index].title.toString(),
+                                                  widget.controller.settings.playingSongsUnShuffled[index].title.toString().length > 60 ? "${widget.controller.settings.playingSongsUnShuffled[index].title.toString().substring(0, 60)}..." : widget.controller.settings.playingSongsUnShuffled[index].title.toString(),
                                                   style: TextStyle(
-                                                    color: widget.controller.playingSongsUnShuffled[index] != widget.controller.playingSongs[widget.controller.indexNotifier.value] ? Colors.white : Colors.blue,
+                                                    color: widget.controller.settings.playingSongsUnShuffled[index] != widget.controller.settings.playingSongs[widget.controller.indexNotifier.value] ? Colors.white : Colors.blue,
                                                     fontSize: normalSize,
                                                   )
                                               ),
                                               SizedBox(
                                                 height: height * 0.005,
                                               ),
-                                              Text(widget.controller.playingSongsUnShuffled[index].artists.toString().length > 60 ? "${widget.controller.playingSongsUnShuffled[index].artists.toString().substring(0, 60)}..." : widget.controller.playingSongsUnShuffled[index].artists.toString(),
+                                              Text(widget.controller.settings.playingSongsUnShuffled[index].artists.toString().length > 60 ? "${widget.controller.settings.playingSongsUnShuffled[index].artists.toString().substring(0, 60)}..." : widget.controller.settings.playingSongsUnShuffled[index].artists.toString(),
                                                   style: TextStyle(
-                                                    color: widget.controller.playingSongsUnShuffled[index] != widget.controller.playingSongs[widget.controller.indexNotifier.value] ? Colors.white : Colors.blue,
+                                                    color: widget.controller.settings.playingSongsUnShuffled[index] != widget.controller.settings.playingSongs[widget.controller.indexNotifier.value] ? Colors.white : Colors.blue,
                                                     fontSize: smallSize,
                                                   )
                                               ),
@@ -277,9 +316,9 @@ class _SongPlayerWidget extends State<SongPlayerWidget> {
                                         ),
                                         const Spacer(),
                                         Text(
-                                            "${widget.controller.playingSongs[index].duration ~/ 60}:${(widget.controller.playingSongs[index].duration % 60).toString().padLeft(2, '0')}",
+                                            "${widget.controller.settings.playingSongs[index].duration ~/ 60}:${(widget.controller.settings.playingSongs[index].duration % 60).toString().padLeft(2, '0')}",
                                             style: TextStyle(
-                                              color: widget.controller.playingSongsUnShuffled[index] != widget.controller.playingSongs[widget.controller.indexNotifier.value] ? Colors.white : Colors.blue,
+                                              color: widget.controller.settings.playingSongsUnShuffled[index] != widget.controller.settings.playingSongs[widget.controller.indexNotifier.value] ? Colors.white : Colors.blue,
                                               fontSize: normalSize,
                                             )
                                         ),
@@ -347,7 +386,7 @@ class _SongPlayerWidget extends State<SongPlayerWidget> {
                         height: height * 0.005,
                       ),
                       Text(
-                        widget.controller.playingSongs[widget.controller.indexNotifier.value].title.toString(),
+                        widget.controller.settings.playingSongs[widget.controller.indexNotifier.value].title.toString(),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                         textAlign: TextAlign.center,
@@ -372,7 +411,7 @@ class _SongPlayerWidget extends State<SongPlayerWidget> {
                         height: height * 0.005,
                       ),
                       Text(
-                        widget.controller.playingSongs[widget.controller.indexNotifier.value].artists.toString(),
+                        widget.controller.settings.playingSongs[widget.controller.indexNotifier.value].artists.toString(),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                         textAlign: TextAlign.center,
@@ -396,7 +435,7 @@ class _SongPlayerWidget extends State<SongPlayerWidget> {
                         height: height * 0.005,
                       ),
                       Text(
-                        widget.controller.playingSongs[widget.controller.indexNotifier.value].album.toString(),
+                        widget.controller.settings.playingSongs[widget.controller.indexNotifier.value].album.toString(),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                         textAlign: TextAlign.center,
@@ -410,7 +449,7 @@ class _SongPlayerWidget extends State<SongPlayerWidget> {
                 ),
               if(!values[0])
                 MultiValueListenableBuilder(
-                  valueListenables: [widget.controller.lyricModelNotifier, widget.controller.sliderNotifier, widget.controller.lyricUINotifier, widget.controller.playingNotifier, widget.controller.colorNotifier, widget.controller.colorNotifier2],
+                  valueListenables: [widget.controller.lyricModelNotifier, widget.controller.sliderNotifier, widget.controller.playingNotifier, widget.controller.colorNotifier, widget.controller.colorNotifier2],
                   builder: (context, value, child){
                     return AnimatedContainer(
                       duration: const Duration(milliseconds: 500),
@@ -421,8 +460,8 @@ class _SongPlayerWidget extends State<SongPlayerWidget> {
                       width: width * 0.275,
                       child: LyricsReader(
                         model: value[0],
-                        position: widget.controller.sliderNotifier.value,
-                        lyricUi: widget.controller.lyricUINotifier.value,
+                        position: value[1],
+                        lyricUi: lyricUI,
                         playing: widget.controller.playingNotifier.value,
                         size: Size.infinite,
                         padding: EdgeInsets.only(
@@ -440,7 +479,7 @@ class _SongPlayerWidget extends State<SongPlayerWidget> {
                                     onTap: () {
                                       confirm.call();
                                       setState(() {
-                                        widget.controller.seekAudio(Duration(milliseconds: progress));
+                                        widget.controller.audioPlayer.seek(Duration(milliseconds: progress));
                                       });
                                     },
                                   ),
@@ -552,7 +591,7 @@ class _SongPlayerWidget extends State<SongPlayerWidget> {
                     ),
                     child: Text(
                       // Song Title - Artist with maximum 65 characters
-                      "${widget.controller.playingSongs[widget.controller.indexNotifier.value].title} - ${widget.controller.playingSongs[widget.controller.indexNotifier.value].artists}",
+                      "${widget.controller.settings.playingSongs[widget.controller.indexNotifier.value].title} - ${widget.controller.settings.playingSongs[widget.controller.indexNotifier.value].artists}",
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: normalSize,
@@ -575,7 +614,7 @@ class _SongPlayerWidget extends State<SongPlayerWidget> {
                           ),
                           child: ProgressBar(
                             progress: Duration(milliseconds: values[0]),
-                            total: Duration(seconds: widget.controller.playingSongs.isNotEmpty? widget.controller.playingSongs[widget.controller.indexNotifier.value].duration : 0),
+                            total: Duration(seconds: widget.controller.settings.playingSongs.isNotEmpty? widget.controller.settings.playingSongs[widget.controller.indexNotifier.value].duration : 0),
                             progressBarColor: values[1],
                             baseBarColor: Colors.white.withOpacity(0.24),
                             bufferedBarColor: Colors.white.withOpacity(0.24),
@@ -590,7 +629,7 @@ class _SongPlayerWidget extends State<SongPlayerWidget> {
                               fontWeight: FontWeight.normal,
                             ),
                             onSeek: (duration) {
-                              widget.controller.seekAudio(duration);
+                              widget.controller.audioPlayer.seek(duration);
                             },
                           ),
                         );
@@ -608,21 +647,21 @@ class _SongPlayerWidget extends State<SongPlayerWidget> {
                               setState(() {
                                 if(widget.controller.shuffleNotifier.value == false) {
                                   widget.controller.shuffleNotifier.value = true;
-                                  MetadataType song = widget.controller.playingSongs[widget.controller.indexNotifier.value];
-                                  widget.controller.playingSongs.shuffle();
-                                  setState(() {
-                                    widget.controller.indexNotifier.value = widget.controller.playingSongs.indexOf(song);
-                                  });
+                                  // MetadataType song = widget.controller.settings.playingSongs[widget.controller.indexNotifier.value];
+                                  // widget.controller.settings.playingSongs.shuffle();
+                                  // setState(() {
+                                  //   widget.controller.indexNotifier.value = widget.controller.settings.playingSongs.indexOf(song);
+                                  // });
                                 }
                                 else{
                                   widget.controller.shuffleNotifier.value = false;
-                                  MetadataType song = widget.controller.playingSongs[widget.controller.indexNotifier.value];
-                                  widget.controller.playingSongs.clear();
-                                  widget.controller.playingSongs.addAll(widget.controller.playingSongsUnShuffled);
-                                  setState(() {
-                                    widget.controller.indexNotifier.value = widget.controller.playingSongsUnShuffled.indexOf(song);
-
-                                  });
+                                  // MetadataType song = widget.controller.settings.playingSongs[widget.controller.indexNotifier.value];
+                                  // widget.controller.settings.playingSongs.clear();
+                                  // widget.controller.settings.playingSongs.addAll(widget.controller.settings.playingSongsUnShuffled);
+                                  // setState(() {
+                                  //   widget.controller.indexNotifier.value = widget.controller.settings.playingSongsUnShuffled.indexOf(song);
+                                  //
+                                  // });
                                 }
                               });
                             },

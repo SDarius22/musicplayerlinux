@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
@@ -9,30 +10,29 @@ import 'package:audiotags/audiotags.dart';
 
 import '../domain/album_type.dart';
 import '../domain/artist_type.dart';
-import '../domain/featured_artist_type.dart';
 import '../domain/metadata_type.dart';
 import '../domain/playlist_type.dart';
 import '../domain/settings_type.dart';
+import '../utils/objectbox.g.dart';
 import '../utils/dominant_color/dominant_color.dart';
-import '../repo/repository.dart';
 import '../utils/flac_metadata/flacstream.dart';
 import '../utils/id3tag/id3tag.dart';
 import '../utils/lyric_reader/lyrics_reader.dart';
 import '../utils/lyric_reader/lyrics_reader_model.dart';
+import 'objectBox.dart';
 
 
 class Controller{
-  Settings settings = Settings.fromJson(jsonDecode(File("assets/settings.json").readAsStringSync()));
-  Repository repo = Repository();
+  late Box<Settings> settingsBox;
+  late Box<MetadataType> songBox;
+  late Box<PlaylistType> playlistBox;
+  late Box<AlbumType> albumBox;
+  late Box<ArtistType> artistBox;
+  Settings settings = Settings();
   AudioPlayer audioPlayer = AudioPlayer();
-  BuildContext? context;
-
-  List<MetadataType> playingSongs = [];
-  List<MetadataType> playingSongsUnShuffled = [];
 
   ValueNotifier<double> volumeNotifier = ValueNotifier<double>(0.5);
   ValueNotifier<double> speedNotifier = ValueNotifier<double>(1);
-  ValueNotifier<double> progressNotifier = ValueNotifier<double>(0);
   ValueNotifier<int> indexNotifier = ValueNotifier<int>(0);
   ValueNotifier<int> sliderNotifier = ValueNotifier<int>(0);
   ValueNotifier<int> sleepTimerNotifier = ValueNotifier<int>(0);
@@ -44,360 +44,99 @@ class Controller{
   ValueNotifier<bool> searchNotifier = ValueNotifier<bool>(false);
   ValueNotifier<bool> finishedRetrievingNotifier = ValueNotifier<bool>(false);
   ValueNotifier<LyricsReaderModel> lyricModelNotifier = ValueNotifier<LyricsReaderModel>(LyricsReaderModel());
-  ValueNotifier<LyricUI> lyricUINotifier = ValueNotifier<LyricUI>(UINetease());
   ValueNotifier<String> plainLyricNotifier = ValueNotifier<String>('');
   ValueNotifier<List<MetadataType>> found = ValueNotifier<List<MetadataType>>([]);
   ValueNotifier<Color> colorNotifier = ValueNotifier<Color>(Colors.deepPurpleAccent.shade400); // Light color, for lyrics and sliders
   ValueNotifier<Color> colorNotifier2 = ValueNotifier<Color>(Colors.blueAccent.shade400); // Dark color, for background of player and window bar
   ValueNotifier<Uint8List> imageNotifier = ValueNotifier<Uint8List>(File("./assets/bg.png").readAsBytesSync());
-
-  int currentPosition = 0;
   bool changed = false;
 
-  void updateContext(BuildContext context){
-    this.context = context;
-    lyricModelReset();
-  }
 
-  Future<void> searchLyrics() async {
-    plainLyricNotifier.value = 'Searching for lyrics...';
-    final Map<String, String> cookies = {'arl': '8436641c809f643da885ce7eb45e39e6a9514f882b1541a05282a33485f6f96fc56ddb724424ec3518e25bbaa08de4e7521e5f289a14c512dd65dc2ec0ad10b83138e5d02c1531a5bf5766ecfd492d0157815bafa5f08b90dcfe51a1eba1bbbf'};
-    final Map<String, String> params = {'jo': 'p', 'rto': 'c', 'i': 'c'};
-    const String loginUrl = 'https://auth.deezer.com/login/arl';
-    const String deezerApiUrl = 'https://pipe.deezer.com/api';
-    String title = playingSongs[indexNotifier.value].title;
-    String artist = playingSongs[indexNotifier.value].artists;
-    String path = playingSongs[indexNotifier.value].path;
-    String searchUrl = 'https://api.deezer.com/search?q=$title-$artist&limit=1&index=0&output=json';
-    print(searchUrl);
-
-    final Uri uri = Uri.parse(loginUrl).replace(queryParameters: params);
-    final http.Request postRequest = http.Request('POST', uri);
-    postRequest.headers.addAll({
-      'Content-Type': 'application/json',
-      'Cookie': 'arl=${cookies['arl']}'
-    });
-    final http.StreamedResponse streamedResponse = await postRequest.send();
-    final String postResponseString = await streamedResponse.stream.bytesToString();
-    final Map<String, dynamic> postResponseJson = jsonDecode(postResponseString);
-
-    //print(postResponseJson);
-    final String jwt = postResponseJson['jwt'];
-    //print(jwt);
-
-    final http.Response getResponse = await http.get(Uri.parse(searchUrl), headers: {
-      'Cookie': 'arl=${cookies['arl']}',
-    });
-
-    final Map<String, dynamic> getResponseJson = jsonDecode(getResponse.body);
-    //print(getResponseJson['data'][0]['id']);
-
-    final String trackId = getResponseJson['data'][0]['id'].toString();
-
-
-
-    final Map<String, dynamic> jsonData = {
-      'operationName': 'SynchronizedTrackLyrics',
-      'variables': {
-        'trackId': trackId,
-      },
-      'query': '''query SynchronizedTrackLyrics(\$trackId: String!) {
-                            track(trackId: \$trackId) {
-                              ...SynchronizedTrackLyrics
-                              __typename
-                            }
-                          }
-                      
-                          fragment SynchronizedTrackLyrics on Track {
-                            id
-                            lyrics {
-                              ...Lyrics
-                              __typename
-                            }
-                            album {
-                              cover {
-                                small: urls(pictureRequest: {width: 100, height: 100})
-                                medium: urls(pictureRequest: {width: 264, height: 264})
-                                large: urls(pictureRequest: {width: 800, height: 800})
-                              explicitStatus
-                              __typename
-                            }
-                            __typename
-                          }
-                          __typename
-                          }
-                      
-                          fragment Lyrics on Lyrics {
-                            id
-                            copyright
-                            text
-                            writers
-                            synchronizedLines {
-                              ...LyricsSynchronizedLines
-                              __typename
-                            }
-                            __typename
-                          }
-                      
-                          fragment LyricsSynchronizedLines on LyricsSynchronizedLine {
-                            lrcTimestamp
-                            line
-                            lineTranslated
-                            milliseconds
-                            duration
-                            __typename
-                          }'''
-    };
-
-    final http.Response lyricResponse = await http.post(
-      Uri.parse(deezerApiUrl),
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer $jwt',
-      },
-      body: jsonEncode(jsonData),
-    );
-
-    final Map<String, dynamic> lyricResponseJson = jsonDecode(lyricResponse.body);
-    //print(lyricResponseJson);
-
-    String plainLyric = '';
-    String syncedLyric = '';
-    try{
-      plainLyric += lyricResponseJson['data']['track']['lyrics']['text'] + "\n";
-      plainLyric += "${"\nWriters: " + lyricResponseJson['data']['track']['lyrics']['writers']}\nCopyright: " + lyricResponseJson['data']['track']['lyrics']['copyright'];
-    }
-    catch(e){
-      print(e);
-      plainLyric = 'No lyrics found';
-    }
-
-    try {
-      for (var line in lyricResponseJson['data']['track']['lyrics']['synchronizedLines']) {
-        syncedLyric += "${line['lrcTimestamp']} ${line['line']}\n";
-      }
-      syncedLyric += "${"\nWriters: " + lyricResponseJson['data']['track']['lyrics']['writers']}\nCopyright: " + lyricResponseJson['data']['track']['lyrics']['copyright'];
-    } catch (e) {
-      print(e);
-      syncedLyric = 'No lyrics found';
-    }
-    //print(plainLyric);
-
-    lyricModelNotifier.value = LyricsModelBuilder.create().bindLyricToMain(syncedLyric).getModel();
-    plainLyricNotifier.value = plainLyric;
-
-    if(syncedLyric != 'No lyrics found'){
-      var lyrPath = path.replaceAll(".mp3", ".lrc")
-          .replaceAll(
-          ".flac", ".lrc").replaceAll(".wav", ".lrc")
-          .replaceAll(
-          ".m4a", ".lrc");
-      File lyrFile = File(lyrPath);
-      lyrFile.writeAsStringSync(syncedLyric);
-      playingSongs[indexNotifier.value].lyricsPath = lyrFile.path;
-    }
-    else if (plainLyric != 'No lyrics found'){
-      var lyrPath = path.replaceAll(".mp3", ".lrc")
-          .replaceAll(
-          ".flac", ".lrc").replaceAll(".wav", ".lrc")
-          .replaceAll(
-          ".m4a", ".lrc");
-      File lyrFile = File(lyrPath);
-      lyrFile.writeAsStringSync(plainLyric);
-      playingSongs[indexNotifier.value].lyricsPath = lyrFile.path;
-    }
-
-  }
-
-  void lyricModelReset() {
-    lyricUINotifier.value = UINetease(
-        defaultSize : MediaQuery.of(context!).size.height * 0.023,
-        defaultExtSize : MediaQuery.of(context!).size.height * 0.02,
-        otherMainSize : MediaQuery.of(context!).size.height * 0.02,
-        bias : 0.5,
-        lineGap : 5,
-        inlineGap : 5,
-        highlightColor: colorNotifier.value,
-        lyricAlign : LyricAlign.CENTER,
-        lyricBaseLine : LyricBaseLine.CENTER,
-        highlight : false
-    );
-    //print(playingSongs[indexNotifier.value].lyricsPath);
-    if (playingSongs[indexNotifier.value].lyricsPath.contains(".lrc")) {
-      File lyrFile = File(playingSongs[indexNotifier.value].lyricsPath);
-      lyricModelNotifier.value = LyricsModelBuilder.create().bindLyricToMain(lyrFile.readAsStringSync()).getModel();
-      if (lyricModelNotifier.value.lyrics.isEmpty) {
-        lyricModelNotifier.value = LyricsModelBuilder.create().bindLyricToMain("No lyrics").getModel();
-        plainLyricNotifier.value = lyrFile.readAsStringSync();
-      }
+  Controller(ObjectBox objectBox) {
+    settingsBox = objectBox.store.box<Settings>();
+    if (settingsBox.isEmpty()) {
+      print("Initialising settings");
+      settingsBox.put(settings);
     }
     else {
-      lyricModelNotifier.value = LyricsModelBuilder.create().bindLyricToMain("No lyrics").getModel();
-      plainLyricNotifier.value = "No lyrics";
+      settings = settingsBox.getAll().last;
+      // for (Settings setting in settingsBox.getAll()){
+      //   print(setting.playingSongsUnShuffled.first.title);
+      // }
     }
+    songBox = objectBox.store.box<MetadataType>();
+    albumBox = objectBox.store.box<AlbumType>();
+    artistBox = objectBox.store.box<ArtistType>();
+    playlistBox = objectBox.store.box<PlaylistType>();
   }
 
-  Future<void> indexChange(int newIndex) async {
-    changed = true;
-    indexNotifier.value = newIndex;
-    var file = File("assets/settings.json");
-    settings.lastPlayingIndex = newIndex;
-    file.writeAsStringSync(jsonEncode(settings.toJson()));
-    await imageRetrieve(playingSongs[newIndex].path, true);
-    DominantColors extractor = DominantColors(bytes: imageNotifier.value, dominantColorsCount: 2);
-    var colors = extractor.extractDominantColors();
-    if(colors.first.computeLuminance() > 0.179 && colors.last.computeLuminance() > 0.179){
-      colorNotifier.value = colors.first;
-      colorNotifier2.value = Colors.black;
+
+  Future<void> updatePlaying(List<MetadataType> songs) async {
+    settings.playingSongs.clear();
+    settings.playingSongsUnShuffled.clear();
+    for(int i = 0; i < songs.length; i++){
+      MetadataType song = songs[i];
+      song.orderPosition = i;
+      //print("${song.title} - ${song.orderPosition}");
+      songBox.put(song);
+      settings.playingSongs.add(songs[i]);
+      settings.playingSongsUnShuffled.add(songs[i]);
     }
-    else if (colors.first.computeLuminance() < 0.179 && colors.last.computeLuminance() < 0.179){
-      colorNotifier.value = Colors.blue;
-      colorNotifier2.value = colors.first;
+    if (shuffleNotifier.value){
+      settings.playingSongs.shuffle();
     }
-    else{
-      if(colors.first.computeLuminance() > 0.179){
-        colorNotifier.value = colors.first;
-        colorNotifier2.value = colors.last;
-      }
-      else{
-        colorNotifier.value = colors.last;
-        colorNotifier2.value = colors.first;
-      }
-    }
-    lyricModelReset();
+    settingsBox.put(settings);
   }
 
-  void playSong() async {
-    if(changed){
-      audioPlayer = AudioPlayer()..play(DeviceFileSource(playingSongs[indexNotifier.value].path), volume: volumeNotifier.value, position: const Duration(milliseconds: 0));
-      playingNotifier.value = true;
-      changed = false;
-    }
-    else{
-      if (playingNotifier.value){
-        print("pause");
-        audioPlayer.pause();
-        playingNotifier.value = false;
-      }
-      else{
-        print("resume");
-        audioPlayer.resume();
-        playingNotifier.value = true;
-      }
-    }
-    audioPlayer.onPositionChanged.listen((Duration event){
-      //print(playingSongs[indexNotifier.value].duration);
-      int duration = playingSongs[indexNotifier.value].duration;
-      //print(event.inMilliseconds.toInt() ~/ 1000);
-      if(event.inMilliseconds.toInt() ~/ 1000 == duration){
-        if(repeatNotifier.value){
-          print("repeat");
-          audioPlayer.stop();
-          sliderNotifier.value = 0;
-          playingNotifier.value = false;
-          changed = true;
-          playSong();
-        }
-        else {
-          print("next");
-          nextSong();
-        }
-      }
-      else
-      {
-        sliderNotifier.value = event.inMilliseconds;
-      }
-    });
-
-    audioPlayer.onPlayerStateChanged.listen((PlayerState state) {
-      playingNotifier.value = state == PlayerState.playing;
-    });
-  }
-
-  Future<void> previousSong() async {
-    if(sliderNotifier.value > 5000){
-      seekAudio(const Duration(milliseconds: 0));
-    }
-    else {
-      int newIndex;
-      if (indexNotifier.value == 0) {
-        newIndex = playingSongs.length - 1;
-      } else {
-        newIndex = indexNotifier.value - 1;
-      }
-      audioPlayer.stop();
-      sliderNotifier.value = 0;
-      playingNotifier.value = false;
-      await indexChange(newIndex);
-      playSong();
-    }
-  }
-
-  Future<void> nextSong() async {
-    int newIndex;
-    if (indexNotifier.value == playingSongs.length - 1) {
-      newIndex = 0;
-    } else {
-      newIndex = indexNotifier.value + 1;
-    }
-    audioPlayer.stop();
-    sliderNotifier.value = 0;
-    playingNotifier.value = false;
-    await indexChange(newIndex);
-    playSong();
-  }
 
   Future<void> retrieveSongs() async {
-    var file = File("assets/songs.json");
-    List<dynamic> toWrite = [];
-    List<MetadataType> songs = [];
+    List<MetadataType> songs = songBox.getAll();
     List<String> paths = [];
-    if (!settings.firstTime){
-      String response = file.readAsStringSync();
-      var data = jsonDecode(response);
-      int length = data.length;
-      for(int i = 0; i < length; i++){
-        MetadataType song = MetadataType.fromJson(data[i]);
-        paths.add(song.path);
-        songs.add(song);
-      }
+    for (int i = 0; i < songs.length; i++){
+      paths.add(songs[i].path);
     }
-    
+
     List<FileSystemEntity> allEntities = [];
     final dir = Directory(settings.directory);
     allEntities = await dir.list().toList();
-    for(int i = 0; i < allEntities.length; i++){
-      if(allEntities[i] is Directory){
-        allEntities.addAll(await Directory(allEntities[i].path).list().toList());
-      }
-    }
+
     for(int i = 0; i < allEntities.length; i++){
       if(allEntities[i] is File){
         String path = allEntities[i].path.replaceAll("\\", "/");
-        //print(path);
         if (path.endsWith(".flac") || path.endsWith(".mp3") || path.endsWith(".wav") || path.endsWith(".m4a")) {
           if(paths.contains(path)){
-            repo.songs.value.add(songs[paths.indexOf(path)]);
           }
           else{
-            //print(path);
             paths.add(allEntities[i].path);
-            repo.songs.value.add(await retrieveSong(allEntities[i].path, allEntities));
+            var song = await retrieveSong(allEntities[i].path, allEntities);
+            song.orderPosition = songs.length;
+            songBox.put(song);
           }
-          if (i % 25 == 0){
-            repo.songs.value = List.from(repo.songs.value)..sort((a, b) => a.title.replaceAll(RegExp('[^A-Za-z0-9]'), '').toLowerCase().compareTo(b.title.replaceAll(RegExp('[^A-Za-z0-9]'), '').toLowerCase()));
-          }
-          toWrite.add(repo.songs.value.last.toJson());
         }
       }
-      progressNotifier.value = i / allEntities.length;
-
+      else if(allEntities[i] is Directory){
+        allEntities.addAll(await Directory(allEntities[i].path).list().toList());
+      }
     }
-    file.writeAsStringSync(jsonEncode(toWrite));
-    repo.songs.value = List.from(repo.songs.value)..sort((a, b) => a.title.replaceAll(RegExp('[^A-Za-z0-9]'), '').toLowerCase().compareTo(b.title.replaceAll(RegExp('[^A-Za-z0-9]'), '').toLowerCase()));
-    makeAlbumsArtists();
-    getPlaylists();
-    await imageRetrieve(playingSongs[indexNotifier.value].path, true);
+    await makeAlbumsArtists();
+
+    if (settings.playingSongs.isEmpty){
+      //print("empty");
+      updatePlaying(songBox.query().order(MetadataType_.orderPosition).build().find());
+    }
+    else{
+      //print("not empty");
+      settings.playingSongsUnShuffled.sort((a, b) => a.orderPosition.compareTo(b.orderPosition));
+      settings.playingSongs.sort((a, b) => a.orderPosition.compareTo(b.orderPosition));
+      if (shuffleNotifier.value) {
+        settings.playingSongs.shuffle();
+      }
+    }
+
+    //print(settings.playingSongsUnShuffled.first.title);
+    indexNotifier.value = settings.lastPlayingIndex;
+
+    await imageRetrieve(settings.playingSongs[indexNotifier.value].path, true);
     DominantColors extractor = DominantColors(bytes: imageNotifier.value, dominantColorsCount: 2);
     var colors = extractor.extractDominantColors();
     if(colors.first.computeLuminance() > 0.179 && colors.last.computeLuminance() > 0.179){
@@ -605,198 +344,349 @@ class Controller{
     return image;
   }
 
-  void makeAlbumsArtists() {
-    for(int i = 0; i < repo.songs.value.length; i++){
-      if (settings.firstTime){
-        settings.lastPlaying.add(repo.songs.value[i].path);
-      }
-      bool albumExists = false;
-      for(AlbumType album1 in repo.albums){
-        if(album1.name == repo.songs.value[i].album){
-          album1.songs.add(repo.songs.value[i]);
-          List<String> songArtists = repo.songs.value[i].artists.split("; ");
-
-          for(int j = 0; j < songArtists.length; j++)
-          {
-            bool artistInAlbum = false;
-            for(int k = 0; k < album1.featuredartists.length; k++)
-            {
-              if(songArtists[j].replaceAll(RegExp('[^A-Za-z0-9]'), '').toLowerCase() == album1.featuredartists[k].name.replaceAll(RegExp('[^A-Za-z0-9]'), '').toLowerCase())
-              {
-                artistInAlbum = true;
-                album1.featuredartists[k].appearances++;
-                break;
-              }
-            }
-            if(!artistInAlbum){
-              album1.featuredartists.add(FeaturedArtistType());
-              album1.featuredartists[album1.featuredartists.length - 1].name = songArtists[j];
-              album1.featuredartists[album1.featuredartists.length - 1].appearances++;
-            }
+  Future<void> makeAlbumsArtists() async {
+    List<MetadataType> songs = songBox.getAll();
+    for(MetadataType song in songs) {
+      Query<AlbumType> albumQuery = albumBox.query(AlbumType_.name.equals(song.album)).build();
+      List<AlbumType> albums = albumQuery.find();
+      if (albums.isEmpty){
+        AlbumType album = AlbumType();
+        album.name = song.album;
+        album.songs.add(song);
+        List<String> songArtists = song.artists.split("; ");
+        for (String artist in songArtists){
+          Query<ArtistType> artistQuery = artistBox.query(ArtistType_.name.equals(artist)).build();
+          List<ArtistType> artists = artistQuery.find();
+          if (artists.isEmpty){
+            ArtistType artistType = ArtistType();
+            artistType.name = artist;
+            artistType.songs.add(song);
+            artistBox.put(artistType);
           }
-          albumExists = true;
-          break;
-        }
-      }
-      if(!albumExists){
-        repo.albums.add(AlbumType());
-        repo.albums[repo.albums.length - 1].name = repo.songs.value[i].album;
-        repo.albums[repo.albums.length - 1].songs.add(repo.songs.value[i]);
-        List<String> songArtists = repo.songs.value[i].artists.split("; ");
-
-        for(int j = 0; j < songArtists.length; j++)
-        {
-          repo.albums[repo.albums.length - 1].featuredartists.add(FeaturedArtistType());
-          repo.albums[repo.albums.length - 1].featuredartists[repo.albums[repo.albums.length - 1].featuredartists.length - 1].name = songArtists[j];
-          repo.albums[repo.albums.length - 1].featuredartists[repo.albums[repo.albums.length - 1].featuredartists.length - 1].appearances++;
-        }
-      }
-
-      if(repo.songs.value[i].artists.endsWith("; ")){
-        repo.songs.value[i].artists = repo.songs.value[i].artists.substring(0, repo.songs.value[i].artists.length - 2);
-      }
-      List<String> songArtists = repo.songs.value[i].artists.split("; ");
-
-      for(String artist2 in songArtists){
-        bool artistExists = false;
-        for(ArtistType artist1 in repo.artists){
-          if(artist1.name.replaceAll(RegExp('[^A-Za-z0-9]'), '').toLowerCase() == artist2.replaceAll(RegExp('[^A-Za-z0-9]'), '').toLowerCase()){
-            artist1.songs.add(repo.songs.value[i]);
-            artistExists = true;
-            break;
+          else{
+            artists.first.songs.add(song);
+            artistBox.put(artists.first);
           }
         }
-        if(!artistExists){
-          repo.artists.add(ArtistType());
-          repo.artists[repo.artists.length - 1].name = artist2.replaceAll("\"", "");
-          repo.artists[repo.artists.length - 1].songs.add(repo.songs.value[i]);
+        albumBox.put(album);
+      }
+      else{
+        albums.first.songs.add(song);
+        albumBox.put(albums.first);
+        List<String> songArtists = song.artists.split("; ");
+        for (String artist in songArtists){
+          Query<ArtistType> artistQuery = artistBox.query(ArtistType_.name.equals(artist)).build();
+          List<ArtistType> artists = artistQuery.find();
+          if (artists.isEmpty){
+            ArtistType artistType = ArtistType();
+            artistType.name = artist;
+            artistType.songs.add(song);
+            artistBox.put(artistType);
+          }
+          else{
+            artists.first.songs.add(song);
+            artistBox.put(artists.first);
+          }
         }
       }
     }
-
-    repo.albums.sort((a, b) => a.name.compareTo(b.name));
-    for(int j = 0; j < repo.artists.length; j++){
-      repo.artists[j].songs.sort((a, b) => a.album.compareTo(b.album));
-    }
-    for(int j = 0; j < repo.albums.length; j++){
-      int albumDuration = 0;
-      for(int k = 0; k < repo.albums[j].songs.length; k++) {
-        albumDuration += repo.albums[j].songs[k].duration;
-      }
-      //"${widget.controller.playingSongs[index].duration ~/ 60}:${(widget.controller.playingSongs[index].duration % 60).toString().padLeft(2, '0')}",
-      // duration string but in hours, minutes, seconds
-      repo.albums[j].duration = "${albumDuration ~/ 3600} hours, ${(albumDuration % 3600 ~/ 60)} minutes and ${(albumDuration % 60)} seconds";
-      repo.albums[j].duration = repo.albums[j].duration.replaceAll("0 hours, ", "");
-      repo.albums[j].duration = repo.albums[j].duration.replaceAll("0 minutes and ", "");
-
-
-
-      repo.albums[j].songs.sort((a, b){
-        int disc = a.discNumber.compareTo(b.discNumber);
-        if(disc == 0){
-          return a.trackNumber.compareTo(b.trackNumber);
-        }
-        else{
-          return disc;
-        }
-      });
-      repo.albums[j].featuredartists.sort((a, b) => a.appearances.compareTo(b.appearances));
-    }
-    repo.artists.sort((a, b) => a.name.replaceAll(RegExp('[^A-Za-z0-9]'), '').toLowerCase().compareTo(b.name.replaceAll(RegExp('[^A-Za-z0-9]'), '').toLowerCase()));
-    repo.albums.sort((a, b) => a.name.replaceAll(RegExp('[^A-Za-z0-9]'), '').toLowerCase().compareTo(b.name.replaceAll(RegExp('[^A-Za-z0-9]'), '').toLowerCase()));
   }
 
-  void getPlaylists(){
-    for (int i = 0; i < settings.lastPlaying.length; i++) {
-      for (int j = 0; j < repo.songs.value.length; j++) {
-        if (settings.lastPlaying[i].toString().replaceAll("\\", "/") == repo.songs.value[j].path.toString()) {
-          playingSongs.add(MetadataType());
-          playingSongs[playingSongs.length - 1] = repo.songs.value[j];
-          // print("Added");
-        }
-      }
+  Future<void> searchLyrics() async {
+    plainLyricNotifier.value = 'Searching for lyrics...';
+    final Map<String, String> cookies = {'arl': '8436641c809f643da885ce7eb45e39e6a9514f882b1541a05282a33485f6f96fc56ddb724424ec3518e25bbaa08de4e7521e5f289a14c512dd65dc2ec0ad10b83138e5d02c1531a5bf5766ecfd492d0157815bafa5f08b90dcfe51a1eba1bbbf'};
+    final Map<String, String> params = {'jo': 'p', 'rto': 'c', 'i': 'c'};
+    const String loginUrl = 'https://auth.deezer.com/login/arl';
+    const String deezerApiUrl = 'https://pipe.deezer.com/api';
+    MetadataType song = settings.playingSongs[indexNotifier.value];
+    String title = song.title;
+    String artist = song.artists;
+    String path = song.path;
+    String searchUrl = 'https://api.deezer.com/search?q=$title-$artist&limit=1&index=0&output=json';
+    print(searchUrl);
+
+    final Uri uri = Uri.parse(loginUrl).replace(queryParameters: params);
+    final http.Request postRequest = http.Request('POST', uri);
+    postRequest.headers.addAll({
+      'Content-Type': 'application/json',
+      'Cookie': 'arl=${cookies['arl']}'
+    });
+    final http.StreamedResponse streamedResponse = await postRequest.send();
+    final String postResponseString = await streamedResponse.stream.bytesToString();
+    final Map<String, dynamic> postResponseJson = jsonDecode(postResponseString);
+
+    //print(postResponseJson);
+    final String jwt = postResponseJson['jwt'];
+    //print(jwt);
+
+    final http.Response getResponse = await http.get(Uri.parse(searchUrl), headers: {
+      'Cookie': 'arl=${cookies['arl']}',
+    });
+
+    final Map<String, dynamic> getResponseJson = jsonDecode(getResponse.body);
+    //print(getResponseJson['data'][0]['id']);
+
+    final String trackId = getResponseJson['data'][0]['id'].toString();
+
+
+
+    final Map<String, dynamic> jsonData = {
+      'operationName': 'SynchronizedTrackLyrics',
+      'variables': {
+        'trackId': trackId,
+      },
+      'query': '''query SynchronizedTrackLyrics(\$trackId: String!) {
+                            track(trackId: \$trackId) {
+                              ...SynchronizedTrackLyrics
+                              __typename
+                            }
+                          }
+                      
+                          fragment SynchronizedTrackLyrics on Track {
+                            id
+                            lyrics {
+                              ...Lyrics
+                              __typename
+                            }
+                            album {
+                              cover {
+                                small: urls(pictureRequest: {width: 100, height: 100})
+                                medium: urls(pictureRequest: {width: 264, height: 264})
+                                large: urls(pictureRequest: {width: 800, height: 800})
+                              explicitStatus
+                              __typename
+                            }
+                            __typename
+                          }
+                          __typename
+                          }
+                      
+                          fragment Lyrics on Lyrics {
+                            id
+                            copyright
+                            text
+                            writers
+                            synchronizedLines {
+                              ...LyricsSynchronizedLines
+                              __typename
+                            }
+                            __typename
+                          }
+                      
+                          fragment LyricsSynchronizedLines on LyricsSynchronizedLine {
+                            lrcTimestamp
+                            line
+                            lineTranslated
+                            milliseconds
+                            duration
+                            __typename
+                          }'''
+    };
+
+    final http.Response lyricResponse = await http.post(
+      Uri.parse(deezerApiUrl),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $jwt',
+      },
+      body: jsonEncode(jsonData),
+    );
+
+    final Map<String, dynamic> lyricResponseJson = jsonDecode(lyricResponse.body);
+    //print(lyricResponseJson);
+
+    String plainLyric = '';
+    String syncedLyric = '';
+    try{
+      plainLyric += lyricResponseJson['data']['track']['lyrics']['text'] + "\n";
+      plainLyric += "${"\nWriters: " + lyricResponseJson['data']['track']['lyrics']['writers']}\nCopyright: " + lyricResponseJson['data']['track']['lyrics']['copyright'];
+    }
+    catch(e){
+      print(e);
+      plainLyric = 'No lyrics found';
     }
 
-
-
-    if(playingSongs.isEmpty){
-      playingSongsUnShuffled.clear();
-      playingSongs.clear();
-      for (int i = 0; i < repo.songs.value.length; i++) {
-        playingSongs.add(MetadataType());
-        playingSongs[playingSongs.length - 1] = repo.songs.value[i];
+    try {
+      for (var line in lyricResponseJson['data']['track']['lyrics']['synchronizedLines']) {
+        syncedLyric += "${line['lrcTimestamp']} ${line['line']}\n";
       }
+      syncedLyric += "${"\nWriters: " + lyricResponseJson['data']['track']['lyrics']['writers']}\nCopyright: " + lyricResponseJson['data']['track']['lyrics']['copyright'];
+    } catch (e) {
+      print(e);
+      syncedLyric = 'No lyrics found';
     }
+    //print(plainLyric);
 
-    playingSongsUnShuffled.clear();
-    playingSongsUnShuffled.addAll(playingSongs);
-    var file = File("assets/playlists.json");
-    String response = file.readAsStringSync();
-    var data = jsonDecode(response);
-    int length = data.length;
-    for(int i = 0; i < length; i++){
-      List<MetadataType> songs = [];
-      List<FeaturedArtistType> featuredArtists = [];
-      List<String> paths = [];
-      for(int j = 0; j < data[i]["paths"].length; j++){
-        String rePath = data[i]["paths"][j];
-        for (var element in repo.songs.value) {
-          if(element.path.replaceAll("/", "\\") == rePath.replaceAll("/", "\\")){
-            songs.add(element);
-          }
-        }
+    lyricModelNotifier.value = LyricsModelBuilder.create().bindLyricToMain(syncedLyric).getModel();
+    plainLyricNotifier.value = plainLyric;
 
-        paths.add(data[i]["paths"][j]);
-      }
-      //print(paths);
-      for(int j = 0; j < data[i]["featuredArtists"].length; j++){
-        featuredArtists.add(FeaturedArtistType());
-        featuredArtists[j].name = data[i]["featuredArtists"][j]["name"];
-        featuredArtists[j].appearances = data[i]["featuredArtists"][j]["appearances"];
-      }
-      repo.playlists.add(PlaylistType());
-      repo.playlists[repo.playlists.length - 1].name = data[i]["name"];
-      repo.playlists[repo.playlists.length - 1].songs.addAll(songs);
-      repo.playlists[repo.playlists.length - 1].duration = data[i]["duration"];
-      repo.playlists[repo.playlists.length - 1].featuredArtists.addAll(featuredArtists);
-      repo.playlists[repo.playlists.length - 1].paths.addAll(paths);
+    if(syncedLyric != 'No lyrics found'){
+      var lyrPath = path.replaceAll(".mp3", ".lrc")
+          .replaceAll(
+          ".flac", ".lrc").replaceAll(".wav", ".lrc")
+          .replaceAll(
+          ".m4a", ".lrc");
+      File lyrFile = File(lyrPath);
+      lyrFile.writeAsStringSync(syncedLyric);
+      song.lyricsPath = lyrFile.path;
     }
-
-    if (settings.firstTime == true){
-      var file = File("assets/settings.json");
-      settings.firstTime = false;
-      file.writeAsStringSync(jsonEncode(settings.toJson()));
+    else if (plainLyric != 'No lyrics found'){
+      var lyrPath = path.replaceAll(".mp3", ".lrc")
+          .replaceAll(
+          ".flac", ".lrc").replaceAll(".wav", ".lrc")
+          .replaceAll(
+          ".m4a", ".lrc");
+      File lyrFile = File(lyrPath);
+      lyrFile.writeAsStringSync(plainLyric);
+      song.lyricsPath = lyrFile.path;
     }
-
+    songBox.put(song);
   }
+
+  void lyricModelReset() {
+    //print(playingSongs[indexNotifier.value].lyricsPath);
+    if (settings.playingSongs[indexNotifier.value].lyricsPath.contains(".lrc")) {
+      File lyrFile = File(settings.playingSongs[indexNotifier.value].lyricsPath);
+      lyricModelNotifier.value = LyricsModelBuilder.create().bindLyricToMain(lyrFile.readAsStringSync()).getModel();
+      if (lyricModelNotifier.value.lyrics.isEmpty) {
+        lyricModelNotifier.value = LyricsModelBuilder.create().bindLyricToMain("No lyrics").getModel();
+        plainLyricNotifier.value = lyrFile.readAsStringSync();
+      }
+    }
+    else {
+      lyricModelNotifier.value = LyricsModelBuilder.create().bindLyricToMain("No lyrics").getModel();
+      plainLyricNotifier.value = "No lyrics";
+    }
+  }
+
+  Future<void> indexChange(int newIndex) async {
+    changed = true;
+    indexNotifier.value = newIndex;
+    settings.lastPlayingIndex = newIndex;
+    settingsBox.put(settings);
+    print(settings.playingSongs.first.title);
+
+    await imageRetrieve(settings.playingSongs[newIndex].path, true);
+    DominantColors extractor = DominantColors(bytes: imageNotifier.value, dominantColorsCount: 2);
+    var colors = extractor.extractDominantColors();
+    if(colors.first.computeLuminance() > 0.179 && colors.last.computeLuminance() > 0.179){
+      colorNotifier.value = colors.first;
+      colorNotifier2.value = Colors.black;
+    }
+    else if (colors.first.computeLuminance() < 0.179 && colors.last.computeLuminance() < 0.179){
+      colorNotifier.value = Colors.blue;
+      colorNotifier2.value = colors.first;
+    }
+    else{
+      if(colors.first.computeLuminance() > 0.179){
+        colorNotifier.value = colors.first;
+        colorNotifier2.value = colors.last;
+      }
+      else{
+        colorNotifier.value = colors.last;
+        colorNotifier2.value = colors.first;
+      }
+    }
+    lyricModelReset();
+  }
+
+  void playSong() async {
+    if(changed){
+      audioPlayer = AudioPlayer()..play(DeviceFileSource(settings.playingSongs[indexNotifier.value].path), volume: volumeNotifier.value, position: const Duration(milliseconds: 0));
+      playingNotifier.value = true;
+      changed = false;
+    }
+    else{
+      if (playingNotifier.value){
+        print("pause");
+        audioPlayer.pause();
+        playingNotifier.value = false;
+      }
+      else{
+        print("resume");
+        audioPlayer.resume();
+        playingNotifier.value = true;
+      }
+    }
+    audioPlayer.onPositionChanged.listen((Duration event){
+      //print(playingSongs[indexNotifier.value].duration);
+      int duration = settings.playingSongs[indexNotifier.value].duration;
+      //print(event.inMilliseconds.toInt() ~/ 1000);
+      if(event.inMilliseconds.toInt() ~/ 1000 == duration){
+        if(repeatNotifier.value){
+          print("repeat");
+          audioPlayer.stop();
+          sliderNotifier.value = 0;
+          playingNotifier.value = false;
+          changed = true;
+          playSong();
+        }
+        else {
+          print("next");
+          nextSong();
+        }
+      }
+      else
+      {
+        sliderNotifier.value = event.inMilliseconds;
+      }
+    });
+
+    audioPlayer.onPlayerStateChanged.listen((PlayerState state) {
+      playingNotifier.value = state == PlayerState.playing;
+    });
+  }
+
+  Future<void> previousSong() async {
+    if(sliderNotifier.value > 5000){
+      audioPlayer.seek(const Duration(milliseconds: 0));
+    }
+    else {
+      int newIndex;
+      if (indexNotifier.value == 0) {
+        newIndex = settings.playingSongs.length - 1;
+      } else {
+        newIndex = indexNotifier.value - 1;
+      }
+      audioPlayer.stop();
+      sliderNotifier.value = 0;
+      playingNotifier.value = false;
+      await indexChange(newIndex);
+      playSong();
+    }
+  }
+
+  Future<void> nextSong() async {
+    int newIndex;
+    if (indexNotifier.value == settings.playingSongs.length - 1) {
+      newIndex = 0;
+    } else {
+      newIndex = indexNotifier.value + 1;
+    }
+    audioPlayer.stop();
+    sliderNotifier.value = 0;
+    playingNotifier.value = false;
+    await indexChange(newIndex);
+    playSong();
+  }
+
+
 
   void filter(String enteredKeyword) {
     List<MetadataType> results = [];
 
     if (enteredKeyword.isEmpty) {
       // if the search field is empty or only contains white-space, we'll display all users
-      results = repo.songs.value;
+      results = songBox.getAll();
     } else {
-      results = repo.songs.value.where((song) => song.title.toLowerCase().contains(enteredKeyword.toLowerCase())).toList();
-      results.addAll(repo.songs.value.where((song) => song.artists.toLowerCase().contains(enteredKeyword.toLowerCase())).toList());
-      results.addAll(repo.songs.value.where((song) => song.album.toLowerCase().contains(enteredKeyword.toLowerCase())).toList());
-      results = results.toSet().toList();
+      results = songBox.query(MetadataType_.title.contains(enteredKeyword) | MetadataType_.artists.contains(enteredKeyword) | MetadataType_.album.contains(enteredKeyword)).build().find();
+      // results.addAll(repo.songs.value.where((song) => song.artists.toLowerCase().contains(enteredKeyword.toLowerCase())).toList());
+      // results.addAll(repo.songs.value.where((song) => song.album.toLowerCase().contains(enteredKeyword.toLowerCase())).toList());
+      // results = results.toSet().toList();
       // we use the toLowerCase() method to make it case-insensitive
     }
 
     // Refresh the UI
     found.value = results;
-  }
-
-  void setSpeed(double speed){
-    audioPlayer.setPlaybackRate(speed);
-  }
-
-  void setVolume(double volume){
-    audioPlayer.setVolume(volume);
-  }
-
-  void seekAudio(Duration duration){
-    audioPlayer.seek(duration);
   }
 }

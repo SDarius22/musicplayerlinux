@@ -35,7 +35,6 @@ class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
 
   @override
   void initState() {
-    widget.controller.context = context;
     super.initState();
     initSystemTray();
   }
@@ -221,6 +220,7 @@ class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
+    //print(widget.controller.settings.firstTime);
     Widget finalWidget = widget.controller.settings.firstTime ?
     WelcomeScreen(controller: widget.controller) :
     HomePage(controller: widget.controller);

@@ -4,7 +4,9 @@ import 'dart:ui';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:hovering/hovering.dart';
+import 'package:musicplayer/utils/objectbox.g.dart';
 import '../controller/controller.dart';
+import '../domain/artist_type.dart';
 import 'artist_screen.dart';
 
 
@@ -25,7 +27,7 @@ class _ArtistsState extends State<Artists>{
     var smallSize = height * 0.015;
     return GridView.builder(
       padding: EdgeInsets.all(width * 0.01),
-      itemCount: widget.controller.repo.artists.length + 7,
+      itemCount: widget.controller.artistBox.query().order(ArtistType_.name).build().find().length + 7,
       gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
         childAspectRatio: 0.825,
         maxCrossAxisExtent: width * 0.125,
@@ -33,13 +35,17 @@ class _ArtistsState extends State<Artists>{
         mainAxisSpacing: width * 0.0125,
       ),
       itemBuilder: (BuildContext context, int index) {
-        return index < widget.controller.repo.artists.length?
+        ArtistType artist = ArtistType();
+        if (index < widget.controller.artistBox.query().order(ArtistType_.name).build().find().length){
+          artist = widget.controller.artistBox.query().order(ArtistType_.name).build().find()[index];
+        }
+        return index < widget.controller.artistBox.query().order(ArtistType_.name).build().find().length ?
         MouseRegion(
           cursor: SystemMouseCursors.click,
           child: GestureDetector(
             onTap: () {
               Navigator.push(context, MaterialPageRoute(builder: (context){
-                return ArtistWidget(controller: widget.controller, artist: widget.controller.repo.artists[index]);
+                return ArtistWidget(controller: widget.controller, artist: artist);
               }));
             },
             child: Column(
@@ -51,7 +57,7 @@ class _ArtistsState extends State<Artists>{
                     height: width * 0.2,
                     margin: EdgeInsets.only(bottom: width * 0.005),
                     child: FutureBuilder(
-                      future: widget.controller.imageRetrieve(widget.controller.repo.artists[index].songs.first.path, false),
+                      future: widget.controller.imageRetrieve(artist.songs.first.path, false),
                       builder: (ctx, snapshot) {
                         if (snapshot.hasData) {
                           return HoverWidget(
@@ -220,7 +226,7 @@ class _ArtistsState extends State<Artists>{
                   ),
                 ),
                 Text(
-                  widget.controller.repo.artists[index].name,
+                  artist.name,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   textAlign: TextAlign.center,

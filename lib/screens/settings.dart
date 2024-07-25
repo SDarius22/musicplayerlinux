@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import '../controller/controller.dart';
+import 'home.dart';
 
 
 class Settings extends StatefulWidget {
@@ -57,7 +58,7 @@ class _SettingsState extends State<Settings> {
                                   onChanged: (double value) {
                                     setState(() {
                                       widget.controller.volumeNotifier.value = value;
-                                      widget.controller.setVolume(widget.controller.volumeNotifier.value);
+                                      widget.controller.audioPlayer.setVolume(widget.controller.volumeNotifier.value);
                                     });
                                   },
                                 ),
@@ -82,7 +83,7 @@ class _SettingsState extends State<Settings> {
                               }
                               _volume = !_volume;
                               setState(() {
-                                widget.controller.setVolume(widget.controller.volumeNotifier.value);
+                                widget.controller.audioPlayer.setVolume(widget.controller.volumeNotifier.value);
                               });
                             },
                           ),
@@ -167,15 +168,13 @@ class _SettingsState extends State<Settings> {
                               if(directory != "") {
                                 setState(() {
                                   widget.controller.settings.directory = directory;
+                                  widget.controller.settingsBox.put(widget.controller.settings);
                                 });
-                                setState(() {
-                                  widget.controller.settings.firstTime = true;
-                                });
-                                widget.controller.retrieveSongs();
+                                Navigator.pushReplacement(context, MaterialPageRoute(builder: (BuildContext context){
+                                  return HomePage(controller: widget.controller);
+                                }));
 
                               }
-                              var file = File("assets/settings.json");
-                              file.writeAsStringSync(jsonEncode(widget.controller.settings.toJson()));
                             },
                             child: Text(
                               widget.controller.settings.directory.length <= 40 ? widget.controller.settings.directory : widget.controller.settings.directory.substring(0, 40) + "...",

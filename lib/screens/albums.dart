@@ -4,8 +4,10 @@ import 'dart:ui';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:hovering/hovering.dart';
+import 'package:musicplayer/domain/album_type.dart';
 import 'package:musicplayer/screens/album_screen.dart';
 import '../controller/controller.dart';
+import '../utils/objectbox.g.dart';
 
 
 class Albums extends StatefulWidget{
@@ -28,7 +30,7 @@ class _AlbumsState extends State<Albums>{
     var smallSize = height * 0.015;
     return GridView.builder(
         padding: EdgeInsets.all(width * 0.01),
-        itemCount: widget.controller.repo.albums.length + 7,
+        itemCount: widget.controller.albumBox.query().order(AlbumType_.name).build().find().length + 7,
         gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
           childAspectRatio: 0.825,
           maxCrossAxisExtent: width * 0.125,
@@ -36,14 +38,18 @@ class _AlbumsState extends State<Albums>{
           mainAxisSpacing: width * 0.0125,
         ),
         itemBuilder: (BuildContext context, int index) {
-          return index < widget.controller.repo.albums.length?
+          AlbumType album = AlbumType();
+          if (index < widget.controller.albumBox.query().order(AlbumType_.name).build().find().length){
+            album = widget.controller.albumBox.query().order(AlbumType_.name).build().find()[index];
+          }
+          return index < widget.controller.albumBox.query().order(AlbumType_.name).build().find().length?
           MouseRegion(
             cursor: SystemMouseCursors.click,
             child: GestureDetector(
               onTap: () {
                 /// Something like navigate to album
                 Navigator.push(context, MaterialPageRoute(builder: (context){
-                  return AlbumWidget(controller: widget.controller, album: widget.controller.repo.albums[index]);
+                  return AlbumWidget(controller: widget.controller, album: album);
                 }));
               },
               child: Column(
@@ -54,7 +60,7 @@ class _AlbumsState extends State<Albums>{
                       height: width * 0.2,
                       margin: EdgeInsets.only(bottom: width * 0.005),
                       child: FutureBuilder(
-                        future: widget.controller.imageRetrieve(widget.controller.repo.albums[index].songs.first.path, false),
+                        future: widget.controller.imageRetrieve(album.songs.first.path, false),
                         builder: (ctx, snapshot) {
                           if (snapshot.hasData) {
                             return HoverWidget(
@@ -163,7 +169,7 @@ class _AlbumsState extends State<Albums>{
                     ),
                   ),
                   Text(
-                    widget.controller.repo.albums[index].name,
+                    album.name,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     textAlign: TextAlign.center,

@@ -1,19 +1,13 @@
-import 'featured_artist_type.dart';
+import 'artist_type.dart';
 import 'metadata_type.dart';
+import 'package:objectbox/objectbox.dart';
 
+@Entity()
 class PlaylistType{
+  @Id()
+  int id = 0;
   String name = "Unknown playlist";
-  List<String> paths = [];
-  List<MetadataType> songs = [];
   String duration = "Unknown duration";
-  List<FeaturedArtistType> featuredArtists = [];
-
-  Map<String, dynamic> toJson() {
-    return {
-      'name': name,
-      'paths': paths,
-      'duration': duration,
-      'featuredArtists': featuredArtists,
-    };
-  }
+  final songs = ToMany<MetadataType>();
+  final artists = ToMany<ArtistType>();
 }
