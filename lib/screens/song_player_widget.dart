@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:hovering/hovering.dart';
 import '../utils/multivaluelistenablebuilder/mvlb.dart';
 import '../controller/controller.dart';
-import '../domain/metadata_type.dart';
 import '../utils/lyric_reader/lyrics_reader.dart';
 import '../utils/progress_bar/audio_video_progress_bar.dart';
 

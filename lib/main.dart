@@ -1,12 +1,8 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:musicplayer/controller/objectBox.dart';
-import 'domain/metadata_type.dart';
-import 'utils/objectbox.g.dart';
 import 'screens/main_screen.dart';
-import 'package:provider/provider.dart';
 import 'package:window_manager/window_manager.dart';
-import 'package:system_tray/system_tray.dart';
 import 'controller/controller.dart';
 
 late ObjectBox objectBox;

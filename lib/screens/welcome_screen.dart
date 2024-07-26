@@ -1,12 +1,9 @@
-import 'dart:io';
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:window_manager/window_manager.dart';
 
 import '../controller/controller.dart';
-import '../domain/settings_type.dart';
 import 'home.dart';
 
 class WelcomeScreen extends StatefulWidget {
