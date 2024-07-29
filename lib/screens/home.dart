@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:musicplayer/screens/search_widget.dart';
 import 'package:musicplayer/screens/song_player_widget.dart';
+import 'package:musicplayer/utils/objectbox.g.dart';
 import 'package:window_manager/window_manager.dart';
 import '../controller/controller.dart';
 import 'albums.dart';
@@ -33,7 +34,7 @@ class _HomePageState extends State<HomePage>{
   @override
   void initState(){
     widget.controller.retrieveSongs();
-    widget.controller.found.value = widget.controller.songBox.getAll();
+    widget.controller.found.value = widget.controller.songBox.query().order(MetadataType_.title).build().find();
     // widget.controller.indexNotifier.value= widget.controller.settings.lastPlayingIndex;
     super.initState();
   }

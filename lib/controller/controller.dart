@@ -49,8 +49,6 @@ class Controller{
   ValueNotifier<Color> colorNotifier = ValueNotifier<Color>(Colors.deepPurpleAccent.shade400); // Light color, for lyrics and sliders
   ValueNotifier<Color> colorNotifier2 = ValueNotifier<Color>(Colors.blueAccent.shade400); // Dark color, for background of player and window bar
   ValueNotifier<Uint8List> imageNotifier = ValueNotifier<Uint8List>(File("./assets/bg.png").readAsBytesSync());
-  bool changed = false;
-
 
   Controller(ObjectBox objectBox) {
     settingsBox = objectBox.store.box<Settings>();
@@ -68,6 +66,26 @@ class Controller{
     albumBox = objectBox.store.box<AlbumType>();
     artistBox = objectBox.store.box<ArtistType>();
     playlistBox = objectBox.store.box<PlaylistType>();
+
+    audioPlayer.onPositionChanged.listen((Duration event){
+        sliderNotifier.value = event.inMilliseconds;
+    });
+
+    audioPlayer.onPlayerStateChanged.listen((PlayerState state) {
+      playingNotifier.value = state == PlayerState.playing;
+      if(state == PlayerState.completed){
+        if(repeatNotifier.value){
+          print("repeat");
+          sliderNotifier.value = 0;
+          playSong();
+        }
+        else {
+          print("next");
+          nextSong();
+        }
+      }
+    });
+
   }
 
 
@@ -134,30 +152,7 @@ class Controller{
     }
 
     //print(settings.playingSongsUnShuffled.first.title);
-    indexNotifier.value = settings.lastPlayingIndex;
-
-    await imageRetrieve(settings.playingSongs[indexNotifier.value].path, true);
-    DominantColors extractor = DominantColors(bytes: imageNotifier.value, dominantColorsCount: 2);
-    var colors = extractor.extractDominantColors();
-    if(colors.first.computeLuminance() > 0.179 && colors.last.computeLuminance() > 0.179){
-      colorNotifier.value = colors.first;
-      colorNotifier2.value = Colors.black;
-    }
-    else if (colors.first.computeLuminance() < 0.179 && colors.last.computeLuminance() < 0.179){
-      colorNotifier.value = Colors.blue;
-      colorNotifier2.value = colors.first;
-    }
-    else{
-      if(colors.first.computeLuminance() > 0.179){
-        colorNotifier.value = colors.first;
-        colorNotifier2.value = colors.last;
-      }
-      else{
-        colorNotifier.value = colors.last;
-        colorNotifier2.value = colors.first;
-      }
-    }
-    lyricModelReset();
+    await indexChange(settings.lastPlayingIndex);
     finishedRetrievingNotifier.value = true;
   }
 
@@ -559,12 +554,13 @@ class Controller{
     }
   }
 
-  Future<void> indexChange(int newIndex) async {
-    changed = true;
+  Future<void> indexChange(int newIndex) async{
+    sliderNotifier.value = 0;
+    playingNotifier.value = false;
     indexNotifier.value = newIndex;
     settings.lastPlayingIndex = newIndex;
     settingsBox.put(settings);
-    print(settings.playingSongs.first.title);
+    print(settings.playingSongs[newIndex].title);
 
     await imageRetrieve(settings.playingSongs[newIndex].path, true);
     DominantColors extractor = DominantColors(bytes: imageNotifier.value, dominantColorsCount: 2);
@@ -590,51 +586,17 @@ class Controller{
     lyricModelReset();
   }
 
-  void playSong() async {
-    if(changed){
-      audioPlayer = AudioPlayer()..play(DeviceFileSource(settings.playingSongs[indexNotifier.value].path), volume: volumeNotifier.value, position: const Duration(milliseconds: 0));
-      playingNotifier.value = true;
-      changed = false;
+  Future<void> playSong() async {
+    if (playingNotifier.value){
+      print("pause");
+      await audioPlayer.pause();
+      playingNotifier.value = false;
     }
     else{
-      if (playingNotifier.value){
-        print("pause");
-        audioPlayer.pause();
-        playingNotifier.value = false;
-      }
-      else{
-        print("resume");
-        audioPlayer.resume();
-        playingNotifier.value = true;
-      }
+      print("resume");
+      await audioPlayer.play(DeviceFileSource(settings.playingSongs[indexNotifier.value].path), position: Duration(milliseconds: sliderNotifier.value));
+      playingNotifier.value = true;
     }
-    audioPlayer.onPositionChanged.listen((Duration event){
-      //print(playingSongs[indexNotifier.value].duration);
-      int duration = settings.playingSongs[indexNotifier.value].duration;
-      //print(event.inMilliseconds.toInt() ~/ 1000);
-      if(event.inMilliseconds.toInt() ~/ 1000 == duration){
-        if(repeatNotifier.value){
-          print("repeat");
-          audioPlayer.stop();
-          sliderNotifier.value = 0;
-          playingNotifier.value = false;
-          changed = true;
-          playSong();
-        }
-        else {
-          print("next");
-          nextSong();
-        }
-      }
-      else
-      {
-        sliderNotifier.value = event.inMilliseconds;
-      }
-    });
-
-    audioPlayer.onPlayerStateChanged.listen((PlayerState state) {
-      playingNotifier.value = state == PlayerState.playing;
-    });
   }
 
   Future<void> previousSong() async {
@@ -648,9 +610,6 @@ class Controller{
       } else {
         newIndex = indexNotifier.value - 1;
       }
-      audioPlayer.stop();
-      sliderNotifier.value = 0;
-      playingNotifier.value = false;
       await indexChange(newIndex);
       playSong();
     }
@@ -663,30 +622,23 @@ class Controller{
     } else {
       newIndex = indexNotifier.value + 1;
     }
-    audioPlayer.stop();
-    sliderNotifier.value = 0;
-    playingNotifier.value = false;
     await indexChange(newIndex);
     playSong();
   }
-
-
 
   void filter(String enteredKeyword) {
     List<MetadataType> results = [];
 
     if (enteredKeyword.isEmpty) {
-      // if the search field is empty or only contains white-space, we'll display all users
-      results = songBox.getAll();
+      results = songBox.query().order(MetadataType_.title).build().find();
     } else {
-      results = songBox.query(MetadataType_.title.contains(enteredKeyword) | MetadataType_.artists.contains(enteredKeyword) | MetadataType_.album.contains(enteredKeyword)).build().find();
-      // results.addAll(repo.songs.value.where((song) => song.artists.toLowerCase().contains(enteredKeyword.toLowerCase())).toList());
-      // results.addAll(repo.songs.value.where((song) => song.album.toLowerCase().contains(enteredKeyword.toLowerCase())).toList());
-      // results = results.toSet().toList();
-      // we use the toLowerCase() method to make it case-insensitive
+      results = songBox.query(MetadataType_.title.contains(enteredKeyword, caseSensitive: false) | MetadataType_.artists.contains(enteredKeyword, caseSensitive: false) | MetadataType_.album.contains(enteredKeyword, caseSensitive: false)).build().find();
     }
-
-    // Refresh the UI
     found.value = results;
+  }
+
+  void setRepeat() {
+    repeatNotifier.value = !repeatNotifier.value;
+    print("repeat: ${repeatNotifier.value}");
   }
 }

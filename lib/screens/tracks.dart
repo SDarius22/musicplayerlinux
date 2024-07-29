@@ -136,7 +136,7 @@ class _TracksState extends State<Tracks>{
                                                     valueListenable: widget.controller.playingNotifier,
                                                     builder: (context, value, child){
                                                       return Icon(
-                                                        widget.controller.settings.playingSongs[widget.controller.indexNotifier.value] == song && widget.controller.playingNotifier.value == true ?
+                                                        widget.controller.settings.playingSongs.isNotEmpty && widget.controller.settings.playingSongs[widget.controller.indexNotifier.value] == song && widget.controller.playingNotifier.value == true ?
                                                         FluentIcons.pause_32_filled : FluentIcons.play_32_filled,
                                                         size: height * 0.1,
                                                         color: Colors.white,

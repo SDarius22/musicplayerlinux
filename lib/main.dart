@@ -33,10 +33,16 @@ Future<void> main() async {
           home: MyApp(controller: controller),
       )
   );
-  // FlutterError.onError = (FlutterErrorDetails details) {
-  //   print('flutter error hidden from console');
-  //   // FlutterError.dumpErrorToConsole(details, forceReport: false);
-  // };
+  FlutterError.onError = (FlutterErrorDetails details) {
+    if (details.exceptionAsString().contains('overflowed by ')){
+      print('flutter error hidden from console');
+    }
+    else{
+      FlutterError.dumpErrorToConsole(details, forceReport: false);
+    }
+
+    // FlutterError.dumpErrorToConsole(details, forceReport: false);
+  };
 }
 
 

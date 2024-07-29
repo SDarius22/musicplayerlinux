@@ -683,8 +683,8 @@ class _SongPlayerWidget extends State<SongPlayerWidget> {
                             builder: (context, value, child){
                               return IconButton(
                                 onPressed: () async {
-                                  print("pressed pause play");
-                                  widget.controller.playSong();
+                                  //print("pressed pause play");
+                                  await widget.controller.playSong();
                                 },
                                 icon: widget.controller.playingNotifier.value ?
                                 Icon(FluentIcons.pause_16_filled, color: Colors.white, size: height * 0.023,) :
@@ -701,12 +701,10 @@ class _SongPlayerWidget extends State<SongPlayerWidget> {
                         ),
                         IconButton(
                             onPressed: () {
-                              if(widget.controller.repeatNotifier.value == false) {
-                                widget.controller.repeatNotifier.value = true;
-                              } else {
-                                widget.controller.repeatNotifier.value = false;
-                              }
-                              setState(() {});
+                              widget.controller.setRepeat();
+                              setState(() {
+                                
+                              });
                             },
                             icon: widget.controller.repeatNotifier.value == false ?
                             Icon(FluentIcons.arrow_repeat_all_16_filled, size: height * 0.024,) :
