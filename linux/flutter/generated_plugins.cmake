@@ -5,6 +5,7 @@
 list(APPEND FLUTTER_PLUGIN_LIST
   audioplayers_linux
   audiotags
+  bitsdojo_window_linux
   file_saver
   objectbox_flutter_libs
   screen_retriever

@@ -1,11 +1,10 @@
 import 'dart:io';
+import 'package:collection/collection.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:hovering/hovering.dart';
 import 'package:musicplayer/domain/artist_type.dart';
-import 'package:window_manager/window_manager.dart';
 import '../controller/controller.dart';
-import 'settings.dart';
 
 class ArtistWidget extends StatefulWidget {
   final Controller controller;
@@ -44,192 +43,192 @@ class _ArtistWidget extends State<ArtistWidget> {
     var normalSize = height * 0.02;
     var smallSize = height * 0.015;
     return Scaffold(
-      appBar: PreferredSize(
-        preferredSize: Size(
-          double.maxFinite,
-          height * 0.04,
-        ),
-        child: DragToMoveArea(
-          child: ValueListenableBuilder(
-              valueListenable: widget.controller.colorNotifier2,
-              builder: (context, value, child){
-                return AppBar(
-                  title: Text(
-                    'Music Player',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: normalSize,
-                    ),
-                  ),
-                  backgroundColor: widget.controller.colorNotifier2.value,
-                  leading: IconButton(
-                    onPressed: () {
-                      //print("Back");
-                      Navigator.pop(context);
-                    },
-                    icon: Icon(
-                      FluentIcons.arrow_left_16_filled,
-                      size: height * 0.02,
-                      color: Colors.white,
-                    ),
-                  ),
-                  actions: [
-                    Container(
-                        alignment: Alignment.center,
-                        child: ValueListenableBuilder(
-                          valueListenable: _visible,
-                          builder: (context, value, child) =>
-                              Row(
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                mainAxisAlignment: MainAxisAlignment.end,
-                                children: [
-                                  Visibility(
-                                    visible: _visible.value,
-                                    child: SizedBox(
-                                      height: height * 0.05,
-                                      width: width * 0.1,
-                                      child:
-                                      MouseRegion(
-                                        onEnter: (event) {
-                                          _visible.value = true;
-                                        },
-                                        onExit: (event) {
-                                          _visible.value = false;
-                                        },
-                                        child: ValueListenableBuilder(
-                                            valueListenable: widget.controller.volumeNotifier,
-                                            builder: (context, value, child){
-                                              return SliderTheme(
-                                                data: SliderThemeData(
-                                                  trackHeight: 2,
-                                                  thumbShape: RoundSliderThumbShape(enabledThumbRadius: height * 0.0075),
-                                                ),
-                                                child: Slider(
-                                                  min: 0.0,
-                                                  max: 1.0,
-                                                  mouseCursor: SystemMouseCursors.click,
-                                                  value: value,
-                                                  activeColor: widget.controller.colorNotifier.value,
-                                                  thumbColor: Colors.white,
-                                                  inactiveColor: Colors.white,
-                                                  onChanged: (double value) {
-                                                    widget.controller.volumeNotifier.value = value;
-                                                    widget.controller.audioPlayer.setVolume(widget.controller.volumeNotifier.value);
-                                                  },
-                                                ),
-                                              );
-                                            }
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                  MouseRegion(
-                                    onEnter: (event) {
-                                      _visible.value = true;
-                                    },
-                                    onExit: (event) {
-                                      _visible.value = false;
-                                    },
-                                    child: ValueListenableBuilder(
-                                        valueListenable: widget.controller.volumeNotifier,
-                                        builder: (context, value, child) {
-                                          return IconButton(
-                                            icon: volume ? Icon(
-                                              FluentIcons.speaker_2_16_filled,
-                                              size: height * 0.02,
-                                              color: Colors.white,
-                                            ) :
-                                            Icon(
-                                              FluentIcons.speaker_mute_16_filled,
-                                              size: height * 0.02,
-                                              color: Colors.white,
-                                            ),
-                                            onPressed: () {
-                                              if(volume) {
-                                                widget.controller.volumeNotifier.value = 0;
-                                              }
-                                              else {
-                                                widget.controller.volumeNotifier.value = 0.1;
-                                              }
-                                              volume = !volume;
-                                              widget.controller.audioPlayer.setVolume(widget.controller.volumeNotifier.value);
-                                            },
-                                          );
-                                        }
-                                    ),
-                                  ),
-                                  IconButton(onPressed: (){
-                                    print("Search");
-                                    setState(() {
-                                      search = !search;
-                                    });
-                                    searchNode.requestFocus();
-                                  }, icon: Icon(
-                                    FluentIcons.search_16_filled,
-                                    size: height * 0.02,
-                                    color: Colors.white,
-                                  )
-                                  ),
-                                  IconButton(onPressed: (){
-                                    print("Tapped settings");
-                                    Navigator.push(context, MaterialPageRoute(builder: (BuildContext context){
-                                      return Settings(controller: widget.controller,);
-                                    }));
-                                  }, icon: Icon(
-                                    FluentIcons.settings_16_filled,
-                                    size: height * 0.02,
-                                    color: Colors.white,
-                                  )
-                                  )//Icon(Icons.more_vert)),
-                                ],
-                              ),
-                        )),
-                    Icon(
-                      FluentIcons.divider_tall_16_regular,
-                      size: height * 0.02,
-                      color: Colors.white,
-                    ),
-                    IconButton(
-                      onPressed: () => windowManager.minimize(),
-                      icon: Icon(
-                        FluentIcons.spacebar_20_filled,
-                        size: height * 0.02,
-                        color: Colors.white,
-                      ),
-                    ),
-                    IconButton(
-                      onPressed: () async {
-                        if (await windowManager.isMaximized()) {
-                          //print("Restoring");
-                          await windowManager.unmaximize();
-                          //await windowManager.setSize(Size(width * 0.6, height * 0.6));
-                        } else {
-                          await windowManager.maximize();
-                        }
-
-                      },
-                      icon: Icon(
-                        FluentIcons.maximize_16_regular,
-                        size: height * 0.02,
-                        color: Colors.white,
-                      ),
-                    ),
-                    IconButton(
-                      onPressed: () => windowManager.close(),
-                      icon: Icon(
-                        Icons.close_outlined,
-                        size: height * 0.02,
-                        color: Colors.white,
-
-                      ),
-                    ),
-                  ],
-                );
-              }
-          ),
-
-        ),
-      ),
+      // appBar: PreferredSize(
+      //   preferredSize: Size(
+      //     double.maxFinite,
+      //     height * 0.04,
+      //   ),
+      //   child: DragToMoveArea(
+      //     child: ValueListenableBuilder(
+      //         valueListenable: widget.controller.colorNotifier2,
+      //         builder: (context, value, child){
+      //           return AppBar(
+      //             title: Text(
+      //               'Music Player',
+      //               style: TextStyle(
+      //                 color: Colors.white,
+      //                 fontSize: normalSize,
+      //               ),
+      //             ),
+      //             backgroundColor: widget.controller.colorNotifier2.value,
+      //             leading: IconButton(
+      //               onPressed: () {
+      //                 //print("Back");
+      //                 Navigator.pop(context);
+      //               },
+      //               icon: Icon(
+      //                 FluentIcons.arrow_left_16_filled,
+      //                 size: height * 0.02,
+      //                 color: Colors.white,
+      //               ),
+      //             ),
+      //             actions: [
+      //               Container(
+      //                   alignment: Alignment.center,
+      //                   child: ValueListenableBuilder(
+      //                     valueListenable: _visible,
+      //                     builder: (context, value, child) =>
+      //                         Row(
+      //                           crossAxisAlignment: CrossAxisAlignment.center,
+      //                           mainAxisAlignment: MainAxisAlignment.end,
+      //                           children: [
+      //                             Visibility(
+      //                               visible: _visible.value,
+      //                               child: SizedBox(
+      //                                 height: height * 0.05,
+      //                                 width: width * 0.1,
+      //                                 child:
+      //                                 MouseRegion(
+      //                                   onEnter: (event) {
+      //                                     _visible.value = true;
+      //                                   },
+      //                                   onExit: (event) {
+      //                                     _visible.value = false;
+      //                                   },
+      //                                   child: ValueListenableBuilder(
+      //                                       valueListenable: widget.controller.volumeNotifier,
+      //                                       builder: (context, value, child){
+      //                                         return SliderTheme(
+      //                                           data: SliderThemeData(
+      //                                             trackHeight: 2,
+      //                                             thumbShape: RoundSliderThumbShape(enabledThumbRadius: height * 0.0075),
+      //                                           ),
+      //                                           child: Slider(
+      //                                             min: 0.0,
+      //                                             max: 1.0,
+      //                                             mouseCursor: SystemMouseCursors.click,
+      //                                             value: value,
+      //                                             activeColor: widget.controller.colorNotifier.value,
+      //                                             thumbColor: Colors.white,
+      //                                             inactiveColor: Colors.white,
+      //                                             onChanged: (double value) {
+      //                                               widget.controller.volumeNotifier.value = value;
+      //                                               widget.controller.audioPlayer.setVolume(widget.controller.volumeNotifier.value);
+      //                                             },
+      //                                           ),
+      //                                         );
+      //                                       }
+      //                                   ),
+      //                                 ),
+      //                               ),
+      //                             ),
+      //                             MouseRegion(
+      //                               onEnter: (event) {
+      //                                 _visible.value = true;
+      //                               },
+      //                               onExit: (event) {
+      //                                 _visible.value = false;
+      //                               },
+      //                               child: ValueListenableBuilder(
+      //                                   valueListenable: widget.controller.volumeNotifier,
+      //                                   builder: (context, value, child) {
+      //                                     return IconButton(
+      //                                       icon: volume ? Icon(
+      //                                         FluentIcons.speaker_2_16_filled,
+      //                                         size: height * 0.02,
+      //                                         color: Colors.white,
+      //                                       ) :
+      //                                       Icon(
+      //                                         FluentIcons.speaker_mute_16_filled,
+      //                                         size: height * 0.02,
+      //                                         color: Colors.white,
+      //                                       ),
+      //                                       onPressed: () {
+      //                                         if(volume) {
+      //                                           widget.controller.volumeNotifier.value = 0;
+      //                                         }
+      //                                         else {
+      //                                           widget.controller.volumeNotifier.value = 0.1;
+      //                                         }
+      //                                         volume = !volume;
+      //                                         widget.controller.audioPlayer.setVolume(widget.controller.volumeNotifier.value);
+      //                                       },
+      //                                     );
+      //                                   }
+      //                               ),
+      //                             ),
+      //                             IconButton(onPressed: (){
+      //                               print("Search");
+      //                               setState(() {
+      //                                 search = !search;
+      //                               });
+      //                               searchNode.requestFocus();
+      //                             }, icon: Icon(
+      //                               FluentIcons.search_16_filled,
+      //                               size: height * 0.02,
+      //                               color: Colors.white,
+      //                             )
+      //                             ),
+      //                             IconButton(onPressed: (){
+      //                               print("Tapped settings");
+      //                               Navigator.push(context, MaterialPageRoute(builder: (BuildContext context){
+      //                                 return Settings(controller: widget.controller,);
+      //                               }));
+      //                             }, icon: Icon(
+      //                               FluentIcons.settings_16_filled,
+      //                               size: height * 0.02,
+      //                               color: Colors.white,
+      //                             )
+      //                             )//Icon(Icons.more_vert)),
+      //                           ],
+      //                         ),
+      //                   )),
+      //               Icon(
+      //                 FluentIcons.divider_tall_16_regular,
+      //                 size: height * 0.02,
+      //                 color: Colors.white,
+      //               ),
+      //               IconButton(
+      //                 onPressed: () => windowManager.minimize(),
+      //                 icon: Icon(
+      //                   FluentIcons.spacebar_20_filled,
+      //                   size: height * 0.02,
+      //                   color: Colors.white,
+      //                 ),
+      //               ),
+      //               IconButton(
+      //                 onPressed: () async {
+      //                   if (await windowManager.isMaximized()) {
+      //                     //print("Restoring");
+      //                     await windowManager.unmaximize();
+      //                     //await windowManager.setSize(Size(width * 0.6, height * 0.6));
+      //                   } else {
+      //                     await windowManager.maximize();
+      //                   }
+      //
+      //                 },
+      //                 icon: Icon(
+      //                   FluentIcons.maximize_16_regular,
+      //                   size: height * 0.02,
+      //                   color: Colors.white,
+      //                 ),
+      //               ),
+      //               IconButton(
+      //                 onPressed: () => windowManager.close(),
+      //                 icon: Icon(
+      //                   Icons.close_outlined,
+      //                   size: height * 0.02,
+      //                   color: Colors.white,
+      //
+      //                 ),
+      //               ),
+      //             ],
+      //           );
+      //         }
+      //     ),
+      //
+      //   ),
+      // ),
       body: SafeArea(
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 500),
@@ -243,10 +242,23 @@ class _ArtistWidget extends State<ArtistWidget> {
           ),
           alignment: Alignment.center,
           child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.start,
             children: [
+              IconButton(
+                onPressed: (){
+                  print("Back");
+                  Navigator.pop(context);
+                },
+                icon: Icon(
+                  FluentIcons.arrow_left_16_filled,
+                  size: height * 0.02,
+                  color: Colors.white,
+                ),
+              ),
               AnimatedContainer(
                 duration: const Duration(milliseconds: 500),
-                width: width * 0.45,
+                width: width * 0.4,
                 child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.center,
@@ -344,26 +356,13 @@ class _ArtistWidget extends State<ArtistWidget> {
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
                             IconButton(
-                              onPressed: (){
+                              onPressed: () async {
                                 //print("Playing ${widget.controller.indexNotifier.value}");
-                                widget.controller.audioPlayer.stop();
-                                if(widget.controller.settings.playingSongs != widget.artist.songs){
-                                  widget.controller.settings.playingSongs.clear();
-                                  widget.controller.settings.playingSongsUnShuffled.clear();
-
-                                  widget.controller.settings.playingSongs.addAll(widget.artist.songs);
-                                  widget.controller.settings.playingSongsUnShuffled.addAll(widget.artist.songs);
-
-                                  if(widget.controller.shuffleNotifier.value == true) {
-                                    widget.controller.settings.playingSongs.shuffle();
-                                  }
-
-
-                                  widget.controller.settingsBox.put(widget.controller.settings);
-
+                                if(widget.controller.settings.playingSongsUnShuffled.equals(widget.artist.songs)){
+                                  widget.controller.updatePlaying(widget.artist.songs);
                                 }
-                                widget.controller.indexChange(widget.controller.settings.playingSongs.indexOf(widget.controller.settings.playingSongsUnShuffled[0]));
-                                widget.controller.playSong();
+                                await widget.controller.indexChange(widget.controller.settings.playingSongs.indexOf(widget.controller.settings.playingSongsUnShuffled[0]));
+                                await widget.controller.playSong();
                               },
                               icon: Icon(
                                 FluentIcons.play_12_filled,
@@ -416,21 +415,12 @@ class _ArtistWidget extends State<ArtistWidget> {
                             behavior: HitTestBehavior.translucent,
                             onTap: () async {
                               //print(widget.controller.playingSongsUnShuffled[index].title);
-                              widget.controller.audioPlayer.stop();
-                              widget.controller.settings.playingSongs.clear();
-                              widget.controller.settings.playingSongsUnShuffled.clear();
-
-                              widget.controller.settings.playingSongs.addAll(widget.artist.songs);
-                              widget.controller.settings.playingSongsUnShuffled.addAll(widget.artist.songs);
-
-                              if(widget.controller.shuffleNotifier.value == true) {
-                                widget.controller.settings.playingSongs.shuffle();
+                              if(widget.controller.settings.playingSongsUnShuffled.equals(widget.artist.songs)){
+                                widget.controller.updatePlaying(widget.artist.songs);
                               }
 
-                              widget.controller.settingsBox.put(widget.controller.settings);
-
                               await widget.controller.indexChange(widget.controller.settings.playingSongs.indexOf(widget.controller.settings.playingSongsUnShuffled[index]));
-                              widget.controller.playSong();
+                              await widget.controller.playSong();
                             },
                             child: FutureBuilder(
                                 future: widget.controller.imageRetrieve(widget.artist.songs[index].path, false),

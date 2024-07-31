@@ -59,27 +59,15 @@ class _TracksState extends State<Tracks>{
                 child: GestureDetector(
                   onTap: () async {
                     //print("Playing ${widget.controller.indexNotifier.value}");
-                    if (widget.controller.settings.playingSongs[widget.controller.indexNotifier.value].path == song.path) {
+                    if (widget.controller.settings.playingSongs[widget.controller.indexNotifier.value].path != song.path) {
                       //print("path match");
-                      if (widget.controller.playingNotifier.value == true) {
-                        //print("Pausing");
-                        widget.controller.audioPlayer.pause();
-                        widget.controller.playingNotifier.value = false;
-                      }
-                      else {
-                        widget.controller.audioPlayer.resume();
-                        widget.controller.playingNotifier.value = true;
-                      }
-                    }
-                    else {
-                      widget.controller.audioPlayer.stop();
                       if(widget.controller.settings.playingSongsUnShuffled.equals(widget.controller.songBox.query().order(MetadataType_.title).build().find()) == false){
                         print("Updating playing songs");
                         widget.controller.updatePlaying(widget.controller.songBox.query().order(MetadataType_.title).build().find());
                       }
                       await widget.controller.indexChange(widget.controller.settings.playingSongs.indexOf(song));
-                      widget.controller.playSong();
                     }
+                    await widget.controller.playSong();
                   },
                   child: Column(
                     children: [
@@ -120,9 +108,9 @@ class _TracksState extends State<Tracks>{
                                                   IconButton(
                                                     onPressed: (){
                                                       print("Add $index");
-                                                      // _songstoadd.add(widget.controller.songBox.query().order(MetadataType_.title).build().find()[sindex]);
+                                                      // _songToAdd.add(widget.controller.songBox.query().order(MetadataType_.title).build().find()[index]);
                                                       // setState(() {
-                                                      //   addelement = true;
+                                                      //   addElement = true;
                                                       // });
                                                     },
                                                     padding: const EdgeInsets.all(0),

@@ -1,24 +1,28 @@
 import 'dart:async';
+
 import 'package:flutter/material.dart';
-import 'package:musicplayer/controller/objectBox.dart';
-import 'screens/main_screen.dart';
-import 'package:window_manager/window_manager.dart';
+import 'package:bitsdojo_window/bitsdojo_window.dart';
+
 import 'controller/controller.dart';
+import 'controller/objectBox.dart';
+import 'screens/main_screen.dart';
 
 late ObjectBox objectBox;
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await windowManager.ensureInitialized();
-  WindowOptions windowOptions = const WindowOptions(
-    center: true,
-    titleBarStyle: TitleBarStyle.hidden,
-    // skipTaskbar: true,
-  );
-  windowManager.waitUntilReadyToShow(windowOptions,() async {
-    await windowManager.maximize();
-    await windowManager.show();
-    await windowManager.focus();
-  });
+
+
+  // await windowManager.ensureInitialized();
+  // WindowOptions windowOptions = const WindowOptions(
+  //   center: true,
+  //   titleBarStyle: TitleBarStyle.hidden,
+  //   // skipTaskbar: true,
+  // );
+  // windowManager.waitUntilReadyToShow(windowOptions,() async {
+  //   await windowManager.maximize();
+  //   await windowManager.show();
+  //   await windowManager.focus();
+  // });
   objectBox = await ObjectBox.create();
   Controller controller = Controller(objectBox);
 
@@ -33,16 +37,15 @@ Future<void> main() async {
           home: MyApp(controller: controller),
       )
   );
-  FlutterError.onError = (FlutterErrorDetails details) {
-    if (details.exceptionAsString().contains('overflowed by ')){
-      print('flutter error hidden from console');
-    }
-    else{
-      FlutterError.dumpErrorToConsole(details, forceReport: false);
-    }
 
-    // FlutterError.dumpErrorToConsole(details, forceReport: false);
-  };
+  doWhenWindowReady(() {
+    final win = appWindow;
+    win.minSize = const Size(800, 600);
+    win.alignment = Alignment.center;
+    win.title = 'Music Player';
+    win.maximize();
+    win.show();
+  });
 }
 
 

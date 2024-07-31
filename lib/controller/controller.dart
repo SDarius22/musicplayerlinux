@@ -1,12 +1,13 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-import 'package:http/http.dart' as http;
 
+import 'package:http/http.dart' as http;
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:audiotags/audiotags.dart';
+import 'package:deezer/deezer.dart' as deezer;
 
 import '../domain/album_type.dart';
 import '../domain/artist_type.dart';
@@ -37,6 +38,7 @@ class Controller{
   ValueNotifier<int> sliderNotifier = ValueNotifier<int>(0);
   ValueNotifier<int> sleepTimerNotifier = ValueNotifier<int>(0);
   ValueNotifier<bool> minimizedNotifier = ValueNotifier<bool>(true);
+  ValueNotifier<bool> hiddenNotifier = ValueNotifier<bool>(false);
   ValueNotifier<bool> listNotifier = ValueNotifier<bool>(false);
   ValueNotifier<bool> playingNotifier = ValueNotifier<bool>(false);
   ValueNotifier<bool> repeatNotifier = ValueNotifier<bool>(false);
@@ -106,7 +108,6 @@ class Controller{
     settingsBox.put(settings);
   }
 
-
   Future<void> retrieveSongs() async {
     List<MetadataType> songs = songBox.getAll();
     List<String> paths = [];
@@ -123,6 +124,7 @@ class Controller{
         String path = allEntities[i].path.replaceAll("\\", "/");
         if (path.endsWith(".flac") || path.endsWith(".mp3") || path.endsWith(".wav") || path.endsWith(".m4a")) {
           if(paths.contains(path)){
+            //print("already exists");
           }
           else{
             paths.add(allEntities[i].path);
@@ -158,9 +160,7 @@ class Controller{
 
   Future<MetadataType> retrieveSong(String path, List<FileSystemEntity> allEntities) async {
     MetadataType metadataVariable = MetadataType();
-
-    metadataVariable.artists = '';
-
+    metadataVariable.path = path;
     var metadataVar = await AudioTags.read(path);
     if( metadataVar == null || metadataVar.pictures.isEmpty == true){
       //print(path);
@@ -178,8 +178,7 @@ class Controller{
           }
           if (metadate2.contains("ARTIST=") &&
               !metadate2.contains("ALBUMARTIST=")) {
-            metadataVariable.artists += metadate2.substring(8);
-            metadataVariable.artists += "; ";
+            metadataVariable.artists = metadate2.substring(8);
           }
           if (metadate2.contains("trackNumber=")) {
             metadataVariable.trackNumber = int.parse(metadate2.substring(13));
@@ -209,38 +208,23 @@ class Controller{
       }
     }
     else {
-      metadataVariable.title = metadataVar.title ?? "Unknown Song";
+      metadataVariable.title = metadataVar.title ?? path.replaceAll("\\", "/").split("/").last;
       metadataVariable.album = metadataVar.album ?? "Unknown Album";
       metadataVariable.duration = metadataVar.duration ?? 0;
       metadataVariable.trackNumber = metadataVar.trackNumber ?? 0;
       metadataVariable.artists = metadataVar.trackArtist ?? "Unknown Artist";
       metadataVariable.discNumber = metadataVar.discNumber ?? 0;
     }
-    var lyrPath = path.replaceAll(".mp3", ".lrc")
-        .replaceAll(
-        ".flac", ".lrc").replaceAll(".wav", ".lrc")
-        .replaceAll(
-        ".m4a", ".lrc");
-    bool exists = false;
-    for (FileSystemEntity entity in allEntities) {
-      if (entity.path == lyrPath) {
-        metadataVariable.lyricsPath = lyrPath;
-        exists = true;
-        break;
-      }
-    }
+    var lyrPath = path.replaceRange(path.lastIndexOf("."), path.length, ".lrc");
+    bool exists = allEntities.any((element) => element.path == lyrPath);
     if (!exists) {
-      //print("lyrics not found");
       bool lyricsFound = false;
       if(path.endsWith(".flac")) {
-        //print("flac");
         var flac = FlacInfo(File(path));
         var metadatas = await flac.readMetadatas();
         String metadata = metadatas[2].toString();
         metadata = metadata.substring(1, metadata.length - 1);
-        //print(metadata);
         List<String> metadata2 = metadata.split(', *1234a678::876a4321*,');
-
         for (var metadate2 in metadata2) {
           if (metadate2.contains("LYRICS=")) {
             File lyrFile = File(path.replaceAll(".flac", ".lrc"));
@@ -265,32 +249,6 @@ class Controller{
         metadataVariable.lyricsPath = "No Lyrics";
       }
     }
-    metadataVariable.path = path;
-
-    // if(path.endsWith(".flac")) {
-    //   //print(path);
-    //   var flac = FlacInfo(File(path));
-    //   var metadatas = await flac.readMetadatas();
-    //   String metadata = metadatas[2].toString();
-    //   metadata = metadata.substring(1, metadata.length - 1);
-    //   List<String> metadata2 = metadata.split(', *1234a678::876a4321*,');
-    //
-    //   //print(metadata2);
-    //   for (var metadate2 in metadata2) {
-    //     if(metadate2.contains("discNumber=")){
-    //       metadataVariable.discNumber = int.parse(metadate2.substring(12));
-    //       //print(metadataVariable.discNumber);
-    //     }
-    //   }
-    // }
-    // else if(path.endsWith(".mp3")){
-    //   //print(path);
-    //   var parser = ID3TagReader.path(path);
-    //   var tags = parser.readTagSync();
-    //   metadataVariable.discNumber = int.parse(tags.trackNumber ?? "0");
-    // }
-
-
     if(metadataVariable.duration == 0){
       //print("duration is 0");
       var metadataVar2 = await AudioTags.read(path);
@@ -300,9 +258,6 @@ class Controller{
 
 
     }
-    //print(metadataVariable.duration);
-    //print (metadataVariable.durationString);
-    //print("song: ${metadataVariable.title} discNumber: ${metadataVariable.discNumber}");
 
     return metadataVariable;
   }
@@ -538,6 +493,11 @@ class Controller{
     songBox.put(song);
   }
 
+  Future<void> downloadSong() async {
+    deezer.Deezer instance = await deezer.Deezer.create(arl: '8436641c809f643da885ce7eb45e39e6a9514f882b1541a05282a33485f6f96fc56ddb724424ec3518e25bbaa08de4e7521e5f289a14c512dd65dc2ec0ad10b83138e5d02c1531a5bf5766ecfd492d0157815bafa5f08b90dcfe51a1eba1bbbf');
+    ///TODO: Implement downloadSong
+  }
+
   void lyricModelReset() {
     //print(playingSongs[indexNotifier.value].lyricsPath);
     if (settings.playingSongs[indexNotifier.value].lyricsPath.contains(".lrc")) {
@@ -640,5 +600,18 @@ class Controller{
   void setRepeat() {
     repeatNotifier.value = !repeatNotifier.value;
     print("repeat: ${repeatNotifier.value}");
+  }
+
+  void setShuffle() {
+    shuffleNotifier.value = !shuffleNotifier.value;
+    print("shuffle: ${shuffleNotifier.value}");
+    if (shuffleNotifier.value){
+      settings.playingSongs.shuffle();
+    }
+    else{
+      settings.playingSongs.clear();
+      settings.playingSongs.addAll(settings.playingSongsUnShuffled);
+    }
+    settingsBox.put(settings);
   }
 }

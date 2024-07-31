@@ -47,10 +47,23 @@ class _AlbumsState extends State<Albums>{
             cursor: SystemMouseCursors.click,
             child: GestureDetector(
               onTap: () {
-                /// Something like navigate to album
-                Navigator.push(context, MaterialPageRoute(builder: (context){
-                  return AlbumWidget(controller: widget.controller, album: album);
-                }));
+                Navigator.push(
+                    context,
+                    PageRouteBuilder(
+                      opaque: false,
+                      barrierDismissible: true,
+                      pageBuilder: (context, animation1, animation2) => AlbumWidget(controller: widget.controller, album: album),
+                      transitionDuration: const Duration(milliseconds: 200),
+                      reverseTransitionDuration: const Duration(milliseconds: 200),
+                      transitionsBuilder: (context, animation1, animation2, child) {
+                        animation1 = CurvedAnimation(parent: animation1, curve: Curves.linear);
+                        return ScaleTransition(
+                          alignment: Alignment.center,
+                          scale: animation1,
+                          child: child,
+                        );
+                      },
+                ));
               },
               child: Column(
                 children: [
