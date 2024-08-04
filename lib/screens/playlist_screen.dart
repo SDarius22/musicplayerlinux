@@ -1,13 +1,11 @@
 import 'dart:io';
-import 'dart:ui';
+import 'package:collection/collection.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
-import 'package:hovering/hovering.dart';
+import '../utils/hover_widget/hover_widget.dart';
 import 'package:musicplayer/domain/artist_type.dart';
 import 'package:musicplayer/domain/playlist_type.dart';
-import 'package:window_manager/window_manager.dart';
 import '../controller/controller.dart';
-import 'settings.dart';
 
 class PlaylistWidget extends StatefulWidget {
   final Controller controller;
@@ -19,21 +17,27 @@ class PlaylistWidget extends StatefulWidget {
 }
 
 class _PlaylistWidget extends State<PlaylistWidget> {
-  bool volume = true, search = false;
-  final ValueNotifier<bool> _visible = ValueNotifier(false);
-  FocusNode searchNode = FocusNode();
-
   String featuredArtists = "";
+  String duration = "0 seconds";
+  late Future imageFuture;
 
 
   @override
   void initState() {
+    imageFuture = widget.controller.imageRetrieve(widget.playlist.songs.first.path, false);
     for (ArtistType artist in widget.playlist.artists) {
       featuredArtists += artist.name;
       if (artist != widget.playlist.artists.last) {
         featuredArtists += ", ";
       }
     }
+    int totalDuration = 0;
+    for (int i = 0; i < widget.playlist.songs.length; i++){
+      totalDuration += widget.playlist.songs[i].duration;
+    }
+    duration = "${totalDuration ~/ 3600} hours, ${(totalDuration % 3600 ~/ 60)} minutes and ${(totalDuration % 60)} seconds";
+    duration = duration.replaceAll("0 hours, ", "");
+    duration = duration.replaceAll("0 minutes and ", "");
     super.initState();
   }
 
@@ -46,263 +50,86 @@ class _PlaylistWidget extends State<PlaylistWidget> {
     var normalSize = height * 0.02;
     var smallSize = height * 0.015;
     return Scaffold(
-      appBar: PreferredSize(
-        preferredSize: Size(
-          double.maxFinite,
-          height * 0.04,
-        ),
-        child: DragToMoveArea(
-          child: ValueListenableBuilder(
-              valueListenable: widget.controller.colorNotifier,
-              builder: (context, value, child){
-                return AppBar(
-                  title: Text(
-                    'Music Player',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: normalSize,
-                    ),
-                  ),
-                  backgroundColor: widget.controller.colorNotifier.value,
-                  leading: IconButton(
-                    onPressed: () {
-                      print("Back");
-                      Navigator.pop(context);
-                    },
-                    icon: Icon(
-                      FluentIcons.arrow_left_16_filled,
-                      size: height * 0.02,
-                      color: Colors.white,
-                    ),
-                  ),
-                  actions: [
-                    Container(
-                        alignment: Alignment.center,
-                        child: ValueListenableBuilder(
-                          valueListenable: _visible,
-                          builder: (context, value, child) =>
-                              Row(
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                mainAxisAlignment: MainAxisAlignment.end,
-                                children: [
-                                  Visibility(
-                                    visible: _visible.value,
-                                    child: SizedBox(
-                                      height: height * 0.05,
-                                      width: width * 0.1,
-                                      child:
-                                      MouseRegion(
-                                        onEnter: (event) {
-                                          _visible.value = true;
-                                        },
-                                        onExit: (event) {
-                                          _visible.value = false;
-                                        },
-                                        child: ValueListenableBuilder(
-                                            valueListenable: widget.controller.volumeNotifier,
-                                            builder: (context, value, child){
-                                              return SliderTheme(
-                                                data: SliderThemeData(
-                                                  trackHeight: 2,
-                                                  thumbShape: RoundSliderThumbShape(enabledThumbRadius: height * 0.0075),
-                                                ),
-                                                child: Slider(
-                                                  min: 0.0,
-                                                  max: 1.0,
-                                                  mouseCursor: SystemMouseCursors.click,
-                                                  value: value,
-                                                  activeColor: widget.controller.colorNotifier.value,
-                                                  thumbColor: Colors.white,
-                                                  inactiveColor: Colors.white,
-                                                  onChanged: (double value) {
-                                                    widget.controller.volumeNotifier.value = value;
-                                                    widget.controller.audioPlayer.setVolume(widget.controller.volumeNotifier.value);
-                                                  },
-                                                ),
-                                              );
-                                            }
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                  MouseRegion(
-                                    onEnter: (event) {
-                                      _visible.value = true;
-                                    },
-                                    onExit: (event) {
-                                      _visible.value = false;
-                                    },
-                                    child: ValueListenableBuilder(
-                                        valueListenable: widget.controller.volumeNotifier,
-                                        builder: (context, value, child) {
-                                          return IconButton(
-                                            icon: volume ? Icon(
-                                              FluentIcons.speaker_2_16_filled,
-                                              size: height * 0.02,
-                                              color: Colors.white,
-                                            ) :
-                                            Icon(
-                                              FluentIcons.speaker_mute_16_filled,
-                                              size: height * 0.02,
-                                              color: Colors.white,
-                                            ),
-                                            onPressed: () {
-                                              if(volume) {
-                                                widget.controller.volumeNotifier.value = 0;
-                                              }
-                                              else {
-                                                widget.controller.volumeNotifier.value = 0.1;
-                                              }
-                                              volume = !volume;
-                                              widget.controller.audioPlayer.setVolume(widget.controller.volumeNotifier.value);
-                                            },
-                                          );
-                                        }
-                                    ),
-                                  ),
-                                  IconButton(onPressed: (){
-                                    print("Search");
-                                    setState(() {
-                                      search = !search;
-                                    });
-                                    searchNode.requestFocus();
-                                  }, icon: Icon(
-                                    FluentIcons.search_16_filled,
-                                    size: height * 0.02,
-                                    color: Colors.white,
-                                  )
-                                  ),
-                                  IconButton(onPressed: (){
-                                    print("Tapped settings");
-                                    Navigator.push(context, MaterialPageRoute(builder: (BuildContext context){
-                                      return Settings(controller: widget.controller,);
-                                    }));
-                                  }, icon: Icon(
-                                    FluentIcons.settings_16_filled,
-                                    size: height * 0.02,
-                                    color: Colors.white,
-                                  )
-                                  )//Icon(Icons.more_vert)),
-                                ],
-                              ),
-                        )),
-                    Icon(
-                      FluentIcons.divider_tall_16_regular,
-                      size: height * 0.02,
-                      color: Colors.white,
-                    ),
-                    IconButton(
-                      onPressed: () => windowManager.minimize(),
-                      icon: Icon(
-                        FluentIcons.spacebar_20_filled,
-                        size: height * 0.02,
-                        color: Colors.white,
-                      ),
-                    ),
-                    IconButton(
-                      onPressed: () async {
-                        if (await windowManager.isMaximized()) {
-                          //print("Restoring");
-                          await windowManager.unmaximize();
-                          //await windowManager.setSize(Size(width * 0.6, height * 0.6));
-                        } else {
-                          await windowManager.maximize();
-                        }
-
-                      },
-                      icon: Icon(
-                        FluentIcons.maximize_16_regular,
-                        size: height * 0.02,
-                        color: Colors.white,
-                      ),
-                    ),
-                    IconButton(
-                      onPressed: () => windowManager.close(),
-                      icon: Icon(
-                        Icons.close_outlined,
-                        size: height * 0.02,
-                        color: Colors.white,
-
-                      ),
-                    ),
-                  ],
-                );
-              }
-          ),
-
-        ),
-      ),
       body: SafeArea(
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 500),
           width: width,
           height: height,
           padding: EdgeInsets.only(
-            top: height * 0.025,
+            top: height * 0.02,
             left: width * 0.01,
             right: width * 0.01,
-            bottom: height * 0.025
+            bottom: height * 0.02
           ),
           alignment: Alignment.center,
           child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.start,
             children: [
+              IconButton(
+                onPressed: (){
+                  print("Back");
+                  Navigator.pop(context);
+                },
+                icon: Icon(
+                  FluentIcons.arrow_left_16_filled,
+                  size: height * 0.02,
+                  color: Colors.white,
+                ),
+              ),
               AnimatedContainer(
                 duration: const Duration(milliseconds: 500),
-                width: width * 0.45,
+                width: width * 0.4,
+                padding: EdgeInsets.only(
+                  top: height * 0.1,
+                  bottom: height * 0.05,
+                ),
                 child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.start,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children:[
-                    AnimatedContainer(
-                      duration: const Duration(milliseconds: 500),
-                      curve: Curves.easeInOut,
-                      height: height * 0.5,
-                      padding: EdgeInsets.only(
-                        bottom: height * 0.01,
-                      ),
-                      //color: Colors.red,
-                      child: AspectRatio(
-                        aspectRatio: 1.0,
-                        child: FutureBuilder(
-                            future: widget.controller.imageRetrieve(widget.playlist.songs.first.path, false),
-                            builder: (context, snapshot){
-                              if(snapshot.hasData) {
-                                return DecoratedBox(
-                                  decoration: BoxDecoration(
-                                    color: Colors.black,
-                                    borderRadius: BorderRadius.circular(width * 0.025),
-                                    image: DecorationImage(
-                                      image: Image.memory(snapshot.data!).image,
-                                      fit: BoxFit.cover,
+                    Hero(
+                      tag: widget.playlist.name,
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 500),
+                        curve: Curves.easeInOut,
+                        height: height * 0.5,
+                        padding: EdgeInsets.only(
+                          bottom: height * 0.01,
+                        ),
+                        //color: Colors.red,
+                        child: AspectRatio(
+                          aspectRatio: 1.0,
+                          child: FutureBuilder(
+                              future: widget.controller.imageRetrieve(widget.playlist.songs.first.path, false),
+                              builder: (context, snapshot){
+                                if(snapshot.hasData) {
+                                  return DecoratedBox(
+                                    decoration: BoxDecoration(
+                                      color: Colors.black,
+                                      borderRadius: BorderRadius.circular(width * 0.025),
+                                      image: DecorationImage(
+                                        image: Image.memory(snapshot.data!).image,
+                                        fit: BoxFit.cover,
+                                      ),
                                     ),
-                                  ),
-                                );
-                              }
-                              else{
-                                return DecoratedBox(
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(10),
-                                    image: DecorationImage(
-                                      image: Image.memory(File("assets/bg.png").readAsBytesSync()).image,
-                                      fit: BoxFit.cover,
+                                  );
+                                }
+                                else{
+                                  return DecoratedBox(
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(10),
+                                      image: DecorationImage(
+                                        image: Image.memory(File("assets/bg.png").readAsBytesSync()).image,
+                                        fit: BoxFit.cover,
+                                      ),
                                     ),
-                                  ),
-                                );
+                                  );
+                                }
                               }
-                            }
+                          ),
                         ),
                       ),
-                    ),
-                    Text(
-                      "Playlist name:",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: normalSize,
-                        fontWeight: FontWeight.normal,
-                      ),
-                    ),
-                    SizedBox(
-                      height: height * 0.005,
                     ),
                     Text(
                       widget.playlist.name,
@@ -315,17 +142,6 @@ class _PlaylistWidget extends State<PlaylistWidget> {
                       ),
                     ),
                     SizedBox(
-                      height: height * 0.01,
-                    ),
-                    Text(
-                      "Featured artists:",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: normalSize,
-                        fontWeight: FontWeight.normal,
-                      ),
-                    ),
-                    SizedBox(
                       height: height * 0.005,
                     ),
                     Text(
@@ -334,19 +150,8 @@ class _PlaylistWidget extends State<PlaylistWidget> {
                       overflow: TextOverflow.ellipsis,
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        fontSize: boldSize,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    SizedBox(
-                      height: height * 0.01,
-                    ),
-                    Text(
-                      "Playlist duration:",
-                      style: TextStyle(
-                        color: Colors.white,
                         fontSize: normalSize,
-                        fontWeight: FontWeight.normal,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
                     SizedBox(
@@ -358,8 +163,8 @@ class _PlaylistWidget extends State<PlaylistWidget> {
                       overflow: TextOverflow.ellipsis,
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        fontSize: boldSize,
-                        fontWeight: FontWeight.bold,
+                        fontSize: smallSize,
+                        fontWeight: FontWeight.normal,
                       ),
                     ),
                     Row(
@@ -367,26 +172,13 @@ class _PlaylistWidget extends State<PlaylistWidget> {
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
                           IconButton(
-                            onPressed: (){
-                              //print("Playing ${widget.controller.indexNotifier.value}");
-                              widget.controller.audioPlayer.stop();
-                              if(widget.controller.settings.playingSongs != widget.playlist.songs){
-                                widget.controller.settings.playingSongs.clear();
-                                widget.controller.settings.playingSongsUnShuffled.clear();
-
-                                widget.controller.settings.playingSongs.addAll(widget.playlist.songs);
-                                widget.controller.settings.playingSongsUnShuffled.addAll(widget.playlist.songs);
-
-                                if(widget.controller.shuffleNotifier.value == true) {
-                                  widget.controller.settings.playingSongs.shuffle();
-                                }
-
-                                widget.controller.settingsBox.put(widget.controller.settings);
-
+                            onPressed: () async {
+                              if(widget.controller.settings.playingSongsUnShuffled.equals(widget.playlist.songs) == false){
+                                widget.controller.updatePlaying(widget.playlist.songs);
                               }
+                              await widget.controller.indexChange(widget.playlist.songs.first);
+                              await widget.controller.playSong();
 
-                              widget.controller.indexChange(widget.controller.settings.playingSongs.indexOf(widget.controller.settings.playingSongsUnShuffled[0]));
-                              widget.controller.playSong();
                             },
                             icon: Icon(
                               FluentIcons.play_12_filled,
@@ -420,8 +212,8 @@ class _PlaylistWidget extends State<PlaylistWidget> {
                 width: width * 0.45,
                 padding: EdgeInsets.only(
                   left: width * 0.02,
-                  top: height * 0.05,
-                  bottom: height * 0.05,
+                  top: height * 0.1,
+                  bottom: height * 0.2,
                 ),
                 child: ListView.builder(
                   itemCount: widget.playlist.songs.length,
@@ -437,11 +229,12 @@ class _PlaylistWidget extends State<PlaylistWidget> {
                         cursor: SystemMouseCursors.click,
                         child: GestureDetector(
                             behavior: HitTestBehavior.translucent,
-                            onTap: (){
-                              //print(widget.controller.playingSongsUnShuffled[index].title);
-                              widget.controller.indexNotifier.value = widget.controller.settings.playingSongs.indexOf(widget.controller.settings.playingSongsUnShuffled[index]);
-                              widget.controller.indexChange(widget.controller.indexNotifier.value);
-                              widget.controller.playSong();
+                            onTap: () async {
+                              if(widget.controller.settings.playingSongs.equals(widget.playlist.songs) == false){
+                                widget.controller.updatePlaying(widget.playlist.songs);
+                              }
+                              await widget.controller.indexChange(widget.controller.settings.playingSongsUnShuffled[index]);
+                              await widget.controller.playSong();
                             },
                             child: FutureBuilder(
                                 future: widget.controller.imageRetrieve(widget.playlist.songs[index].path, false),

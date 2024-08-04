@@ -1,14 +1,16 @@
 import 'dart:io';
 import 'dart:ui';
 
+import 'package:collection/collection.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
-import 'package:hovering/hovering.dart';
+import '../utils/hover_widget/hover_widget.dart';
 import 'package:musicplayer/utils/objectbox.g.dart';
 import '../controller/controller.dart';
 import '../domain/artist_type.dart';
+import 'add_screen.dart';
 import 'artist_screen.dart';
-
+import 'image_widget.dart';
 
 class Artists extends StatefulWidget{
   final Controller controller;
@@ -25,228 +27,162 @@ class _ArtistsState extends State<Artists>{
     var width = MediaQuery.of(context).size.width;
     var height = MediaQuery.of(context).size.height;
     var smallSize = height * 0.015;
-    return GridView.builder(
-      padding: EdgeInsets.all(width * 0.01),
-      itemCount: widget.controller.artistBox.query().order(ArtistType_.name).build().find().length + 7,
-      gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
-        childAspectRatio: 0.825,
-        maxCrossAxisExtent: width * 0.125,
-        crossAxisSpacing: width * 0.0125,
-        mainAxisSpacing: width * 0.0125,
-      ),
-      itemBuilder: (BuildContext context, int index) {
-        ArtistType artist = ArtistType();
-        if (index < widget.controller.artistBox.query().order(ArtistType_.name).build().find().length){
-          artist = widget.controller.artistBox.query().order(ArtistType_.name).build().find()[index];
-        }
-        return index < widget.controller.artistBox.query().order(ArtistType_.name).build().find().length ?
-        MouseRegion(
-          cursor: SystemMouseCursors.click,
-          child: GestureDetector(
-            onTap: () {
-              Navigator.push(context, MaterialPageRoute(builder: (context){
-                return ArtistWidget(controller: widget.controller, artist: artist);
-              }));
-            },
-            child: Column(
-              children: [
-                AspectRatio(
-                  aspectRatio: 1.0,
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 500),
-                    height: width * 0.2,
-                    margin: EdgeInsets.only(bottom: width * 0.005),
-                    child: FutureBuilder(
-                      future: widget.controller.imageRetrieve(artist.songs.first.path, false),
-                      builder: (ctx, snapshot) {
-                        if (snapshot.hasData) {
-                          return HoverWidget(
-                            hoverChild: Stack(
-                              children: [
-                                Container(
-                                  decoration: BoxDecoration(
-                                      color: Colors.black,
-                                      borderRadius: BorderRadius.circular(height * 0.01),
-                                      image: DecorationImage(
-                                        fit: BoxFit.cover,
-                                        image: Image.memory(snapshot.data!).image,
+    var query = widget.controller.artistBox.query().order(ArtistType_.name).build();
+    return StreamBuilder<List<ArtistType>>(
+      stream: widget.controller.artistBox.query().watch(triggerImmediately: true).map((query) => query.find()),
+      builder: (context, snapshot){
+        if(snapshot.hasData){
+          return GridView.builder(
+            padding: EdgeInsets.all(width * 0.01),
+            itemCount: query.find().length + 7,
+            gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
+              childAspectRatio: 0.825,
+              maxCrossAxisExtent: width * 0.125,
+              crossAxisSpacing: width * 0.0125,
+              mainAxisSpacing: width * 0.0125,
+            ),
+            itemBuilder: (BuildContext context, int index) {
+              ArtistType artist = ArtistType();
+              if (index < query.find().length){
+                artist = query.find()[index];
+              }
+              return index < query.find().length ?
+              MouseRegion(
+                cursor: SystemMouseCursors.click,
+                child: GestureDetector(
+                  onTap: () {
+                    //print(artist.name);
+                    Navigator.push(
+                        context,
+                        PageRouteBuilder(
+                          pageBuilder: (context, animation1, animation2) => ArtistWidget(controller: widget.controller, artist: artist),
+                          transitionDuration: const Duration(milliseconds: 500),
+                          reverseTransitionDuration: const Duration(milliseconds: 500),
+                          transitionsBuilder: (context, animation1, animation2, child) {
+                            animation1 = CurvedAnimation(parent: animation1, curve: Curves.linear);
+                            return ScaleTransition(
+                              scale: animation1,
+                              alignment: Alignment.center,
+                              child: child,
+                            );
+                          },
+                        ));
+                  },
+                  child: Column(
+                    children: [
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(width * 0.01),
+                        child: ImageWidget(
+                          controller: widget.controller,
+                          path: artist.songs.first.path,
+                          heroTag: artist.name,
+                          buttons: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              IconButton(
+                                onPressed: (){
+                                  print("Add $index");
+                                  Navigator.push(
+                                      context,
+                                      PageRouteBuilder(
+                                        pageBuilder: (context, animation1, animation2) => AddScreen(controller: widget.controller, songs: artist.songs),
+                                        transitionDuration: const Duration(milliseconds: 500),
+                                        reverseTransitionDuration: const Duration(milliseconds: 500),
+                                        transitionsBuilder: (context, animation1, animation2, child) {
+                                          animation1 = CurvedAnimation(parent: animation1, curve: Curves.linear);
+                                          return ScaleTransition(
+                                            alignment: Alignment.center,
+                                            scale: animation1,
+                                            child: child,
+                                          );
+                                        },
                                       )
-                                  ),
+                                  );
+                                },
+                                padding: const EdgeInsets.all(0),
+                                icon: Icon(
+                                  FluentIcons.add_12_filled,
+                                  color: Colors.white,
+                                  size: height * 0.035,
                                 ),
-                                ClipRRect(
-                                  borderRadius: BorderRadius.circular(height * 0.01),
-                                  child: BackdropFilter(
-                                    filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                                    child: Container(
-                                      color: Colors.black.withOpacity(0.3),
-                                      alignment: Alignment.center,
-                                      child: Row(
-                                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                                        crossAxisAlignment: CrossAxisAlignment.center,
-                                        children: [
-                                          IconButton(
-                                            onPressed: (){
-                                              print("Add $index");
-                                              // _songstoadd.add(widget.controller.repo.songs.value[sindex]);
-                                              // setState(() {
-                                              //   addelement = true;
-                                              // });
-                                            },
-                                            padding: const EdgeInsets.all(0),
-                                            icon: Icon(
-                                              FluentIcons.add_12_filled,
-                                              color: Colors.white,
-                                              size: height * 0.035,
-                                            ),
-                                          ),
-                                          Icon(
-                                            FluentIcons.open_16_filled,
-                                            size: height * 0.1,
-                                            color: Colors.white,
-                                          ),
-                                          IconButton(
-                                            onPressed: (){
-                                              /// play all the songs of the artist
-                                            },
-                                            padding: const EdgeInsets.all(0),
-                                            icon: Icon(
-                                              FluentIcons.play_12_filled,
-                                              color: Colors.white,
-                                              size: height * 0.035,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            onHover: (event){
-                            },
-                            child: Container(
-                              decoration: BoxDecoration(
-                                  color: Colors.black,
-                                  borderRadius: BorderRadius.circular(height * 0.01),
-                                  image: DecorationImage(
-                                    fit: BoxFit.cover,
-                                    image: Image.memory(snapshot.data!).image,
-                                  )
                               ),
-                            )
-                          );
-                        }
-                        else if (snapshot.hasError) {
-                          return Center(
-                            child: Text(
-                              '${snapshot.error} occurred',
-                              style: const TextStyle(fontSize: 18),
-                            ),
-                          );
-                        }
-                        else{
-                          return Container(
-                            decoration: BoxDecoration(
-                                color: Colors.black,
-                                borderRadius: BorderRadius.circular(height * 0.01),
-                                image: DecorationImage(
-                                  fit: BoxFit.cover,
-                                  image: Image.memory(File("./assets/bg.png").readAsBytesSync()).image,
-                                )
-                            ),
-                            child: const Center(
-                              child: CircularProgressIndicator(
+                              Icon(
+                                FluentIcons.open_16_filled,
+                                size: height * 0.1,
                                 color: Colors.white,
                               ),
-                            ),
-                          );
-                        }
-                      },
-                    ),
-                    // child: Stack(
-                    //   children: [
-                    //     if (_hovereditem == sindex)
-                    //       ClipRRect(
-                    //         // Clip it cleanly.
-                    //         child: BackdropFilter(
-                    //           filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                    //           child: Container(
-                    //             color: Colors.black.withOpacity(0.3),
-                    //             alignment: Alignment.center,
-                    //             child: Row(
-                    //               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    //               crossAxisAlignment: CrossAxisAlignment.center,
-                    //               children: [
-                    //                 IconButton(onPressed: (){
-                    //                   print("Add ${sindex}");
-                    //                   // _songstoadd.add(widget.controller.allmetadata[sindex]);
-                    //                   // setState(() {
-                    //                   //   addelement = true;
-                    //                   // });
-                    //                 },
-                    //                   padding: EdgeInsets.all(0),
-                    //                   icon:
-                    //                   Icon(FluentIcons.add_12_filled, color: Colors.white, size: 40,),
-                    //                 ),
-                    //
-                    //                 Icon(FluentIcons.open_16_filled, size: 110, color: Colors.white,),
-                    //
-                    //                 IconButton(onPressed: (){
-                    //                   widget.controller.playingsongs.clear();
-                    //                   widget.controller.playingsongs_unshuffled.clear();
-                    //
-                    //                   widget.controller.playingsongs.addAll(widget.controller.allalbums[sindex].songs);
-                    //                   widget.controller.playingsongs_unshuffled.addAll(widget.controller.allalbums[sindex].songs);
-                    //
-                    //                   if(widget.controller.shuffle == true)
-                    //                     widget.controller.playingsongs.shuffle();
-                    //
-                    //                   var file = File("assets/settings.json");
-                    //                   widget.controller.settings1.lastplaying.clear();
-                    //
-                    //                   for(int i = 0; i < widget.controller.playingsongs.length; i++){
-                    //                     widget.controller.settings1.lastplaying.add(widget.controller.playingsongs[i].path);
-                    //                   }
-                    //                   widget.controller.settings1.lastplayingindex = widget.controller.playingsongs.indexOf(widget.controller.playingsongs_unshuffled[0]);
-                    //                   file.writeAsStringSync(jsonEncode(widget.controller.settings1.toJson()));
-                    //
-                    //                   widget.controller.index = widget.controller.settings1.lastplayingindex;
-                    //                   widget.controller.playSong();
-                    //                 },
-                    //                   padding: EdgeInsets.all(0),
-                    //                   icon: Icon(FluentIcons.play_12_filled, color: Colors.white, size: 40,),
-                    //                 ),
-                    //               ],
-                    //             ),
-                    //           ),
-                    //         ),
-                    //       ),
-                    //   ],
-                    // ),
+                              IconButton(
+                                onPressed: () async {
+                                  if(widget.controller.settings.playingSongsUnShuffled.equals(artist.songs) == false){
+                                    widget.controller.updatePlaying(artist.songs);
+                                  }
+                                  await widget.controller.indexChange(artist.songs.first);
+                                  await widget.controller.playSong();
+                                },
+                                padding: const EdgeInsets.all(0),
+                                icon: Icon(
+                                  FluentIcons.play_12_filled,
+                                  color: Colors.white,
+                                  size: height * 0.035,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      SizedBox(
+                        height: width * 0.005,
+                      ),
+                      Text(
+                        artist.name,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: smallSize,
+                          fontWeight: FontWeight.normal,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                Text(
-                  artist.name,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: smallSize,
-                    fontWeight: FontWeight.normal,
-                  ),
-                ),
-              ],
+
+              ) :
+              SizedBox(
+                height: width * 0.125,
+                width: width * 0.125,
+              );
+
+            },
+          );
+        }
+        else if(snapshot.hasError){
+          return Center(
+            child: Text(
+              '${snapshot.error} occurred',
+              style: const TextStyle(fontSize: 18),
             ),
-          ),
-
-        ) :
-        SizedBox(
-          height: width * 0.125,
-          width: width * 0.125,
-        );
-
+          );
+        }
+        else if (snapshot.connectionState == ConnectionState.waiting){
+          return const Center(
+            child: CircularProgressIndicator(
+              color: Colors.white,
+            ),
+          );
+        }
+        else{
+          return const Center(
+            child: Text(
+              'No data',
+              style: TextStyle(fontSize: 18),
+            ),
+          );
+        }
       },
     );
+
   }
 }

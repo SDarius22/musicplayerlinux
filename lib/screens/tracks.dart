@@ -1,10 +1,12 @@
 import 'dart:ui';
-import 'dart:io';
 
 import 'package:collection/collection.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
-import 'package:hovering/hovering.dart';
+import 'package:musicplayer/screens/add_screen.dart';
+import 'package:musicplayer/utils/hover_widget/stack_hover_widget.dart';
+import '../utils/hover_widget/hover_widget.dart';
+import 'package:musicplayer/screens/image_widget.dart';
 
 
 import '../domain/metadata_type.dart';
@@ -32,6 +34,7 @@ class _TracksState extends State<Tracks>{
   Widget build(BuildContext context) {
     var width = MediaQuery.of(context).size.width;
     var height = MediaQuery.of(context).size.height;
+    var query = widget.controller.songBox.query().order(MetadataType_.title).build();
     // var boldSize = height * 0.025;
     // var normalSize = height * 0.02;
     var smallSize = height * 0.015;
@@ -41,7 +44,7 @@ class _TracksState extends State<Tracks>{
         if(snapshot.hasData){
           return GridView.builder(
             padding: EdgeInsets.all(width * 0.01),
-            itemCount: widget.controller.songBox.query().order(MetadataType_.title).build().find().length + 7,
+            itemCount: query.find().length + 7,
             gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
               childAspectRatio: 0.8275,
               maxCrossAxisExtent: width * 0.125,
@@ -50,149 +53,95 @@ class _TracksState extends State<Tracks>{
             ),
             itemBuilder: (BuildContext context, int index) {
               MetadataType song = MetadataType();
-              if(index < widget.controller.songBox.query().order(MetadataType_.title).build().find().length){
-                song = widget.controller.songBox.query().order(MetadataType_.title).build().find()[index];
+              if(index < query.find().length){
+                song = query.find()[index];
               }
-              return index < widget.controller.songBox.query().order(MetadataType_.title).build().find().length?
+              return index < query.find().length?
               MouseRegion(
                 cursor: SystemMouseCursors.click,
                 child: GestureDetector(
                   onTap: () async {
+                    widget.controller.loadingNotifier.value = true;
                     //print("Playing ${widget.controller.indexNotifier.value}");
                     if (widget.controller.settings.playingSongs[widget.controller.indexNotifier.value].path != song.path) {
                       //print("path match");
-                      if(widget.controller.settings.playingSongsUnShuffled.equals(widget.controller.songBox.query().order(MetadataType_.title).build().find()) == false){
+                      if(widget.controller.settings.playingSongsUnShuffled.equals(query.find()) == false){
                         print("Updating playing songs");
-                        widget.controller.updatePlaying(widget.controller.songBox.query().order(MetadataType_.title).build().find());
+                        widget.controller.updatePlaying(query.find());
                       }
-                      await widget.controller.indexChange(widget.controller.settings.playingSongs.indexOf(song));
+                      await widget.controller.indexChange(song);
                     }
                     await widget.controller.playSong();
+                    widget.controller.loadingNotifier.value = false;
                   },
                   child: Column(
                     children: [
-                      AspectRatio(
-                        aspectRatio: 1.0,
-                        child: AnimatedContainer(
-                          duration: const Duration(milliseconds: 500),
-                          margin: EdgeInsets.only(bottom: width * 0.005),
-                          child: FutureBuilder(
-                            future: widget.controller.imageRetrieve(song.path, false),
-                            builder: (ctx, snapshot) {
-                              if (snapshot.hasData) {
-                                return HoverWidget(
-                                    hoverChild: Stack(
-                                      alignment: Alignment.center,
-                                      children: [
-                                        Container(
-                                          decoration: BoxDecoration(
-                                              color: Colors.black,
-                                              borderRadius: BorderRadius.circular(height * 0.01),
-                                              image: DecorationImage(
-                                                fit: BoxFit.cover,
-                                                image: Image.memory(snapshot.data!).image,
-                                              )
-                                          ),
-                                        ),
-                                        ClipRRect(
-                                          borderRadius: BorderRadius.circular(height * 0.01),
-                                          child: BackdropFilter(
-                                            filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                                            child: Container(
-                                              color: Colors.black.withOpacity(0.3),
-                                              alignment: Alignment.center,
-                                              child: Row(
-                                                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                                                crossAxisAlignment: CrossAxisAlignment.center,
-                                                children: [
-                                                  IconButton(
-                                                    onPressed: (){
-                                                      print("Add $index");
-                                                      // _songToAdd.add(widget.controller.songBox.query().order(MetadataType_.title).build().find()[index]);
-                                                      // setState(() {
-                                                      //   addElement = true;
-                                                      // });
-                                                    },
-                                                    padding: const EdgeInsets.all(0),
-                                                    icon: Icon(
-                                                      FluentIcons.add_12_filled,
-                                                      color: Colors.white,
-                                                      size: height * 0.035,
-                                                    ),
-                                                  ),
-                                                  ValueListenableBuilder(
-                                                    valueListenable: widget.controller.playingNotifier,
-                                                    builder: (context, value, child){
-                                                      return Icon(
-                                                        widget.controller.settings.playingSongs.isNotEmpty && widget.controller.settings.playingSongs[widget.controller.indexNotifier.value] == song && widget.controller.playingNotifier.value == true ?
-                                                        FluentIcons.pause_32_filled : FluentIcons.play_32_filled,
-                                                        size: height * 0.1,
-                                                        color: Colors.white,
-                                                      );
-                                                    },
-                                                  ),
-                                                  IconButton(
-                                                    onPressed: (){
-                                                      Navigator.push(context, MaterialPageRoute(builder: (context){
-                                                        return AlbumWidget(controller: widget.controller, album: widget.controller.albumBox.query(AlbumType_.name.equals(song.album)).build().find().first);
-                                                      }));
-                                                    },
-                                                    padding: const EdgeInsets.all(0),
-                                                    icon: Icon(
-                                                      FluentIcons.album_20_filled,
-                                                      color: Colors.white,
-                                                      size: height * 0.035,
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    onHover: (event){
-                                    },
-                                    child: Container(
-                                      decoration: BoxDecoration(
-                                          color: Colors.black,
-                                          borderRadius: BorderRadius.circular(height * 0.01),
-                                          image: DecorationImage(
-                                            fit: BoxFit.cover,
-                                            image: Image.memory(snapshot.data!).image,
-                                          )
-                                      ),
-                                    )
-                                );
-                              }
-                              else if (snapshot.hasError) {
-                                return Center(
-                                  child: Text(
-                                    '${snapshot.error} occurred',
-                                    style: const TextStyle(fontSize: 18),
-                                  ),
-                                );
-                              }
-                              else{
-                                return Container(
-                                  decoration: BoxDecoration(
-                                      color: Colors.black,
-                                      borderRadius: BorderRadius.circular(height * 0.01),
-                                      image: DecorationImage(
-                                        fit: BoxFit.cover,
-                                        image: Image.memory(File("assets/bg.png").readAsBytesSync()).image,
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(width * 0.01),
+                        child: ImageWidget(
+                          controller: widget.controller,
+                          path: song.path,
+                          buttons: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              IconButton(
+                                onPressed: (){
+                                  print("Add $index");
+                                  Navigator.push(
+                                      context,
+                                      PageRouteBuilder(
+                                        pageBuilder: (context, animation1, animation2) => AddScreen(controller: widget.controller, songs: [song]),
+                                        transitionDuration: const Duration(milliseconds: 500),
+                                        reverseTransitionDuration: const Duration(milliseconds: 500),
+                                        transitionsBuilder: (context, animation1, animation2, child) {
+                                          animation1 = CurvedAnimation(parent: animation1, curve: Curves.linear);
+                                          return ScaleTransition(
+                                            alignment: Alignment.center,
+                                            scale: animation1,
+                                            child: child,
+                                          );
+                                        },
                                       )
-                                  ),
-                                  child: const Center(
-                                    child: CircularProgressIndicator(
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                );
-                              }
-                            },
+                                  );
+                                },
+                                padding: const EdgeInsets.all(0),
+                                icon: Icon(
+                                  FluentIcons.add_12_filled,
+                                  color: Colors.white,
+                                  size: height * 0.035,
+                                ),
+                              ),
+                              ValueListenableBuilder(
+                                valueListenable: widget.controller.playingNotifier,
+                                builder: (context, value, child){
+                                  return Icon(
+                                    widget.controller.settings.playingSongs.isNotEmpty && widget.controller.settings.playingSongs[widget.controller.indexNotifier.value] == song && widget.controller.playingNotifier.value == true ?
+                                    FluentIcons.pause_32_filled : FluentIcons.play_32_filled,
+                                    size: height * 0.1,
+                                    color: Colors.white,
+                                  );
+                                },
+                              ),
+                              IconButton(
+                                onPressed: (){
+                                  Navigator.push(context, MaterialPageRoute(builder: (context){
+                                    return AlbumWidget(controller: widget.controller, album: widget.controller.albumBox.query(AlbumType_.name.equals(song.album)).build().find().first);
+                                  }));
+                                },
+                                padding: const EdgeInsets.all(0),
+                                icon: Icon(
+                                  FluentIcons.album_20_filled,
+                                  color: Colors.white,
+                                  size: height * 0.035,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
+                      ),
+                      SizedBox(
+                        height: height * 0.004,
                       ),
                       ValueListenableBuilder(
                           valueListenable: widget.controller.indexNotifier,

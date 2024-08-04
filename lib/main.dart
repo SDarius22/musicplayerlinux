@@ -10,19 +10,6 @@ import 'screens/main_screen.dart';
 late ObjectBox objectBox;
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
-
-  // await windowManager.ensureInitialized();
-  // WindowOptions windowOptions = const WindowOptions(
-  //   center: true,
-  //   titleBarStyle: TitleBarStyle.hidden,
-  //   // skipTaskbar: true,
-  // );
-  // windowManager.waitUntilReadyToShow(windowOptions,() async {
-  //   await windowManager.maximize();
-  //   await windowManager.show();
-  //   await windowManager.focus();
-  // });
   objectBox = await ObjectBox.create();
   Controller controller = Controller(objectBox);
 
@@ -34,6 +21,7 @@ Future<void> main() async {
           scaffoldBackgroundColor: const Color(0xFF0E0E0E),
         ),
           debugShowCheckedModeBanner: false,
+          //showPerformanceOverlay: true,
           home: MyApp(controller: controller),
       )
   );

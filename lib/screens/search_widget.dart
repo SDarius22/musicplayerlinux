@@ -2,7 +2,7 @@ import 'dart:io';
 import 'dart:ui';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
-import 'package:hovering/hovering.dart';
+import '../utils/hover_widget/hover_widget.dart';
 import '../controller/controller.dart';
 
 class SearchWidget extends StatefulWidget {
@@ -296,16 +296,17 @@ class _SearchWidget extends State<SearchWidget> {
                         child: GestureDetector(
                           behavior: HitTestBehavior.translucent,
                           onTap: (){
-                            widget.controller.settings.playingSongs.clear();
-                            widget.controller.settings.playingSongsUnShuffled.clear();
-                            widget.controller.settings.playingSongs.addAll(widget.controller.found.value);
-                            widget.controller.settings.playingSongsUnShuffled.addAll(widget.controller.found.value);
-                            if (widget.controller.shuffleNotifier.value) {
-                              widget.controller.settings.playingSongs.shuffle();
-                            }
-                            widget.controller.settingsBox.put(widget.controller.settings);
-                            widget.controller.indexChange(widget.controller.settings.playingSongs.indexOf(widget.controller.found.value[index]));
-                            widget.controller.playSong();
+                            ///TODO: Redo this
+                            // widget.controller.settings.playingSongs.clear();
+                            // widget.controller.settings.playingSongsUnShuffled.clear();
+                            // widget.controller.settings.playingSongs.addAll(widget.controller.found.value);
+                            // widget.controller.settings.playingSongsUnShuffled.addAll(widget.controller.found.value);
+                            // if (widget.controller.shuffleNotifier.value) {
+                            //   widget.controller.settings.playingSongs.shuffle();
+                            // }
+                            // widget.controller.settingsBox.put(widget.controller.settings);
+                            // widget.controller.indexChange(widget.controller.settings.playingSongs.indexOf(widget.controller.found.value[index]));
+                            // widget.controller.playSong();
                           },
                           child: FutureBuilder(
                             future: widget.controller.imageRetrieve(widget.controller.found.value[index].path, false),

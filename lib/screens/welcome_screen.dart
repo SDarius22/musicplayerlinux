@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
-import 'package:window_manager/window_manager.dart';
+
 
 import '../controller/controller.dart';
 import 'home.dart';
@@ -24,66 +24,6 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
     var boldSize = height * 0.025;
     var normalSize = height * 0.02;
     return Scaffold(
-      appBar: PreferredSize(
-        preferredSize: Size(
-          double.maxFinite,
-          height * 0.04,
-        ),
-        child: DragToMoveArea(
-          child: ValueListenableBuilder(
-              valueListenable: widget.controller.colorNotifier,
-              builder: (context, value, child){
-                return AppBar(
-                  title: Text(
-                    'Music Player',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: normalSize,
-                    ),
-                  ),
-                  backgroundColor: widget.controller.colorNotifier2.value,
-                  actions: [
-                    IconButton(
-                      onPressed: () => windowManager.minimize(),
-                      icon: Icon(
-                        FluentIcons.spacebar_20_filled,
-                        size: height * 0.02,
-                        color: Colors.white,
-                      ),
-                    ),
-                    IconButton(
-                      onPressed: () async {
-                        if (await windowManager.isMaximized()) {
-                          //print("Restoring");
-                          await windowManager.unmaximize();
-                          //await windowManager.setSize(Size(width * 0.6, height * 0.6));
-                        } else {
-                          await windowManager.maximize();
-                        }
-
-                      },
-                      icon: Icon(
-                        FluentIcons.maximize_16_regular,
-                        size: height * 0.02,
-                        color: Colors.white,
-                      ),
-                    ),
-                    IconButton(
-                      onPressed: () => windowManager.close(),
-                      icon: Icon(
-                        Icons.close_outlined,
-                        size: height * 0.02,
-                        color: Colors.white,
-
-                      ),
-                    ),
-                  ],
-                );
-              }
-          ),
-
-        ),
-      ),
       body: SafeArea(
         child: Container(
           width: width,
@@ -139,7 +79,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                     onPressed: () async {
                       String chosen = await FilePicker.platform.getDirectoryPath() ?? "";
                       if(chosen != "") {
-                        print(chosen);
+                        //print(chosen);
                         setState(() {
                           widget.controller.settings.directory = chosen;
                           directory = chosen;

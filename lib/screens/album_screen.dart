@@ -3,12 +3,9 @@ import 'dart:ui';
 import 'package:collection/collection.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
-import 'package:hovering/hovering.dart';
+import '../utils/hover_widget/hover_widget.dart';
 import 'package:musicplayer/domain/album_type.dart';
-import 'package:musicplayer/domain/artist_type.dart';
-import 'package:window_manager/window_manager.dart';
 import '../controller/controller.dart';
-import 'settings.dart';
 
 class AlbumWidget extends StatefulWidget {
   final Controller controller;
@@ -20,21 +17,30 @@ class AlbumWidget extends StatefulWidget {
 }
 
 class _AlbumWidget extends State<AlbumWidget> {
-  bool volume = true, search = false;
-  final ValueNotifier<bool> _visible = ValueNotifier(false);
-  FocusNode searchNode = FocusNode();
-
   String featuredArtists = "";
+  String duration = "0 seconds";
+  late Future imageFuture;
 
 
   @override
   void initState() {
-    for (ArtistType artist in widget.album.artists){
-      featuredArtists += artist.name;
-      if(artist != widget.album.artists.last) {
-        featuredArtists += ", ";
-      }
+    ///TODO: No more featured artists, just album artist(s) -> implement and change objectBox
+    // for (ArtistType artist in widget.album.artists){
+    //   featuredArtists += artist.name;
+    //   if(artist != widget.album.artists.last) {
+    //     featuredArtists += ", ";
+    //   }
+    // }
+    imageFuture = widget.controller.imageRetrieve(widget.album.songs.first.path, false);
+    featuredArtists = widget.album.songs.first.artists;
+    int totalDuration = 0;
+    for (int i = 0; i < widget.album.songs.length; i++){
+      totalDuration += widget.album.songs[i].duration;
     }
+    duration = "${totalDuration ~/ 3600} hours, ${(totalDuration % 3600 ~/ 60)} minutes and ${(totalDuration % 60)} seconds";
+    duration = duration.replaceAll("0 hours, ", "");
+    duration = duration.replaceAll("0 minutes and ", "");
+
     super.initState();
   }
 
@@ -234,8 +240,7 @@ class _AlbumWidget extends State<AlbumWidget> {
       //   ),
       // ),
       body: SafeArea(
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 500),
+        child: Container(
           width: width,
           height: height,
           padding: EdgeInsets.only(
@@ -263,60 +268,56 @@ class _AlbumWidget extends State<AlbumWidget> {
               AnimatedContainer(
                 duration: const Duration(milliseconds: 500),
                 width: width * 0.4,
+                padding: EdgeInsets.only(
+                  top: height * 0.1,
+                  bottom: height * 0.05,
+                ),
                 child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.start,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children:[
-                    AnimatedContainer(
-                      duration: const Duration(milliseconds: 500),
-                      curve: Curves.easeInOut,
-                      height: height * 0.5,
-                      padding: EdgeInsets.only(
-                        bottom: height * 0.01,
-                      ),
-                      //color: Colors.red,
-                      child: AspectRatio(
-                        aspectRatio: 1.0,
-                        child: FutureBuilder(
-                          future: widget.controller.imageRetrieve(widget.album.songs.first.path, false),
-                          builder: (context, snapshot){
-                            if(snapshot.hasData) {
-                              return DecoratedBox(
-                                decoration: BoxDecoration(
-                                  color: Colors.black,
-                                  borderRadius: BorderRadius.circular(width * 0.025),
-                                  image: DecorationImage(
-                                    image: Image.memory(snapshot.data!).image,
-                                    fit: BoxFit.cover,
-                                  ),
-                                ),
-                              );
-                            }
-                            else{
-                              return DecoratedBox(
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(10),
-                                  image: DecorationImage(
-                                    image: Image.memory(File("assets/bg.png").readAsBytesSync()).image,
-                                    fit: BoxFit.cover,
-                                  ),
-                                ),
-                              );
-                            }
-                          }
+                    Hero(
+                      tag: widget.album.name,
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 500),
+                        curve: Curves.easeInOut,
+                        height: height * 0.5,
+                        padding: EdgeInsets.only(
+                          bottom: height * 0.01,
+                        ),
+                        //color: Colors.red,
+                        child: AspectRatio(
+                          aspectRatio: 1.0,
+                          child: FutureBuilder(
+                              future: imageFuture,
+                              builder: (context, snapshot){
+                                if(snapshot.hasData) {
+                                  return DecoratedBox(
+                                    decoration: BoxDecoration(
+                                      color: Colors.black,
+                                      borderRadius: BorderRadius.circular(width * 0.025),
+                                      image: DecorationImage(
+                                        image: Image.memory(snapshot.data!).image,
+                                        fit: BoxFit.cover,
+                                      ),
+                                    ),
+                                  );
+                                }
+                                else{
+                                  return DecoratedBox(
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(10),
+                                      image: DecorationImage(
+                                        image: Image.memory(File("assets/bg.png").readAsBytesSync()).image,
+                                        fit: BoxFit.cover,
+                                      ),
+                                    ),
+                                  );
+                                }
+                              }
+                          ),
                         ),
                       ),
-                    ),
-                    Text(
-                      "Album name:",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: normalSize,
-                        fontWeight: FontWeight.normal,
-                      ),
-                    ),
-                    SizedBox(
-                      height: height * 0.005,
                     ),
                     Text(
                       widget.album.name,
@@ -329,17 +330,6 @@ class _AlbumWidget extends State<AlbumWidget> {
                       ),
                     ),
                     SizedBox(
-                      height: height * 0.01,
-                    ),
-                    Text(
-                      "Featured artists:",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: normalSize,
-                        fontWeight: FontWeight.normal,
-                      ),
-                    ),
-                    SizedBox(
                       height: height * 0.005,
                     ),
                     Text(
@@ -348,32 +338,21 @@ class _AlbumWidget extends State<AlbumWidget> {
                       overflow: TextOverflow.ellipsis,
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        fontSize: boldSize,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    SizedBox(
-                      height: height * 0.01,
-                    ),
-                    Text(
-                      "Album duration:",
-                      style: TextStyle(
-                        color: Colors.white,
                         fontSize: normalSize,
-                        fontWeight: FontWeight.normal,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
                     SizedBox(
                       height: height * 0.005,
                     ),
                     Text(
-                      widget.album.duration,
+                      duration,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        fontSize: boldSize,
-                        fontWeight: FontWeight.bold,
+                        fontSize: smallSize,
+                        fontWeight: FontWeight.normal,
                       ),
                     ),
                     SizedBox(
@@ -390,7 +369,7 @@ class _AlbumWidget extends State<AlbumWidget> {
                             if(widget.controller.settings.playingSongsUnShuffled.equals(widget.album.songs) == false){
                               widget.controller.updatePlaying(widget.album.songs);
                             }
-                            await widget.controller.indexChange(widget.controller.settings.playingSongs.indexOf(widget.controller.settings.playingSongsUnShuffled[0]));
+                            await widget.controller.indexChange(widget.album.songs.first);
                             await widget.controller.playSong();
                         },
                           icon: Icon(
@@ -425,8 +404,8 @@ class _AlbumWidget extends State<AlbumWidget> {
                 width: width * 0.45,
                 padding: EdgeInsets.only(
                   left: width * 0.02,
-                  top: height * 0.05,
-                  bottom: height * 0.05,
+                  top: height * 0.1,
+                  bottom: height * 0.2,
                 ),
                 child: ListView.builder(
                   itemCount: widget.album.songs.length,
@@ -446,8 +425,9 @@ class _AlbumWidget extends State<AlbumWidget> {
                             if(widget.controller.settings.playingSongs.equals(widget.album.songs) == false){
                               widget.controller.updatePlaying(widget.album.songs);
                             }
-                            await widget.controller.indexChange(widget.controller.settings.playingSongs.indexOf(widget.controller.settings.playingSongsUnShuffled[index]));
+                            await widget.controller.indexChange(widget.controller.settings.playingSongsUnShuffled[index]);
                             await widget.controller.playSong();
+
                           },
                           child: FutureBuilder(
                             future: widget.controller.imageRetrieve(widget.album.songs[index].path, false),

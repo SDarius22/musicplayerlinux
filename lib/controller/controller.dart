@@ -2,13 +2,14 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:http/http.dart' as http;
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:audiotags/audiotags.dart';
 import 'package:deezer/deezer.dart' as deezer;
-
+import 'package:system_tray/system_tray.dart';
 import '../domain/album_type.dart';
 import '../domain/artist_type.dart';
 import '../domain/metadata_type.dart';
@@ -31,12 +32,15 @@ class Controller{
   late Box<ArtistType> artistBox;
   Settings settings = Settings();
   AudioPlayer audioPlayer = AudioPlayer();
+  final SystemTray _systemTray = SystemTray();
+  final Menu _menuMain = Menu();
 
   ValueNotifier<double> volumeNotifier = ValueNotifier<double>(0.5);
   ValueNotifier<double> speedNotifier = ValueNotifier<double>(1);
   ValueNotifier<int> indexNotifier = ValueNotifier<int>(0);
   ValueNotifier<int> sliderNotifier = ValueNotifier<int>(0);
   ValueNotifier<int> sleepTimerNotifier = ValueNotifier<int>(0);
+  ValueNotifier<bool> loadingNotifier = ValueNotifier<bool>(false);
   ValueNotifier<bool> minimizedNotifier = ValueNotifier<bool>(true);
   ValueNotifier<bool> hiddenNotifier = ValueNotifier<bool>(false);
   ValueNotifier<bool> listNotifier = ValueNotifier<bool>(false);
@@ -53,6 +57,7 @@ class Controller{
   ValueNotifier<Uint8List> imageNotifier = ValueNotifier<Uint8List>(File("./assets/bg.png").readAsBytesSync());
 
   Controller(ObjectBox objectBox) {
+    initSystemTray();
     settingsBox = objectBox.store.box<Settings>();
     if (settingsBox.isEmpty()) {
       print("Initialising settings");
@@ -87,25 +92,40 @@ class Controller{
         }
       }
     });
-
   }
 
 
-  Future<void> updatePlaying(List<MetadataType> songs) async {
-    settings.playingSongs.clear();
-    settings.playingSongsUnShuffled.clear();
+  Future<void> addToQueue(List<MetadataType> songs) async {
+    loadingNotifier.value = true;
     for(int i = 0; i < songs.length; i++){
-      MetadataType song = songs[i];
-      song.orderPosition = i;
-      //print("${song.title} - ${song.orderPosition}");
-      songBox.put(song);
-      settings.playingSongs.add(songs[i]);
-      settings.playingSongsUnShuffled.add(songs[i]);
+      songs[i].orderPosition = settings.playingSongs.length + i;
+      songBox.put(songs[i]);
     }
+    settings.playingSongs.addAll(songs);
+    settings.playingSongsUnShuffled.addAll(songs);
     if (shuffleNotifier.value){
       settings.playingSongs.shuffle();
     }
     settingsBox.put(settings);
+    loadingNotifier.value = false;
+  }
+
+
+  Future<void> updatePlaying(List<MetadataType> songs) async {
+    loadingNotifier.value = true;
+    settings.playingSongs.clear();
+    settings.playingSongsUnShuffled.clear();
+    for(int i = 0; i < songs.length; i++){
+      songs[i].orderPosition = i;
+      songBox.put(songs[i]);
+    }
+    settings.playingSongs.addAll(songs);
+    settings.playingSongsUnShuffled.addAll(songs);
+    if (shuffleNotifier.value){
+      settings.playingSongs.shuffle();
+    }
+    settingsBox.put(settings);
+    loadingNotifier.value = false;
   }
 
   Future<void> retrieveSongs() async {
@@ -130,6 +150,7 @@ class Controller{
             paths.add(allEntities[i].path);
             var song = await retrieveSong(allEntities[i].path, allEntities);
             song.orderPosition = songs.length;
+            print(song.lyricsPath);
             songBox.put(song);
           }
         }
@@ -154,7 +175,7 @@ class Controller{
     }
 
     //print(settings.playingSongsUnShuffled.first.title);
-    await indexChange(settings.lastPlayingIndex);
+    await indexChange(settings.playingSongs[settings.lastPlayingIndex]);
     finishedRetrievingNotifier.value = true;
   }
 
@@ -216,7 +237,9 @@ class Controller{
       metadataVariable.discNumber = metadataVar.discNumber ?? 0;
     }
     var lyrPath = path.replaceRange(path.lastIndexOf("."), path.length, ".lrc");
+    //print(lyrPath);
     bool exists = allEntities.any((element) => element.path == lyrPath);
+    //print(exists);
     if (!exists) {
       bool lyricsFound = false;
       if(path.endsWith(".flac")) {
@@ -248,6 +271,9 @@ class Controller{
       if(!lyricsFound){
         metadataVariable.lyricsPath = "No Lyrics";
       }
+    }
+    else{
+      metadataVariable.lyricsPath = lyrPath;
     }
     if(metadataVariable.duration == 0){
       //print("duration is 0");
@@ -499,7 +525,7 @@ class Controller{
   }
 
   void lyricModelReset() {
-    //print(playingSongs[indexNotifier.value].lyricsPath);
+    print(settings.playingSongs[indexNotifier.value].lyricsPath);
     if (settings.playingSongs[indexNotifier.value].lyricsPath.contains(".lrc")) {
       File lyrFile = File(settings.playingSongs[indexNotifier.value].lyricsPath);
       lyricModelNotifier.value = LyricsModelBuilder.create().bindLyricToMain(lyrFile.readAsStringSync()).getModel();
@@ -514,15 +540,14 @@ class Controller{
     }
   }
 
-  Future<void> indexChange(int newIndex) async{
+  Future<void> indexChange(MetadataType song) async{
     sliderNotifier.value = 0;
     playingNotifier.value = false;
-    indexNotifier.value = newIndex;
-    settings.lastPlayingIndex = newIndex;
+    indexNotifier.value = settings.playingSongs.indexOf(song);
+    settings.lastPlayingIndex = indexNotifier.value;
     settingsBox.put(settings);
-    print(settings.playingSongs[newIndex].title);
 
-    await imageRetrieve(settings.playingSongs[newIndex].path, true);
+    await imageRetrieve(song.path, true);
     DominantColors extractor = DominantColors(bytes: imageNotifier.value, dominantColorsCount: 2);
     var colors = extractor.extractDominantColors();
     if(colors.first.computeLuminance() > 0.179 && colors.last.computeLuminance() > 0.179){
@@ -557,6 +582,7 @@ class Controller{
       await audioPlayer.play(DeviceFileSource(settings.playingSongs[indexNotifier.value].path), position: Duration(milliseconds: sliderNotifier.value));
       playingNotifier.value = true;
     }
+    initSystemTray();
   }
 
   Future<void> previousSong() async {
@@ -570,7 +596,7 @@ class Controller{
       } else {
         newIndex = indexNotifier.value - 1;
       }
-      await indexChange(newIndex);
+      await indexChange(settings.playingSongs[newIndex]);
       playSong();
     }
   }
@@ -582,7 +608,7 @@ class Controller{
     } else {
       newIndex = indexNotifier.value + 1;
     }
-    await indexChange(newIndex);
+    await indexChange(settings.playingSongs[newIndex]);
     playSong();
   }
 
@@ -599,11 +625,13 @@ class Controller{
 
   void setRepeat() {
     repeatNotifier.value = !repeatNotifier.value;
+    initSystemTray();
     print("repeat: ${repeatNotifier.value}");
   }
 
   void setShuffle() {
     shuffleNotifier.value = !shuffleNotifier.value;
+    initSystemTray();
     print("shuffle: ${shuffleNotifier.value}");
     if (shuffleNotifier.value){
       settings.playingSongs.shuffle();
@@ -613,5 +641,82 @@ class Controller{
       settings.playingSongs.addAll(settings.playingSongsUnShuffled);
     }
     settingsBox.put(settings);
+  }
+  Future<void> initSystemTray() async {
+    await _systemTray.initSystemTray(iconPath: 'assets/bg.png');
+    _systemTray.registerSystemTrayEventHandler((eventName) {
+     // debugPrint("eventName: $eventName");
+      if (eventName == kSystemTrayEventClick) {
+        _systemTray.popUpContextMenu();
+      }
+    });
+
+    await _menuMain.buildFrom(
+      [
+        MenuItemLabel(
+          label: 'Music Player',
+          image: 'bg.png',
+          enabled: false,
+        ),
+        MenuSeparator(),
+        MenuItemLabel(
+          label: 'Previous',
+          //image: getImagePath('darts_icon'),
+          onClicked: (menuItem) async {
+            debugPrint("click 'Previous'");
+            await previousSong();
+          },
+        ),
+        MenuItemLabel(
+          label: playingNotifier.value ? 'Pause' : 'Play',
+          //image: getImagePath('darts_icon'),
+          onClicked: (menuItem) async {
+            debugPrint("click 'Play'");
+            await playSong();
+          },
+        ),
+        MenuItemLabel(
+          label: 'Next',
+          //image: getImagePath('darts_icon'),
+          onClicked: (menuItem) async {
+            debugPrint("click 'Next'");
+            await nextSong();
+          },
+        ),
+        MenuSeparator(),
+        MenuItemCheckbox(
+          label: 'Repeat',
+          name: 'repeat',
+          checked: repeatNotifier.value,
+          onClicked: (menuItem) async {
+            debugPrint("click 'Repeat'");
+            await menuItem.setCheck(!menuItem.checked);
+            setRepeat();
+          },
+        ),
+        MenuItemCheckbox(
+          label: 'Shuffle',
+          name: 'shuffle',
+          checked: shuffleNotifier.value,
+          onClicked: (menuItem) async {
+            debugPrint("click 'Shuffle'");
+            await menuItem.setCheck(!menuItem.checked);
+            setShuffle();
+          },
+        ),
+        MenuSeparator(),
+        MenuItemLabel(
+            label: 'Show',
+            //image: getImagePath('darts_icon'),
+            onClicked: (menuItem) => appWindow.show()
+        ),
+        MenuItemLabel(
+            label: 'Exit',
+            //image: getImagePath('darts_icon'),
+            onClicked: (menuItem) => appWindow.close()
+        ),
+      ],
+    );
+    _systemTray.setContextMenu(_menuMain);
   }
 }
