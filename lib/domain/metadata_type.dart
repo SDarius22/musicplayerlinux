@@ -9,6 +9,7 @@ class MetadataType{
   String title = "Unknown Song";
   String artists = "Unknown artist";
   String album = "Unknown album";
+  String albumArtist = "Unknown album artist";
   int duration = 0;
   String path = "";
   String lyricsPath = "No lyrics";

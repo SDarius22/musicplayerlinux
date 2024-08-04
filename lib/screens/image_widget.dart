@@ -49,7 +49,7 @@ class _ImageWidget extends State<ImageWidget> {
                   alignment: Alignment.center,
                   children: [
                     Hero(
-                      tag: widget.heroTag ?? widget.path,
+                      tag: widget.heroTag ?? "${widget.path}hero",
                       child: Container(
                         decoration: BoxDecoration(
                             color: Colors.black,

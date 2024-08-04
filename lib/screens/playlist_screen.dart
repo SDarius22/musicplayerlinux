@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:collection/collection.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
+import '../domain/metadata_type.dart';
 import '../utils/hover_widget/hover_widget.dart';
 import 'package:musicplayer/domain/artist_type.dart';
 import 'package:musicplayer/domain/playlist_type.dart';
@@ -20,17 +21,12 @@ class _PlaylistWidget extends State<PlaylistWidget> {
   String featuredArtists = "";
   String duration = "0 seconds";
   late Future imageFuture;
+  late List<MetadataType> songs;
 
 
   @override
   void initState() {
     imageFuture = widget.controller.imageRetrieve(widget.playlist.songs.first.path, false);
-    for (ArtistType artist in widget.playlist.artists) {
-      featuredArtists += artist.name;
-      if (artist != widget.playlist.artists.last) {
-        featuredArtists += ", ";
-      }
-    }
     int totalDuration = 0;
     for (int i = 0; i < widget.playlist.songs.length; i++){
       totalDuration += widget.playlist.songs[i].duration;
@@ -218,6 +214,7 @@ class _PlaylistWidget extends State<PlaylistWidget> {
                 child: ListView.builder(
                   itemCount: widget.playlist.songs.length,
                   itemBuilder: (context, int index) {
+                    //print("Building ${widget.playlist.songs[widget.playlist.order[index]].title}");
                     return AnimatedContainer(
                       duration: const Duration(milliseconds: 500),
                       curve: Curves.easeInOut,

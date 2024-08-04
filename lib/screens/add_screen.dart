@@ -77,6 +77,9 @@ class _AddScreenState extends State<AddScreen> {
                           else{
                             var playlist = query.find()[i-1];
                             playlist.songs.addAll(widget.songs);
+                            // for(int i = 0; i < widget.songs.length; i++){
+                            //   playlist.order.add(playlist.songs.indexOf(widget.songs[i]));
+                            // }
                             widget.controller.playlistBox.put(playlist);
                           }
                         }
@@ -109,7 +112,8 @@ class _AddScreenState extends State<AddScreen> {
                       if(index > 0 && index <= query.find().length){
                         playlist = query.find()[index-1];
                       }
-                      return MouseRegion(
+                      return index <= query.find().length ?
+                      MouseRegion(
                         cursor: SystemMouseCursors.click,
                         child: GestureDetector(
                           onTap: () {
@@ -190,239 +194,10 @@ class _AddScreenState extends State<AddScreen> {
                             ],
                           ),
                         ),
+                      ) : SizedBox(
+                        width: width * 0.125,
+                        height: width * 0.125,
                       );
-                      // return index == 0 ?
-                      //     StackHoverWidget(
-                      //         topWidget: ClipRRect(
-                      //           child: BackdropFilter(
-                      //             filter: ImageFilter.blur(
-                      //                 sigmaX: selected.contains(index) ? 10 : 0,
-                      //                 sigmaY: selected.contains(index) ? 10 : 0
-                      //             ),
-                      //             child: Container(
-                      //               color: _queueinatp ? Colors.black.withOpacity(0.3) : Colors.transparent,
-                      //               alignment: Alignment.center,
-                      //               child: _queueinatp ? Icon(FluentIcons.checkmark_16_filled, size: 100, color: Colors.white,) : null,
-                      //             ),
-                      //           ),
-                      //         ),
-                      //         bottomWidget: Container(
-                      //           height: 250,
-                      //           width: 250,
-                      //           child: DecoratedBox(
-                      //             decoration: BoxDecoration(
-                      //               borderRadius: BorderRadius.circular(10),
-                      //             ),
-                      //             child: Icon(FluentIcons.text_bullet_list_add_20_filled, size: 100, color: Colors.white,),
-                      //           ),
-                      //         ),
-                      //     ) :
-                      // // MouseRegion(
-                      // //   cursor: SystemMouseCursors.click,
-                      // //   onEnter: (event){
-                      // //     setState(() {
-                      // //       _hovereditem3 = -2;
-                      // //     });
-                      // //   },
-                      // //   onExit: _incrementExit3,
-                      // //   child: GestureDetector(
-                      // //     onTap: (){
-                      // //       print("tapped on queue");
-                      // //       if(_queueinatp)
-                      // //       {
-                      // //         setState(() {
-                      // //           _queueinatp = false;
-                      // //         });
-                      // //       }
-                      // //       else
-                      // //       {
-                      // //         setState(() {
-                      // //           _queueinatp = true;
-                      // //         });
-                      // //       }
-                      // //     },
-                      // //     child: Column(
-                      // //       children: [
-                      // //         Container(
-                      // //             height: 200,
-                      // //             width: 200,
-                      // //             child: Stack(
-                      // //               children: [
-                      // //
-                      // //
-                      // //
-                      // //               ],
-                      // //             )
-                      // //         ),
-                      // //
-                      // //         Container(
-                      // //           height: 10,
-                      // //         ),
-                      // //         Text(
-                      // //           "Current queue",
-                      // //           style: TextStyle(
-                      // //             color: Colors.white,
-                      // //             fontSize: 18,
-                      // //             fontWeight: FontWeight.bold,
-                      // //           ),
-                      // //           textAlign: TextAlign.center,
-                      // //         ),
-                      // //       ],
-                      // //     ),
-                      // //   ),
-                      // //
-                      // // ) :
-                      // Container(
-                      //   child:
-                      //   MouseRegion(
-                      //     cursor: SystemMouseCursors.click,
-                      //     onEnter: (event){
-                      //       setState(() {
-                      //         _hovereditem3 = index-1;
-                      //       });
-                      //     },
-                      //     onExit: _incrementExit3,
-                      //     child: GestureDetector(
-                      //       onTap: (){
-                      //         print("tapped on ${allplaylists[index-1].name}");
-                      //         if(addtoplaylists.contains(allplaylists[index-1])){
-                      //           addtoplaylists.remove(allplaylists[index-1]);
-                      //         }
-                      //         else{
-                      //           addtoplaylists.add(allplaylists[index-1]);
-                      //         }
-                      //         setState(() {
-                      //
-                      //         });
-                      //       },
-                      //       child: Column(
-                      //         children: [
-                      //           Container(
-                      //               height: 200,
-                      //               width: 200,
-                      //               child: Stack(
-                      //                 children: [
-                      //                   allplaylists[index-1].songs.first.imageloaded?
-                      //                   Container(
-                      //                       height: 200,
-                      //                       width: 200,
-                      //                       child: DecoratedBox(
-                      //                         decoration: BoxDecoration(
-                      //                             color: Colors.black,
-                      //                             borderRadius: BorderRadius.circular(10),
-                      //                             image: DecorationImage(
-                      //                               fit: BoxFit.cover,
-                      //                               image: Image.memory(allplaylists[index-1].songs.first.image).image,
-                      //                             )
-                      //                         ),
-                      //                       )
-                      //                   ):
-                      //                   loading?
-                      //                   Container(
-                      //                       height: 200,
-                      //                       width: 200,
-                      //                       child: DecoratedBox(
-                      //                         decoration: BoxDecoration(
-                      //                             color: Colors.black,
-                      //                             borderRadius: BorderRadius.circular(10),
-                      //                             image: DecorationImage(
-                      //                               fit: BoxFit.cover,
-                      //                               image: Image.memory(File("assets\\bg.png").readAsBytesSync()).image,
-                      //                             )
-                      //                         ),
-                      //                         child: Center(
-                      //                           child: CircularProgressIndicator(
-                      //                             color: Colors.white,
-                      //                           ),
-                      //                         ),
-                      //                       )
-                      //                   ):
-                      //                   FutureBuilder(
-                      //                     builder: (ctx, snapshot) {
-                      //                       if (snapshot.hasData) {
-                      //                         return
-                      //                           Container(
-                      //                               height: 200,
-                      //                               width: 200,
-                      //                               child: DecoratedBox(
-                      //                                 decoration: BoxDecoration(
-                      //                                     color: Colors.black,
-                      //                                     borderRadius: BorderRadius.circular(10),
-                      //                                     image: DecorationImage(
-                      //                                       fit: BoxFit.cover,
-                      //                                       image: Image.memory(snapshot.data!).image,
-                      //                                     )
-                      //                                 ),
-                      //                               )
-                      //                           );
-                      //                       }
-                      //                       else if (snapshot.hasError) {
-                      //                         return Center(
-                      //                           child: Text(
-                      //                             '${snapshot.error} occurred',
-                      //                             style: TextStyle(fontSize: 18),
-                      //                           ),
-                      //                         );
-                      //                       } else{
-                      //                         return
-                      //                           Container(
-                      //                               height: 200,
-                      //                               width: 200,
-                      //                               child: DecoratedBox(
-                      //                                 decoration: BoxDecoration(
-                      //                                     color: Colors.black,
-                      //                                     borderRadius: BorderRadius.circular(10),
-                      //                                     image: DecorationImage(
-                      //                                       fit: BoxFit.cover,
-                      //                                       image: Image.memory(File("assets\\bg.png").readAsBytesSync()).image,
-                      //                                     )
-                      //                                 ),
-                      //                                 child: Center(
-                      //                                   child: CircularProgressIndicator(
-                      //                                     color: Colors.white,
-                      //                                   ),
-                      //                                 ),
-                      //                               )
-                      //                           );
-                      //                       }
-                      //                     },
-                      //                     future: imageretriever(allplaylists[index-1].songs.first.path),
-                      //                   ),
-                      //                   ClipRRect(
-                      //                     // Clip it cleanly.
-                      //                     child: BackdropFilter(
-                      //                       filter: addtoplaylists.contains(allplaylists[index-1]) || _hovereditem3 == index-1 ? ImageFilter.blur(sigmaX: 10, sigmaY: 10) : ImageFilter.blur(sigmaX: 0, sigmaY: 0),
-                      //                       child: Container(
-                      //                         color: addtoplaylists.contains(allplaylists[index-1]) ? Colors.black.withOpacity(0.3) : Colors.transparent,
-                      //                         alignment: Alignment.center,
-                      //                         child: addtoplaylists.contains(allplaylists[index-1]) ? Icon(FluentIcons.checkmark_16_filled, size: 100, color: Colors.white,) : null,
-                      //                       ),
-                      //                     ),
-                      //                   ),
-                      //
-                      //                 ],
-                      //               )
-                      //           ),
-                      //
-                      //           Container(
-                      //             height: 10,
-                      //           ),
-                      //           Text(
-                      //             allplaylists[index-1].name.length > 45 ? allplaylists[index-1].name.substring(0, 45) + "..." : allplaylists[index-1].name,
-                      //             style: TextStyle(
-                      //               color: Colors.white,
-                      //               fontSize: 18,
-                      //               fontWeight: FontWeight.bold,
-                      //             ),
-                      //             textAlign: TextAlign.center,
-                      //           ),
-                      //         ],
-                      //       ),
-                      //     ),
-                      //
-                      //   ),
-                      // );
-
                     },
                   ),
                 ),

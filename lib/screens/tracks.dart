@@ -77,6 +77,7 @@ class _TracksState extends State<Tracks>{
                         child: ImageWidget(
                           controller: widget.controller,
                           path: song.path,
+                          heroTag: "${song.path}+$index",
                           buttons: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                             crossAxisAlignment: CrossAxisAlignment.center,

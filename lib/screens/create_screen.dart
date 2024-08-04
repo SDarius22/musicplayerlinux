@@ -6,7 +6,6 @@ import 'package:musicplayer/domain/metadata_type.dart';
 import 'package:musicplayer/domain/playlist_type.dart';
 import '../controller/controller.dart';
 import '../utils/hover_widget/hover_widget.dart';
-import 'image_widget.dart';
 
 class CreateScreen extends StatefulWidget {
   final Controller controller;
@@ -153,7 +152,8 @@ class _CreateScreenState extends State<CreateScreen> {
                             color: Colors.white,
                             fontSize: smallSize,
                           ),
-                          labelText: 'Search', suffixIcon: Icon(FluentIcons.search_16_filled, color: Colors.white, size: height * 0.02,)),
+                          labelText: 'Search', suffixIcon: Icon(FluentIcons.search_16_filled, color: Colors.white, size: height * 0.02,)
+                      ),
                     ),
                     SizedBox(
                       height: height * 0.02,
@@ -296,7 +296,7 @@ class _CreateScreenState extends State<CreateScreen> {
                                           padding: EdgeInsets.all(width * 0.005),
                                           decoration: BoxDecoration(
                                             borderRadius: BorderRadius.circular(height * 0.01),
-                                            color: Colors.transparent,
+                                            color: const Color(0xFF0E0E0E),
                                           ),
                                           child: Row(
                                             children: [

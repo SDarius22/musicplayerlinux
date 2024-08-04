@@ -1,9 +1,11 @@
 import 'dart:io';
 import 'dart:ui';
+import 'package:collection/collection.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import '../utils/hover_widget/hover_widget.dart';
 import '../controller/controller.dart';
+import 'add_screen.dart';
 
 class SearchWidget extends StatefulWidget {
   final Controller controller;
@@ -78,341 +80,223 @@ class _SearchWidget extends State<SearchWidget> {
                       child: MouseRegion(
                         cursor: SystemMouseCursors.click,
                         child: GestureDetector(
-                          behavior: HitTestBehavior.translucent,
-                          onTap: (){
-                            ///TODO: Redo this
-                            // widget.controller.settings.playingSongs.clear();
-                            // widget.controller.settings.playingSongsUnShuffled.clear();
-                            // widget.controller.settings.playingSongs.addAll(widget.controller.found.value);
-                            // widget.controller.settings.playingSongsUnShuffled.addAll(widget.controller.found.value);
-                            // if (widget.controller.shuffleNotifier.value) {
-                            //   widget.controller.settings.playingSongs.shuffle();
-                            // }
-                            // widget.controller.settingsBox.put(widget.controller.settings);
-                            // widget.controller.indexChange(widget.controller.settings.playingSongs.indexOf(widget.controller.found.value[index]));
-                            // widget.controller.playSong();
-                          },
-                          child: FutureBuilder(
-                            future: widget.controller.imageRetrieve(widget.controller.found.value[index].path, false),
-                            builder: (context, snapshot){
-                              return HoverWidget(
-                                hoverChild: Container(
-                                  padding: EdgeInsets.all(width * 0.005),
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(height * 0.01),
-                                    color: const Color(0xFF242424),
-                                  ),
-                                  child: Row(
-                                    children: [
-                                      HoverWidget(
-                                          hoverChild: snapshot.hasData?
-                                          AnimatedContainer(
-                                              duration: const Duration(milliseconds: 500),
-                                              height: height * 0.075,
-                                              child: AspectRatio(
-                                                aspectRatio: 1.0,
-                                                child: Container(
-                                                  decoration: BoxDecoration(
-                                                      color: Colors.black,
-                                                      borderRadius: BorderRadius.circular(height * 0.01),
-                                                      image: DecorationImage(
-                                                        fit: BoxFit.cover,
-                                                        image: Image.memory(snapshot.data!).image,
-                                                      )
-                                                  ),
-                                                  child: ClipRRect(
-                                                    borderRadius: BorderRadius.circular(height * 0.01),
-                                                    child: BackdropFilter(
-                                                      filter: ImageFilter.blur(sigmaX: 2, sigmaY: 2),
-                                                      child: Container(
-                                                        decoration: BoxDecoration(
-                                                          color: Colors.black.withOpacity(0.3),
-                                                        ),
-                                                        child: IconButton(
-                                                          icon: Icon(FluentIcons.add_16_filled, color: Colors.white, size: height * 0.03,),
-                                                          onPressed: () {
-                                                            print("Add");
-                                                          },
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  ),
-                                                ),
-                                              )) :
-                                          snapshot.hasError?
-                                          SizedBox(
-                                            height: height * 0.1,
-                                            width: height * 0.1,
-                                            child: Center(
-                                              child: Text(
-                                                '${snapshot.error} occurred',
-                                                style: TextStyle(fontSize: normalSize),
-                                              ),
-                                            ),
-                                          ) :
-                                          AnimatedContainer(
-                                            duration: const Duration(milliseconds: 500),
-                                            height: height * 0.075,
-                                            child: AspectRatio(
-                                              aspectRatio: 1.0,
-                                              child: Container(
-                                                decoration: BoxDecoration(
-                                                    borderRadius: BorderRadius.circular(height * 0.01),
-                                                    image: DecorationImage(
-                                                      fit: BoxFit.cover,
-                                                      image: Image.memory(File("assets/bg.png").readAsBytesSync()).image,
-                                                    )
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                          onHover: (event){
-                                            return;
-                                            //print("Hovering");
-                                          },
-                                          child: snapshot.hasData?
-                                          AnimatedContainer(
-                                              duration: const Duration(milliseconds: 500),
-                                              height: height * 0.075,
-                                              child: AspectRatio(
-                                                aspectRatio: 1.0,
-                                                child: Container(
-                                                  decoration: BoxDecoration(
-                                                      color: Colors.black,
-                                                      borderRadius: BorderRadius.circular(height * 0.01),
-                                                      image: DecorationImage(
-                                                        fit: BoxFit.cover,
-                                                        image: Image.memory(snapshot.data!).image,
-                                                      )
-                                                  ),
-                                                ),
-                                              )) :
-                                          snapshot.hasError?
-                                          SizedBox(
-                                            height: height * 0.1,
-                                            width: height * 0.1,
-                                            child: Center(
-                                              child: Text(
-                                                '${snapshot.error} occurred',
-                                                style: TextStyle(fontSize: normalSize),
-                                              ),
-                                            ),
-                                          ) :
-                                          AnimatedContainer(
-                                            duration: const Duration(milliseconds: 500),
-                                            height: height * 0.075,
-                                            child: AspectRatio(
-                                              aspectRatio: 1.0,
-                                              child: Container(
-                                                decoration: BoxDecoration(
-                                                    borderRadius: BorderRadius.circular(height * 0.01),
-                                                    image: DecorationImage(
-                                                      fit: BoxFit.cover,
-                                                      image: Image.memory(File("assets/bg.png").readAsBytesSync()).image,
-                                                    )
-                                                ),
-                                              ),
-                                            ),
-                                          )
-                                      ),
-                                      SizedBox(
-                                        width: width * 0.005,
-                                      ),
-                                      Column(
-                                          mainAxisAlignment: MainAxisAlignment.center,
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                                widget.controller.found.value[index].title.toString().length > 30 ? "${widget.controller.found.value[index].title.toString().substring(0, 30)}..." : widget.controller.found.value[index].title.toString(),
-                                                style: TextStyle(
-                                                  color: Colors.white,
-                                                  fontSize: normalSize,
-                                                )
-                                            ),
-                                            SizedBox(
-                                              height: height * 0.001,
-                                            ),
-                                            Text(widget.controller.found.value[index].artists.toString().length > 30 ? "${widget.controller.found.value[index].artists.toString().substring(0, 30)}..." : widget.controller.found.value[index].artists.toString(),
-                                                style: TextStyle(
-                                                  color: Colors.white,
-                                                  fontSize: smallSize,
-                                                )
-                                            ),
-                                          ]
-                                      ),
-                                      const Spacer(),
-                                      Text(
-                                          "${widget.controller.found.value[index].duration ~/ 60}:${(widget.controller.found.value[index].duration % 60).toString().padLeft(2, '0')}",
-                                          style: TextStyle(
-                                            color: Colors.white,
-                                            fontSize: normalSize,
-                                          )
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                onHover: (event){
-                                  return;
-                                  //print("Hovering");
-                                },
-                                child: Container(
-                                  padding: EdgeInsets.all(width * 0.005),
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(height * 0.01),
-                                    color: Colors.transparent,
-                                  ),
-                                  child: Row(
-                                    children: [
-                                      HoverWidget(
-                                          hoverChild: snapshot.hasData?
-                                          AnimatedContainer(
-                                              duration: const Duration(milliseconds: 500),
-                                              height: height * 0.075,
-                                              child: AspectRatio(
-                                                aspectRatio: 1.0,
-                                                child: Container(
-                                                  decoration: BoxDecoration(
-                                                      color: Colors.black,
-                                                      borderRadius: BorderRadius.circular(height * 0.01),
-                                                      image: DecorationImage(
-                                                        fit: BoxFit.cover,
-                                                        image: Image.memory(snapshot.data!).image,
-                                                      )
-                                                  ),
-                                                  child: ClipRRect(
-                                                    borderRadius: BorderRadius.circular(height * 0.01),
-                                                    child: BackdropFilter(
-                                                      filter: ImageFilter.blur(sigmaX: 2, sigmaY: 2),
-                                                      child: Container(
-                                                        decoration: BoxDecoration(
-                                                          color: Colors.black.withOpacity(0.3),
-                                                        ),
-                                                        child: IconButton(
-                                                          icon: Icon(FluentIcons.add_16_filled, color: Colors.white, size: height * 0.03,),
-                                                          onPressed: () {
-                                                            print("Add");
-                                                          },
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  ),
-                                                ),
-                                              )) :
-                                          snapshot.hasError?
-                                          SizedBox(
-                                            height: height * 0.1,
-                                            width: height * 0.1,
-                                            child: Center(
-                                              child: Text(
-                                                '${snapshot.error} occurred',
-                                                style: TextStyle(fontSize: normalSize),
-                                              ),
-                                            ),
-                                          ) :
-                                          AnimatedContainer(
-                                            duration: const Duration(milliseconds: 500),
-                                            height: height * 0.075,
-                                            child: AspectRatio(
-                                              aspectRatio: 1.0,
-                                              child: Container(
-                                                decoration: BoxDecoration(
-                                                    borderRadius: BorderRadius.circular(height * 0.01),
-                                                    image: DecorationImage(
-                                                      fit: BoxFit.cover,
-                                                      image: Image.memory(File("assets/bg.png").readAsBytesSync()).image,
-                                                    )
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                          onHover: (event){
-                                            return;
-                                            //print("Hovering");
-                                          },
-                                          child: snapshot.hasData?
-                                          AnimatedContainer(
-                                              duration: const Duration(milliseconds: 500),
-                                              height: height * 0.075,
-                                              child: AspectRatio(
-                                                aspectRatio: 1.0,
-                                                child: Container(
-                                                  decoration: BoxDecoration(
-                                                      color: Colors.black,
-                                                      borderRadius: BorderRadius.circular(height * 0.01),
-                                                      image: DecorationImage(
-                                                        fit: BoxFit.cover,
-                                                        image: Image.memory(snapshot.data!).image,
-                                                      )
-                                                  ),
-                                                ),
-                                              )) :
-                                          snapshot.hasError?
-                                          SizedBox(
-                                            height: height * 0.1,
-                                            width: height * 0.1,
-                                            child: Center(
-                                              child: Text(
-                                                '${snapshot.error} occurred',
-                                                style: TextStyle(fontSize: normalSize),
-                                              ),
-                                            ),
-                                          ) :
-                                          AnimatedContainer(
-                                            duration: const Duration(milliseconds: 500),
-                                            height: height * 0.075,
-                                            child: AspectRatio(
-                                              aspectRatio: 1.0,
-                                              child: Container(
-                                                decoration: BoxDecoration(
-                                                    borderRadius: BorderRadius.circular(height * 0.01),
-                                                    image: DecorationImage(
-                                                      fit: BoxFit.cover,
-                                                      image: Image.memory(File("assets/bg.png").readAsBytesSync()).image,
-                                                    )
-                                                ),
-                                              ),
-                                            ),
-                                          )
-                                      ),
-                                      SizedBox(
-                                        width: width * 0.005,
-                                      ),
-                                      Column(
-                                          mainAxisAlignment: MainAxisAlignment.center,
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                                widget.controller.found.value[index].title.toString().length > 30 ? "${widget.controller.found.value[index].title.toString().substring(0, 30)}..." : widget.controller.found.value[index].title.toString(),
-                                                style: TextStyle(
-                                                  color: Colors.white,
-                                                  fontSize: normalSize,
-                                                )
-                                            ),
-                                            SizedBox(
-                                              height: height * 0.001,
-                                            ),
-                                            Text(widget.controller.found.value[index].artists.toString().length > 30 ? "${widget.controller.found.value[index].artists.toString().substring(0, 30)}..." : widget.controller.found.value[index].artists.toString(),
-                                                style: TextStyle(
-                                                  color: Colors.white,
-                                                  fontSize: smallSize,
-                                                )
-                                            ),
-                                          ]
-                                      ),
-                                      const Spacer(),
-                                      Text(
-                                          "${widget.controller.found.value[index].duration ~/ 60}:${(widget.controller.found.value[index].duration % 60).toString().padLeft(2, '0')}",
-                                          style: TextStyle(
-                                            color: Colors.white,
-                                            fontSize: normalSize,
-                                          )
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              );
+                          onTap: () async {
+                            if(widget.controller.settings.playingSongs.equals(widget.controller.found.value) == false){
+                              widget.controller.updatePlaying(widget.controller.found.value);
                             }
-                          )
+                            await widget.controller.indexChange(widget.controller.settings.playingSongsUnShuffled[index]);
+                            await widget.controller.playSong();
+                          },
+                          child: HoverWidget(
+                            hoverChild: Container(
+                              padding: EdgeInsets.all(width * 0.005),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(width * 0.01),
+                                color: const Color(0xFF2E2E2E),
+                              ),
+                              child: Row(
+                                children: [
+                                  ClipRRect(
+                                      borderRadius: BorderRadius.circular(width * 0.01),
+                                      child: FutureBuilder(
+                                        future: widget.controller.imageRetrieve(widget.controller.found.value[index].path, false),
+                                        builder: (context, snapshot) {
+                                          return AspectRatio(
+                                            aspectRatio: 1.0,
+                                            child: snapshot.hasData?
+                                            Stack(
+                                              alignment: Alignment.center,
+                                              children: [
+                                                Container(
+                                                  decoration: BoxDecoration(
+                                                      color: Colors.black,
+                                                      image: DecorationImage(
+                                                        fit: BoxFit.cover,
+                                                        image: Image.memory(snapshot.data!).image,
+                                                      )
+                                                  ),
+                                                ),
+                                                ClipRRect(
+                                                  child: BackdropFilter(
+                                                    filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                                                    child: Container(
+                                                      color: Colors.black.withOpacity(0.3),
+                                                      alignment: Alignment.center,
+                                                      child: IconButton(
+                                                        icon: Icon(FluentIcons.add_16_filled, color: Colors.white, size: height * 0.03,),
+                                                        onPressed: () {
+                                                          print("Add");
+                                                          Navigator.push(
+                                                              context,
+                                                              PageRouteBuilder(
+                                                                pageBuilder: (context, animation1, animation2) => AddScreen(controller: widget.controller, songs: [widget.controller.found.value[index]]),
+                                                                transitionDuration: const Duration(milliseconds: 500),
+                                                                reverseTransitionDuration: const Duration(milliseconds: 500),
+                                                                transitionsBuilder: (context, animation1, animation2, child) {
+                                                                  animation1 = CurvedAnimation(parent: animation1, curve: Curves.linear);
+                                                                  return ScaleTransition(
+                                                                    alignment: Alignment.center,
+                                                                    scale: animation1,
+                                                                    child: child,
+                                                                  );
+                                                                },
+                                                              )
+                                                          );
+                                                        },
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            ) :
+                                            snapshot.hasError?
+                                            Center(
+                                              child: Text(
+                                                '${snapshot.error} occurred',
+                                                style: const TextStyle(fontSize: 18),
+                                              ),
+                                            ) :
+                                            Container(
+                                              decoration: BoxDecoration(
+                                                  color: Colors.black,
+                                                  image: DecorationImage(
+                                                    fit: BoxFit.cover,
+                                                    image: Image.memory(File("assets/bg.png").readAsBytesSync()).image,
+                                                  )
+                                              ),
+                                              child: const Center(
+                                                child: CircularProgressIndicator(
+                                                  color: Colors.white,
+                                                ),
+                                              ),
+                                            ),
+                                          );
+                                        },
+                                      )
+                                  ),
+                                  SizedBox(
+                                    width: width * 0.005,
+                                  ),
+                                  Column(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                            widget.controller.found.value[index].title.toString().length > 30 ? "${widget.controller.found.value[index].title.toString().substring(0, 30)}..." : widget.controller.found.value[index].title.toString(),
+                                            style: TextStyle(
+                                              color: Colors.white,
+                                              fontSize: normalSize,
+                                            )
+                                        ),
+                                        SizedBox(
+                                          height: height * 0.001,
+                                        ),
+                                        Text(widget.controller.found.value[index].artists.toString().length > 30 ? "${widget.controller.found.value[index].artists.toString().substring(0, 30)}..." : widget.controller.found.value[index].artists.toString(),
+                                            style: TextStyle(
+                                              color: Colors.white,
+                                              fontSize: smallSize,
+                                            )
+                                        ),
+                                      ]
+                                  ),
+                                  const Spacer(),
+                                  Text(
+                                      "${widget.controller.found.value[index].duration ~/ 60}:${(widget.controller.found.value[index].duration % 60).toString().padLeft(2, '0')}",
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: normalSize,
+                                      )
+                                  ),
+                                ],
+                              ),
+                            ),
+                            child: Container(
+                              padding: EdgeInsets.all(width * 0.005),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(height * 0.01),
+                                color: const Color(0xFF0E0E0E),
+                              ),
+                              child: Row(
+                                children: [
+                                  ClipRRect(
+                                      borderRadius: BorderRadius.circular(width * 0.01),
+                                      child: FutureBuilder(
+                                        future: widget.controller.imageRetrieve(widget.controller.found.value[index].path, false),
+                                        builder: (context, snapshot) {
+                                          return AspectRatio(
+                                            aspectRatio: 1.0,
+                                            child: snapshot.hasData?
+                                            Container(
+                                              decoration: BoxDecoration(
+                                                  color: Colors.black,
+                                                  image: DecorationImage(
+                                                    fit: BoxFit.cover,
+                                                    image: Image.memory(snapshot.data!).image,
+                                                  )
+                                              ),
+                                            ) :
+                                            snapshot.hasError?
+                                            Center(
+                                              child: Text(
+                                                '${snapshot.error} occurred',
+                                                style: const TextStyle(fontSize: 18),
+                                              ),
+                                            ) :
+                                            Container(
+                                              decoration: BoxDecoration(
+                                                  color: Colors.black,
+                                                  image: DecorationImage(
+                                                    fit: BoxFit.cover,
+                                                    image: Image.memory(File("assets/bg.png").readAsBytesSync()).image,
+                                                  )
+                                              ),
+                                              child: const Center(
+                                                child: CircularProgressIndicator(
+                                                  color: Colors.white,
+                                                ),
+                                              ),
+                                            ),
+                                          );
+                                        },
+                                      )
+                                  ),
+                                  SizedBox(
+                                    width: width * 0.005,
+                                  ),
+                                  Column(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                            widget.controller.found.value[index].title.toString().length > 30 ? "${widget.controller.found.value[index].title.toString().substring(0, 30)}..." : widget.controller.found.value[index].title.toString(),
+                                            style: TextStyle(
+                                              color: Colors.white,
+                                              fontSize: normalSize,
+                                            )
+                                        ),
+                                        SizedBox(
+                                          height: height * 0.001,
+                                        ),
+                                        Text(widget.controller.found.value[index].artists.toString().length > 30 ? "${widget.controller.found.value[index].artists.toString().substring(0, 30)}..." : widget.controller.found.value[index].artists.toString(),
+                                            style: TextStyle(
+                                              color: Colors.white,
+                                              fontSize: smallSize,
+                                            )
+                                        ),
+                                      ]
+                                  ),
+                                  const Spacer(),
+                                  Text(
+                                      "${widget.controller.found.value[index].duration ~/ 60}:${(widget.controller.found.value[index].duration % 60).toString().padLeft(2, '0')}",
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: normalSize,
+                                      )
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
                         ),
                       ),
                     );
