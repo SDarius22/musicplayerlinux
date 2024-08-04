@@ -27,9 +27,9 @@ class _ArtistWidget extends State<ArtistWidget> {
     for(int i = 0; i < widget.artist.songs.length; i++){
       totalDuration += widget.artist.songs[i].duration;
     }
-    duration = "${totalDuration ~/ 3600} hours, ${(totalDuration % 3600 ~/ 60)} minutes and ${(totalDuration % 60)} seconds";
-    duration = duration.replaceAll("0 hours, ", "");
-    duration = duration.replaceAll("0 minutes and ", "");
+    duration = " ${totalDuration ~/ 3600} hours, ${(totalDuration % 3600 ~/ 60)} minutes and ${(totalDuration % 60)} seconds";
+    duration = duration.replaceAll(" 0 hours,", "");
+    duration = duration.replaceAll(" 0 minutes and", "");
     super.initState();
   }
 

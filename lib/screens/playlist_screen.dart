@@ -35,9 +35,9 @@ class _PlaylistWidget extends State<PlaylistWidget> {
     for (int i = 0; i < widget.playlist.songs.length; i++){
       totalDuration += widget.playlist.songs[i].duration;
     }
-    duration = "${totalDuration ~/ 3600} hours, ${(totalDuration % 3600 ~/ 60)} minutes and ${(totalDuration % 60)} seconds";
-    duration = duration.replaceAll("0 hours, ", "");
-    duration = duration.replaceAll("0 minutes and ", "");
+    duration = " ${totalDuration ~/ 3600} hours, ${(totalDuration % 3600 ~/ 60)} minutes and ${(totalDuration % 60)} seconds";
+    duration = duration.replaceAll(" 0 hours,", "");
+    duration = duration.replaceAll(" 0 minutes and", "");
     super.initState();
   }
 
@@ -158,7 +158,7 @@ class _PlaylistWidget extends State<PlaylistWidget> {
                       height: height * 0.005,
                     ),
                     Text(
-                      widget.playlist.duration,
+                      duration,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       textAlign: TextAlign.center,

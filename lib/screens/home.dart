@@ -31,6 +31,7 @@ class _HomePageState extends State<HomePage>{
   void initState(){
     widget.controller.retrieveSongs();
     widget.controller.found.value = widget.controller.songBox.query().order(MetadataType_.title).build().find();
+    widget.controller.found2.value = widget.controller.songBox.query().order(MetadataType_.title).build().find();
     super.initState();
   }
 

@@ -1,11 +1,7 @@
-import 'dart:ui';
-
 import 'package:collection/collection.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:musicplayer/screens/add_screen.dart';
-import 'package:musicplayer/utils/hover_widget/stack_hover_widget.dart';
-import '../utils/hover_widget/hover_widget.dart';
 import 'package:musicplayer/screens/image_widget.dart';
 
 

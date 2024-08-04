@@ -20,7 +20,7 @@ class _SettingsState extends State<Settings> {
   Widget build(BuildContext context) {
     var width = MediaQuery.of(context).size.width;
     var height = MediaQuery.of(context).size.height;
-    var boldSize = height * 0.025;
+    //var boldSize = height * 0.025;
     var normalSize = height * 0.02;
     var smallSize = height * 0.015;
     return Scaffold(

@@ -52,6 +52,7 @@ class Controller{
   ValueNotifier<LyricsReaderModel> lyricModelNotifier = ValueNotifier<LyricsReaderModel>(LyricsReaderModel());
   ValueNotifier<String> plainLyricNotifier = ValueNotifier<String>('');
   ValueNotifier<List<MetadataType>> found = ValueNotifier<List<MetadataType>>([]);
+  ValueNotifier<List<MetadataType>> found2 = ValueNotifier<List<MetadataType>>([]);
   ValueNotifier<Color> colorNotifier = ValueNotifier<Color>(Colors.deepPurpleAccent.shade400); // Light color, for lyrics and sliders
   ValueNotifier<Color> colorNotifier2 = ValueNotifier<Color>(Colors.blueAccent.shade400); // Dark color, for background of player and window bar
   ValueNotifier<Uint8List> imageNotifier = ValueNotifier<Uint8List>(File("./assets/bg.png").readAsBytesSync());
@@ -612,7 +613,7 @@ class Controller{
     playSong();
   }
 
-  void filter(String enteredKeyword) {
+  void filter(String enteredKeyword, bool search) {
     List<MetadataType> results = [];
 
     if (enteredKeyword.isEmpty) {
@@ -620,7 +621,13 @@ class Controller{
     } else {
       results = songBox.query(MetadataType_.title.contains(enteredKeyword, caseSensitive: false) | MetadataType_.artists.contains(enteredKeyword, caseSensitive: false) | MetadataType_.album.contains(enteredKeyword, caseSensitive: false)).build().find();
     }
-    found.value = results;
+    if(search) {
+      found.value = results;
+    }
+    else{
+      //print("found2");
+      found2.value = results;
+    }
   }
 
   void setRepeat() {

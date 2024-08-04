@@ -4,13 +4,13 @@ import 'dart:ui';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:musicplayer/screens/image_widget.dart';
-import '../utils/hover_widget/hover_widget.dart';
 import 'package:musicplayer/screens/playlist_screen.dart';
 import '../controller/controller.dart';
 import '../domain/playlist_type.dart';
 import '../utils/hover_widget/stack_hover_widget.dart';
 import '../utils/objectbox.g.dart';
 import 'add_screen.dart';
+import 'create_screen.dart';
 
 class Playlists extends StatefulWidget{
   final Controller controller;
@@ -52,7 +52,21 @@ class _PlaylistsState extends State<Playlists>{
                 cursor: SystemMouseCursors.click,
                 child: GestureDetector(
                   onTap: (){
-                    ///TODO: Add playlist
+                    Navigator.push(
+                        context,
+                        PageRouteBuilder(
+                          pageBuilder: (context, animation1, animation2) => CreateScreen(controller: widget.controller),
+                          transitionDuration: const Duration(milliseconds: 500),
+                          reverseTransitionDuration: const Duration(milliseconds: 500),
+                          transitionsBuilder: (context, animation1, animation2, child) {
+                            animation1 = CurvedAnimation(parent: animation1, curve: Curves.linear);
+                            return ScaleTransition(
+                              alignment: Alignment.center,
+                              scale: animation1,
+                              child: child,
+                            );
+                          },
+                        ));
                   },
                   child: Column(
                     children: [
@@ -107,9 +121,21 @@ class _PlaylistsState extends State<Playlists>{
                 cursor: SystemMouseCursors.click,
                 child: GestureDetector(
                   onTap: () {
-                    Navigator.push(context, MaterialPageRoute(builder: (context){
-                      return PlaylistWidget(controller: widget.controller, playlist: playlist);
-                    }));
+                    Navigator.push(
+                        context,
+                        PageRouteBuilder(
+                          pageBuilder: (context, animation1, animation2) =>PlaylistWidget(controller: widget.controller, playlist: playlist),
+                          transitionDuration: const Duration(milliseconds: 500),
+                          reverseTransitionDuration: const Duration(milliseconds: 500),
+                          transitionsBuilder: (context, animation1, animation2, child) {
+                            animation1 = CurvedAnimation(parent: animation1, curve: Curves.linear);
+                            return ScaleTransition(
+                              alignment: Alignment.center,
+                              scale: animation1,
+                              child: child,
+                            );
+                          },
+                        ));
                   },
                   child: Column(
                     children: [

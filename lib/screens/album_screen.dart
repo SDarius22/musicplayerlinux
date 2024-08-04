@@ -24,22 +24,15 @@ class _AlbumWidget extends State<AlbumWidget> {
 
   @override
   void initState() {
-    ///TODO: No more featured artists, just album artist(s) -> implement and change objectBox
-    // for (ArtistType artist in widget.album.artists){
-    //   featuredArtists += artist.name;
-    //   if(artist != widget.album.artists.last) {
-    //     featuredArtists += ", ";
-    //   }
-    // }
     imageFuture = widget.controller.imageRetrieve(widget.album.songs.first.path, false);
     featuredArtists = widget.album.songs.first.artists;
     int totalDuration = 0;
     for (int i = 0; i < widget.album.songs.length; i++){
       totalDuration += widget.album.songs[i].duration;
     }
-    duration = "${totalDuration ~/ 3600} hours, ${(totalDuration % 3600 ~/ 60)} minutes and ${(totalDuration % 60)} seconds";
-    duration = duration.replaceAll("0 hours, ", "");
-    duration = duration.replaceAll("0 minutes and ", "");
+    duration = " ${totalDuration ~/ 3600} hours, ${(totalDuration % 3600 ~/ 60)} minutes and ${(totalDuration % 60)} seconds";
+    duration = duration.replaceAll(" 0 hours,", "");
+    duration = duration.replaceAll(" 0 minutes and", "");
 
     super.initState();
   }
