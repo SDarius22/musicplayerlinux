@@ -79,7 +79,7 @@ class _CreateScreenState extends State<CreateScreen> {
                         print("Create new playlist");
                         PlaylistType newPlaylist = PlaylistType();
                         newPlaylist.name = playlistName;
-                        newPlaylist.songs.addAll(selected);
+                        newPlaylist.paths = selected.map((e) => e.path).toList();
                         widget.controller.playlistBox.put(newPlaylist);
                         Navigator.pop(context);
                       },

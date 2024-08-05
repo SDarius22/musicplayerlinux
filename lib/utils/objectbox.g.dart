@@ -138,7 +138,7 @@ final _entities = <obx_int.ModelEntity>[
   obx_int.ModelEntity(
       id: const obx_int.IdUid(4, 8138458686595929493),
       name: 'PlaylistType',
-      lastPropertyId: const obx_int.IdUid(3, 760761914373865781),
+      lastPropertyId: const obx_int.IdUid(4, 115872929520469160),
       flags: 0,
       properties: <obx_int.ModelProperty>[
         obx_int.ModelProperty(
@@ -150,14 +150,14 @@ final _entities = <obx_int.ModelEntity>[
             id: const obx_int.IdUid(2, 2535308499671640161),
             name: 'name',
             type: 9,
+            flags: 0),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(4, 115872929520469160),
+            name: 'paths',
+            type: 30,
             flags: 0)
       ],
-      relations: <obx_int.ModelRelation>[
-        obx_int.ModelRelation(
-            id: const obx_int.IdUid(4, 665601103463795119),
-            name: 'songs',
-            targetId: const obx_int.IdUid(3, 6788901964787053678))
-      ],
+      relations: <obx_int.ModelRelation>[],
       backlinks: <obx_int.ModelBacklink>[]),
   obx_int.ModelEntity(
       id: const obx_int.IdUid(5, 3381058623511901147),
@@ -234,18 +234,25 @@ Future<obx.Store> openStore(
 obx_int.ModelDefinition getObjectBoxModel() {
   final model = obx_int.ModelInfo(
       entities: _entities,
-      lastEntityId: const obx_int.IdUid(5, 3381058623511901147),
-      lastIndexId: const obx_int.IdUid(0, 0),
+      lastEntityId: const obx_int.IdUid(6, 2399656013847482170),
+      lastIndexId: const obx_int.IdUid(1, 3864785647806364607),
       lastRelationId: const obx_int.IdUid(7, 402437723284524367),
       lastSequenceId: const obx_int.IdUid(0, 0),
-      retiredEntityUids: const [],
+      retiredEntityUids: const [2399656013847482170],
       retiredIndexUids: const [],
       retiredPropertyUids: const [
         4869174380156865862,
         6539779889947158058,
-        760761914373865781
+        760761914373865781,
+        336385773500841657,
+        4768104187573886413,
+        932226390393604773
       ],
-      retiredRelationUids: const [4871067807185301201, 1282705007299066595],
+      retiredRelationUids: const [
+        4871067807185301201,
+        1282705007299066595,
+        665601103463795119
+      ],
       modelVersion: 5,
       modelVersionParserMinimum: 5,
       version: 1);
@@ -371,17 +378,19 @@ obx_int.ModelDefinition getObjectBoxModel() {
     PlaylistType: obx_int.EntityDefinition<PlaylistType>(
         model: _entities[3],
         toOneRelations: (PlaylistType object) => [],
-        toManyRelations: (PlaylistType object) =>
-            {obx_int.RelInfo<PlaylistType>.toMany(4, object.id): object.songs},
+        toManyRelations: (PlaylistType object) => {},
         getId: (PlaylistType object) => object.id,
         setId: (PlaylistType object, int id) {
           object.id = id;
         },
         objectToFB: (PlaylistType object, fb.Builder fbb) {
           final nameOffset = fbb.writeString(object.name);
-          fbb.startTable(4);
+          final pathsOffset = fbb.writeList(
+              object.paths.map(fbb.writeString).toList(growable: false));
+          fbb.startTable(5);
           fbb.addInt64(0, object.id);
           fbb.addOffset(1, nameOffset);
+          fbb.addOffset(3, pathsOffset);
           fbb.finish(fbb.endTable());
           return object.id;
         },
@@ -392,9 +401,12 @@ obx_int.ModelDefinition getObjectBoxModel() {
           final object = PlaylistType()
             ..id = const fb.Int64Reader().vTableGet(buffer, rootOffset, 4, 0)
             ..name = const fb.StringReader(asciiOptimization: true)
-                .vTableGet(buffer, rootOffset, 6, '');
-          obx_int.InternalToManyAccess.setRelInfo<PlaylistType>(object.songs,
-              store, obx_int.RelInfo<PlaylistType>.toMany(4, object.id));
+                .vTableGet(buffer, rootOffset, 6, '')
+            ..paths = const fb.ListReader<String>(
+                    fb.StringReader(asciiOptimization: true),
+                    lazy: false)
+                .vTableGet(buffer, rootOffset, 10, []);
+
           return object;
         }),
     Settings: obx_int.EntityDefinition<Settings>(
@@ -532,9 +544,9 @@ class PlaylistType_ {
   static final name =
       obx.QueryStringProperty<PlaylistType>(_entities[3].properties[1]);
 
-  /// see [PlaylistType.songs]
-  static final songs = obx.QueryRelationToMany<PlaylistType, MetadataType>(
-      _entities[3].relations[0]);
+  /// See [PlaylistType.paths].
+  static final paths =
+      obx.QueryStringVectorProperty<PlaylistType>(_entities[3].properties[2]);
 }
 
 /// [Settings] entity fields to define ObjectBox queries.

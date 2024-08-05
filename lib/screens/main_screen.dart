@@ -237,14 +237,13 @@ class _MyAppState extends State<MyApp>{
                           home: finalWidget,
                         ),
                       ),
-                      if(!widget.controller.settings.firstTime)
                       ValueListenableBuilder(
                           valueListenable: widget.controller.finishedRetrievingNotifier,
                           builder: (context, value, child) {
                             return AnimatedContainer(
                               duration: const Duration(milliseconds: 500),
                               alignment: Alignment.bottomCenter,
-                              child: value?
+                              child: !widget.controller.settings.firstTime ? value?
                               SongPlayerWidget(controller: widget.controller) :
                               AnimatedContainer(
                                 duration: const Duration(milliseconds: 500),
@@ -275,7 +274,7 @@ class _MyAppState extends State<MyApp>{
                                     ),
                                   ],
                                 ),
-                              ),
+                              ) : Container(),
                             );
                           }
                       ),
@@ -301,8 +300,6 @@ class _MyAppState extends State<MyApp>{
                       ),
                     ],
                   ),
-
-
                 ),
               ],
             )

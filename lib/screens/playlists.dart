@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:musicplayer/screens/image_widget.dart';
 import 'package:musicplayer/screens/playlist_screen.dart';
 import '../controller/controller.dart';
+import '../domain/metadata_type.dart';
 import '../domain/playlist_type.dart';
 import '../utils/hover_widget/stack_hover_widget.dart';
 import '../utils/objectbox.g.dart';
@@ -143,7 +144,7 @@ class _PlaylistsState extends State<Playlists>{
                         borderRadius: BorderRadius.circular(width * 0.01),
                         child: ImageWidget(
                           controller: widget.controller,
-                          path: playlist.songs.first.path,
+                          path: playlist.paths.first,
                           heroTag: playlist.name,
                           buttons: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -152,10 +153,14 @@ class _PlaylistsState extends State<Playlists>{
                               IconButton(
                                 onPressed: (){
                                   print("Add $index");
+                                  List<MetadataType> songs = [];
+                                  for (var path in playlist.paths){
+                                    songs.add(widget.controller.songBox.query(MetadataType_.path.equals(path)).build().find().first);
+                                  }
                                   Navigator.push(
                                       context,
                                       PageRouteBuilder(
-                                        pageBuilder: (context, animation1, animation2) => AddScreen(controller: widget.controller, songs: playlist.songs),
+                                        pageBuilder: (context, animation1, animation2) => AddScreen(controller: widget.controller, songs: songs),
                                         transitionDuration: const Duration(milliseconds: 500),
                                         reverseTransitionDuration: const Duration(milliseconds: 500),
                                         transitionsBuilder: (context, animation1, animation2, child) {

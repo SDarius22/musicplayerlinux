@@ -4,9 +4,9 @@ import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import '../domain/metadata_type.dart';
 import '../utils/hover_widget/hover_widget.dart';
-import 'package:musicplayer/domain/artist_type.dart';
 import 'package:musicplayer/domain/playlist_type.dart';
 import '../controller/controller.dart';
+import '../utils/objectbox.g.dart';
 
 class PlaylistWidget extends StatefulWidget {
   final Controller controller;
@@ -21,15 +21,19 @@ class _PlaylistWidget extends State<PlaylistWidget> {
   String featuredArtists = "";
   String duration = "0 seconds";
   late Future imageFuture;
-  late List<MetadataType> songs;
+  List<MetadataType> songs = [];
 
 
   @override
   void initState() {
-    imageFuture = widget.controller.imageRetrieve(widget.playlist.songs.first.path, false);
+    imageFuture = widget.controller.imageRetrieve(widget.playlist.paths.first, false);
+    for (int i = 0; i < widget.playlist.paths.length; i++){
+      MetadataType song = widget.controller.songBox.query(MetadataType_.path.equals(widget.playlist.paths[i])).build().find().first;
+      songs.add(song);
+    }
     int totalDuration = 0;
-    for (int i = 0; i < widget.playlist.songs.length; i++){
-      totalDuration += widget.playlist.songs[i].duration;
+    for (int i = 0; i < songs.length; i++){
+      totalDuration += songs[i].duration;
     }
     duration = " ${totalDuration ~/ 3600} hours, ${(totalDuration % 3600 ~/ 60)} minutes and ${(totalDuration % 60)} seconds";
     duration = duration.replaceAll(" 0 hours,", "");
@@ -97,7 +101,7 @@ class _PlaylistWidget extends State<PlaylistWidget> {
                         child: AspectRatio(
                           aspectRatio: 1.0,
                           child: FutureBuilder(
-                              future: widget.controller.imageRetrieve(widget.playlist.songs.first.path, false),
+                              future: widget.controller.imageRetrieve(widget.playlist.paths.first, false),
                               builder: (context, snapshot){
                                 if(snapshot.hasData) {
                                   return DecoratedBox(
@@ -169,10 +173,10 @@ class _PlaylistWidget extends State<PlaylistWidget> {
                         children: [
                           IconButton(
                             onPressed: () async {
-                              if(widget.controller.settings.playingSongsUnShuffled.equals(widget.playlist.songs) == false){
-                                widget.controller.updatePlaying(widget.playlist.songs);
+                              if(widget.controller.settings.playingSongsUnShuffled.equals(songs) == false){
+                                widget.controller.updatePlaying(songs);
                               }
-                              await widget.controller.indexChange(widget.playlist.songs.first);
+                              await widget.controller.indexChange(songs.first);
                               await widget.controller.playSong();
 
                             },
@@ -212,9 +216,10 @@ class _PlaylistWidget extends State<PlaylistWidget> {
                   bottom: height * 0.2,
                 ),
                 child: ListView.builder(
-                  itemCount: widget.playlist.songs.length,
+                  itemCount: widget.playlist.paths.length,
                   itemBuilder: (context, int index) {
                     //print("Building ${widget.playlist.songs[widget.playlist.order[index]].title}");
+                    MetadataType song = widget.controller.songBox.query(MetadataType_.path.equals(widget.playlist.paths[index])).build().find().first;
                     return AnimatedContainer(
                       duration: const Duration(milliseconds: 500),
                       curve: Curves.easeInOut,
@@ -227,14 +232,14 @@ class _PlaylistWidget extends State<PlaylistWidget> {
                         child: GestureDetector(
                             behavior: HitTestBehavior.translucent,
                             onTap: () async {
-                              if(widget.controller.settings.playingSongs.equals(widget.playlist.songs) == false){
-                                widget.controller.updatePlaying(widget.playlist.songs);
+                              if(widget.controller.settings.playingSongs.equals(songs) == false){
+                                widget.controller.updatePlaying(songs);
                               }
                               await widget.controller.indexChange(widget.controller.settings.playingSongsUnShuffled[index]);
                               await widget.controller.playSong();
                             },
                             child: FutureBuilder(
-                                future: widget.controller.imageRetrieve(widget.playlist.songs[index].path, false),
+                                future: widget.controller.imageRetrieve(widget.playlist.paths[index], false),
                                 builder: (context, snapshot){
                                   return HoverWidget(
                                     hoverChild: Container(
@@ -312,7 +317,7 @@ class _PlaylistWidget extends State<PlaylistWidget> {
                                               crossAxisAlignment: CrossAxisAlignment.start,
                                               children: [
                                                 Text(
-                                                    widget.playlist.songs[index].title.toString().length > 60 ? "${widget.playlist.songs[index].title.toString().substring(0, 60)}..." : widget.playlist.songs[index].title.toString(),
+                                                    song.title.toString().length > 60 ? "${song.title.toString().substring(0, 60)}..." : song.title.toString(),
                                                     style: TextStyle(
                                                       color: Colors.white,
                                                       fontSize: normalSize,
@@ -322,7 +327,7 @@ class _PlaylistWidget extends State<PlaylistWidget> {
                                                   height: height * 0.005,
                                                 ),
                                                 Text(
-                                                    widget.playlist.songs[index].artists.toString().length > 60 ? "${widget.playlist.songs[index].artists.toString().substring(0, 60)}..." : widget.playlist.songs[index].artists.toString(),
+                                                    song.artists.toString().length > 60 ? "${song.artists.toString().substring(0, 60)}..." : song.artists.toString(),
                                                     style: TextStyle(
                                                       color: Colors.white,
                                                       fontSize: smallSize,
@@ -332,7 +337,7 @@ class _PlaylistWidget extends State<PlaylistWidget> {
                                           ),
                                           const Spacer(),
                                           Text(
-                                              "${widget.playlist.songs[index].duration ~/ 60}:${(widget.playlist.songs[index].duration % 60).toString().padLeft(2, '0')}",
+                                              "${song.duration ~/ 60}:${(song.duration % 60).toString().padLeft(2, '0')}",
                                               style: TextStyle(
                                                 color: Colors.white,
                                                 fontSize: normalSize,
@@ -341,10 +346,6 @@ class _PlaylistWidget extends State<PlaylistWidget> {
                                         ],
                                       ),
                                     ),
-                                    onHover: (event){
-                                      return;
-                                      //print("Hovering");
-                                    },
                                     child: Container(
                                       padding: EdgeInsets.only(
                                         left: width * 0.0075,
@@ -414,7 +415,7 @@ class _PlaylistWidget extends State<PlaylistWidget> {
                                               crossAxisAlignment: CrossAxisAlignment.start,
                                               children: [
                                                 Text(
-                                                    widget.playlist.songs[index].title.toString().length > 60 ? "${widget.playlist.songs[index].title.toString().substring(0, 60)}..." : widget.playlist.songs[index].title.toString(),
+                                                  song.title.toString().length > 60 ? "${song.title.toString().substring(0, 60)}..." : song.title.toString(),
                                                     style: TextStyle(
                                                       color: Colors.white,
                                                       fontSize: normalSize,
@@ -424,7 +425,7 @@ class _PlaylistWidget extends State<PlaylistWidget> {
                                                   height: height * 0.005,
                                                 ),
                                                 Text(
-                                                    widget.playlist.songs[index].artists.toString().length > 60 ? "${widget.playlist.songs[index].artists.toString().substring(0, 60)}..." : widget.playlist.songs[index].artists.toString(),
+                                                  song.artists.toString().length > 60 ? "${song.artists.toString().substring(0, 60)}..." : song.artists.toString(),
                                                     style: TextStyle(
                                                       color: Colors.white,
                                                       fontSize: smallSize,
@@ -434,7 +435,7 @@ class _PlaylistWidget extends State<PlaylistWidget> {
                                           ),
                                           const Spacer(),
                                           Text(
-                                              "${widget.playlist.songs[index].duration ~/ 60}:${(widget.playlist.songs[index].duration % 60).toString().padLeft(2, '0')}",
+                                            "${song.duration ~/ 60}:${(song.duration % 60).toString().padLeft(2, '0')}",
                                               style: TextStyle(
                                                 color: Colors.white,
                                                 fontSize: normalSize,

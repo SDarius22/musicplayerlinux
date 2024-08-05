@@ -76,11 +76,10 @@ class _AddScreenState extends State<AddScreen> {
                           }
                           else{
                             var playlist = query.find()[i-1];
-                            playlist.songs.addAll(widget.songs);
-                            // for(int i = 0; i < widget.songs.length; i++){
-                            //   playlist.order.add(playlist.songs.indexOf(widget.songs[i]));
-                            // }
+                            playlist.paths.addAll(widget.songs.map((e) => e.path).toList());
                             widget.controller.playlistBox.put(playlist);
+                            var playlist2 = widget.controller.playlistBox.get(playlist.id);
+                            print(playlist2?.paths);
                           }
                         }
                         Navigator.pop(context);
@@ -156,7 +155,7 @@ class _AddScreenState extends State<AddScreen> {
                                     else
                                       ImageWidget(
                                         controller: widget.controller,
-                                        path: playlist.songs.first.path,
+                                        path: playlist.paths.first,
                                       ),
                                     if(selected.contains(index))
                                       BackdropFilter(
