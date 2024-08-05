@@ -76,10 +76,12 @@ class _AddScreenState extends State<AddScreen> {
                           }
                           else{
                             var playlist = query.find()[i-1];
-                            playlist.paths.addAll(widget.songs.map((e) => e.path).toList());
+                            for(MetadataType song in widget.songs){
+                              if(!playlist.paths.contains(song.path)) {
+                                playlist.paths.add(song.path);
+                              }
+                            }
                             widget.controller.playlistBox.put(playlist);
-                            var playlist2 = widget.controller.playlistBox.get(playlist.id);
-                            print(playlist2?.paths);
                           }
                         }
                         Navigator.pop(context);

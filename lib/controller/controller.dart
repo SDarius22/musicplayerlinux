@@ -175,7 +175,7 @@ class Controller{
       }
     }
 
-    //print(settings.playingSongsUnShuffled.first.title);
+    //print(settings.playingSongsUnShuffled[settings.lastPlayingIndex].title);
     await indexChange(settings.playingSongs[settings.lastPlayingIndex]);
     finishedRetrievingNotifier.value = true;
   }
