@@ -20,6 +20,7 @@ class Tracks extends StatefulWidget{
 
 
 class _TracksState extends State<Tracks>{
+  int previousLength = 0;
   @override
   void initState() {
     super.initState();
@@ -35,12 +36,12 @@ class _TracksState extends State<Tracks>{
     // var normalSize = height * 0.02;
     var smallSize = height * 0.015;
     return StreamBuilder<List<MetadataType>>(
-      stream: widget.controller.songBox.query().watch(triggerImmediately: true).map((query) => query.find()),
+      stream: widget.controller.songBox.query().order(MetadataType_.title).watch(triggerImmediately: true).map((query) => query.find()),
       builder: (context, snapshot){
         if(snapshot.hasData){
           return GridView.builder(
             padding: EdgeInsets.all(width * 0.01),
-            itemCount: query.find().length + 7,
+            itemCount: snapshot.data!.length + 7,
             gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
               childAspectRatio: 0.8275,
               maxCrossAxisExtent: width * 0.125,
@@ -49,10 +50,10 @@ class _TracksState extends State<Tracks>{
             ),
             itemBuilder: (BuildContext context, int index) {
               MetadataType song = MetadataType();
-              if(index < query.find().length){
-                song = query.find()[index];
+              if(index < snapshot.data!.length){
+                song = snapshot.data![index];
               }
-              return index < query.find().length?
+              return index < snapshot.data!.length?
               MouseRegion(
                 cursor: SystemMouseCursors.click,
                 child: GestureDetector(

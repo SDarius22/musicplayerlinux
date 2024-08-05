@@ -1,5 +1,7 @@
 import 'dart:io';
 import 'dart:ui';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import '../controller/controller.dart';
 
@@ -15,13 +17,11 @@ class ImageWidget extends StatefulWidget {
 }
 
 class _ImageWidget extends State<ImageWidget> {
-  bool isHovered = false;
-  late Future imageFuture;
+  ValueNotifier<bool> isHovered = ValueNotifier(false);
   Image image = Image.memory(File("assets/bg.png").readAsBytesSync());
 
   @override
   void initState() {
-    imageFuture = widget.controller.imageRetrieve(widget.path, false);
     super.initState();
   }
 
@@ -29,21 +29,17 @@ class _ImageWidget extends State<ImageWidget> {
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(
-      future: imageFuture,
+      future: widget.controller.imageRetrieve(widget.path, false),
       builder: (context, snapshot) {
         return AspectRatio(
           aspectRatio: 1.0,
           child: snapshot.hasData? 
               MouseRegion(
                 onEnter: (event) {
-                  setState(() {
-                    isHovered = true;
-                  });
+                  isHovered.value = true;
                 },
                 onExit: (event) {
-                  setState(() {
-                    isHovered = false;
-                  });
+                  isHovered.value = false;
                 },
                 child: Stack(
                   alignment: Alignment.center,
@@ -60,17 +56,23 @@ class _ImageWidget extends State<ImageWidget> {
                         ),
                       ),
                     ),
-                    if (isHovered)
-                      ClipRRect(
-                        child: BackdropFilter(
-                          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                          child: Container(
-                            color: Colors.black.withOpacity(0.3),
-                            alignment: Alignment.center,
-                            child: widget.buttons,
-                          ),
-                        ),
-                      ),
+                    ValueListenableBuilder(
+                      valueListenable: isHovered,
+                      builder: (context, value, child) {
+                        return value?
+                            ClipRRect(
+                              child: BackdropFilter(
+                                filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                                child: Container(
+                                  color: Colors.black.withOpacity(0.3),
+                                  alignment: Alignment.center,
+                                  child: widget.buttons,
+                                ),
+                              ),
+                            ) :
+                            Container();
+                      },
+                    ),
               ],
             ),
           ) :

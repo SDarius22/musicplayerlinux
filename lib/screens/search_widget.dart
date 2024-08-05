@@ -5,6 +5,7 @@ import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import '../utils/hover_widget/hover_widget.dart';
 import '../controller/controller.dart';
+import '../utils/objectbox.g.dart';
 import 'add_screen.dart';
 
 class SearchWidget extends StatefulWidget {
@@ -21,6 +22,7 @@ class _SearchWidget extends State<SearchWidget> {
   @override
   void initState() {
     super.initState();
+    widget.controller.found.value = widget.controller.songBox.query().order(MetadataType_.title).build().find();
     searchNode.requestFocus();
   }
 

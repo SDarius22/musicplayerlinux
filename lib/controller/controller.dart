@@ -151,7 +151,7 @@ class Controller{
             paths.add(allEntities[i].path);
             var song = await retrieveSong(allEntities[i].path, allEntities);
             song.orderPosition = songs.length;
-            print(song.lyricsPath);
+            //print(song.lyricsPath);
             songBox.put(song);
           }
         }
@@ -526,7 +526,7 @@ class Controller{
   }
 
   void lyricModelReset() {
-    print(settings.playingSongs[indexNotifier.value].lyricsPath);
+    //print(settings.playingSongs[indexNotifier.value].lyricsPath);
     if (settings.playingSongs[indexNotifier.value].lyricsPath.contains(".lrc")) {
       File lyrFile = File(settings.playingSongs[indexNotifier.value].lyricsPath);
       lyricModelNotifier.value = LyricsModelBuilder.create().bindLyricToMain(lyrFile.readAsStringSync()).getModel();

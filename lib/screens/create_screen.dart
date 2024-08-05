@@ -6,6 +6,7 @@ import 'package:musicplayer/domain/metadata_type.dart';
 import 'package:musicplayer/domain/playlist_type.dart';
 import '../controller/controller.dart';
 import '../utils/hover_widget/hover_widget.dart';
+import '../utils/objectbox.g.dart';
 
 class CreateScreen extends StatefulWidget {
   final Controller controller;
@@ -24,6 +25,7 @@ class _CreateScreenState extends State<CreateScreen> {
   @override
   void initState() {
     super.initState();
+    widget.controller.found2.value = widget.controller.songBox.query().order(MetadataType_.title).build().find();
     nameNode.requestFocus();
   }
 
@@ -115,9 +117,7 @@ class _CreateScreenState extends State<CreateScreen> {
                     fontSize: normalSize,
                   ),
                   onChanged: (value) {
-                    setState(() {
-                      playlistName = value;
-                    });
+                    playlistName = value;
                   },
                 ),
               SizedBox(
