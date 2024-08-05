@@ -38,6 +38,24 @@ class _PlaylistWidget extends State<PlaylistWidget> {
     duration = " ${totalDuration ~/ 3600} hours, ${(totalDuration % 3600 ~/ 60)} minutes and ${(totalDuration % 60)} seconds";
     duration = duration.replaceAll(" 0 hours,", "");
     duration = duration.replaceAll(" 0 minutes and", "");
+    // map all the artists in the playlist with the number of times they appear
+    var artistMap = <String, int>{};
+    for (int i = 0; i < songs.length; i++){
+      artistMap.containsKey(songs[i].artists) ? artistMap[songs[i].artists] = artistMap[songs[i].artists]! + 1 : artistMap[songs[i].artists] = 1;
+    }
+    // sort the map by the number of times the artist appears
+    var sortedMap = artistMap.entries.toList()..sort((a, b) => b.value.compareTo(a.value));
+    // get the top 3 artists
+    for (int i = 0; i < 3 && i < sortedMap.length; i++){
+      featuredArtists += sortedMap[i].key;
+      if(i != 2 && i != sortedMap.length - 1){
+        featuredArtists += ", ";
+      }
+    }
+    // add "and x more" if there are more than 3 artists
+    if(sortedMap.length > 3){
+      featuredArtists += " and ${sortedMap.length - 3} more";
+    }
     super.initState();
   }
 

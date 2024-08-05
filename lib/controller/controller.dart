@@ -184,7 +184,7 @@ class Controller{
     MetadataType metadataVariable = MetadataType();
     metadataVariable.path = path;
     var metadataVar = await AudioTags.read(path);
-    if( metadataVar == null || metadataVar.pictures.isEmpty == true){
+    if(metadataVar == null || metadataVar.pictures.isEmpty == true){
       //print(path);
       if(path.endsWith(".flac")) {
         var flac = FlacInfo(File(path));
@@ -201,6 +201,9 @@ class Controller{
           if (metadate2.contains("ARTIST=") &&
               !metadate2.contains("ALBUMARTIST=")) {
             metadataVariable.artists = metadate2.substring(8);
+          }
+          if(metadate2.contains("ALBUMARTIST=")){
+            metadataVariable.albumArtist = metadate2.substring(12);
           }
           if (metadate2.contains("trackNumber=")) {
             metadataVariable.trackNumber = int.parse(metadate2.substring(13));
@@ -235,6 +238,7 @@ class Controller{
       metadataVariable.duration = metadataVar.duration ?? 0;
       metadataVariable.trackNumber = metadataVar.trackNumber ?? 0;
       metadataVariable.artists = metadataVar.trackArtist ?? "Unknown Artist";
+      metadataVariable.albumArtist = metadataVar.albumArtist ?? "Unknown Album Artist";
       metadataVariable.discNumber = metadataVar.discNumber ?? 0;
     }
     var lyrPath = path.replaceRange(path.lastIndexOf("."), path.length, ".lrc");
