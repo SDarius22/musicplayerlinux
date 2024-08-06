@@ -44,9 +44,21 @@ class _ImageWidget extends State<ImageWidget> {
                 child: Stack(
                   alignment: Alignment.center,
                   children: [
-                    Hero(
-                      tag: widget.heroTag ?? "${widget.path}hero",
-                      child: Container(
+                    if(widget.heroTag != null)
+                      Hero(
+                        tag: widget.heroTag.toString(),
+                        child: Container(
+                          decoration: BoxDecoration(
+                              color: Colors.black,
+                              image: DecorationImage(
+                                fit: BoxFit.cover,
+                                image: Image.memory(snapshot.data!).image,
+                              )
+                          ),
+                        ),
+                      )
+                    else
+                      Container(
                         decoration: BoxDecoration(
                             color: Colors.black,
                             image: DecorationImage(
@@ -55,11 +67,10 @@ class _ImageWidget extends State<ImageWidget> {
                             )
                         ),
                       ),
-                    ),
                     ValueListenableBuilder(
                       valueListenable: isHovered,
                       builder: (context, value, child) {
-                        return value?
+                        return value && widget.buttons != null?
                             ClipRRect(
                               child: BackdropFilter(
                                 filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),

@@ -38,7 +38,7 @@ class _PlaylistsState extends State<Playlists>{
             padding: EdgeInsets.all(width * 0.01),
             itemCount: query.find().length + 8,
             gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
-              childAspectRatio: 0.8275,
+              childAspectRatio: 0.825,
               maxCrossAxisExtent: width * 0.125,
               crossAxisSpacing: width * 0.0125,
               mainAxisSpacing: width * 0.0125,
@@ -122,10 +122,11 @@ class _PlaylistsState extends State<Playlists>{
                 cursor: SystemMouseCursors.click,
                 child: GestureDetector(
                   onTap: () {
+                    //print(playlist.name);
                     Navigator.push(
                         context,
                         PageRouteBuilder(
-                          pageBuilder: (context, animation1, animation2) =>PlaylistWidget(controller: widget.controller, playlist: playlist),
+                          pageBuilder: (context, animation1, animation2) => PlaylistWidget(controller: widget.controller, playlist: playlist),
                           transitionDuration: const Duration(milliseconds: 500),
                           reverseTransitionDuration: const Duration(milliseconds: 500),
                           transitionsBuilder: (context, animation1, animation2, child) {

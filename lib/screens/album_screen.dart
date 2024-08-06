@@ -6,6 +6,8 @@ import 'package:flutter/material.dart';
 import '../utils/hover_widget/hover_widget.dart';
 import 'package:musicplayer/domain/album_type.dart';
 import '../controller/controller.dart';
+import 'add_screen.dart';
+import 'image_widget.dart';
 
 class AlbumWidget extends StatefulWidget {
   final Controller controller;
@@ -18,12 +20,10 @@ class AlbumWidget extends StatefulWidget {
 
 class _AlbumWidget extends State<AlbumWidget> {
   String duration = "0 seconds";
-  late Future imageFuture;
 
 
   @override
   void initState() {
-    imageFuture = widget.controller.imageRetrieve(widget.album.songs.first.path, false);
     int totalDuration = 0;
     for (int i = 0; i < widget.album.songs.length; i++){
       totalDuration += widget.album.songs[i].duration;
@@ -243,7 +243,7 @@ class _AlbumWidget extends State<AlbumWidget> {
           alignment: Alignment.center,
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               IconButton(
                   onPressed: (){
@@ -277,37 +277,14 @@ class _AlbumWidget extends State<AlbumWidget> {
                           bottom: height * 0.01,
                         ),
                         //color: Colors.red,
-                        child: AspectRatio(
-                          aspectRatio: 1.0,
-                          child: FutureBuilder(
-                              future: imageFuture,
-                              builder: (context, snapshot){
-                                if(snapshot.hasData) {
-                                  return DecoratedBox(
-                                    decoration: BoxDecoration(
-                                      color: Colors.black,
-                                      borderRadius: BorderRadius.circular(width * 0.025),
-                                      image: DecorationImage(
-                                        image: Image.memory(snapshot.data!).image,
-                                        fit: BoxFit.cover,
-                                      ),
-                                    ),
-                                  );
-                                }
-                                else{
-                                  return DecoratedBox(
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(10),
-                                      image: DecorationImage(
-                                        image: Image.memory(File("assets/bg.png").readAsBytesSync()).image,
-                                        fit: BoxFit.cover,
-                                      ),
-                                    ),
-                                  );
-                                }
-                              }
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(width * 0.025),
+                          child: ImageWidget(
+                            controller: widget.controller,
+                            path: widget.album.songs.first.path,
                           ),
                         ),
+
                       ),
                     ),
                     Text(
@@ -372,12 +349,22 @@ class _AlbumWidget extends State<AlbumWidget> {
                         IconButton(
                           onPressed: (){
                           print("Add ${widget.album.name}");
-                          // for(metadata1 song in allalbums[displayedalbum].songs) {
-                          //   _songstoadd.add(song);
-                          // }
-                          // setState(() {
-                          //   addelement = true;
-                          // });
+                          Navigator.push(
+                              context,
+                              PageRouteBuilder(
+                                pageBuilder: (context, animation1, animation2) => AddScreen(controller: widget.controller, songs: widget.album.songs),
+                                transitionDuration: const Duration(milliseconds: 500),
+                                reverseTransitionDuration: const Duration(milliseconds: 500),
+                                transitionsBuilder: (context, animation1, animation2, child) {
+                                  animation1 = CurvedAnimation(parent: animation1, curve: Curves.linear);
+                                  return ScaleTransition(
+                                    alignment: Alignment.center,
+                                    scale: animation1,
+                                    child: child,
+                                  );
+                                },
+                              )
+                          );
                         },
                           icon: Icon(
                             FluentIcons.add_12_filled,
@@ -394,9 +381,9 @@ class _AlbumWidget extends State<AlbumWidget> {
                 duration: const Duration(milliseconds: 500),
                 width: width * 0.45,
                 padding: EdgeInsets.only(
-                  left: width * 0.02,
                   top: height * 0.1,
                   bottom: height * 0.2,
+                  left: width * 0.02,
                 ),
                 child: ListView.builder(
                   itemCount: widget.album.songs.length,
@@ -683,6 +670,9 @@ class _AlbumWidget extends State<AlbumWidget> {
                     );
                   },
                 ),
+              ),
+              SizedBox(
+                width: width * 0.02,
               ),
             ],
           ),

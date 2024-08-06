@@ -8,7 +8,6 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:audiotags/audiotags.dart';
-import 'package:deezer/deezer.dart' as deezer;
 import 'package:system_tray/system_tray.dart';
 import '../domain/album_type.dart';
 import '../domain/artist_type.dart';
@@ -522,11 +521,6 @@ class Controller{
       song.lyricsPath = lyrFile.path;
     }
     songBox.put(song);
-  }
-
-  Future<void> downloadSong() async {
-    deezer.Deezer instance = await deezer.Deezer.create(arl: '8436641c809f643da885ce7eb45e39e6a9514f882b1541a05282a33485f6f96fc56ddb724424ec3518e25bbaa08de4e7521e5f289a14c512dd65dc2ec0ad10b83138e5d02c1531a5bf5766ecfd492d0157815bafa5f08b90dcfe51a1eba1bbbf');
-    ///TODO: Implement downloadSong
   }
 
   void lyricModelReset() {

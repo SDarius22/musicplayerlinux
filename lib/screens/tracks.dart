@@ -43,7 +43,7 @@ class _TracksState extends State<Tracks>{
             padding: EdgeInsets.all(width * 0.01),
             itemCount: snapshot.data!.length + 7,
             gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
-              childAspectRatio: 0.8275,
+              childAspectRatio: 0.825,
               maxCrossAxisExtent: width * 0.125,
               crossAxisSpacing: width * 0.0125,
               mainAxisSpacing: width * 0.0125,

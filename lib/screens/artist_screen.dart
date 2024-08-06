@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import '../utils/hover_widget/hover_widget.dart';
 import 'package:musicplayer/domain/artist_type.dart';
 import '../controller/controller.dart';
+import 'image_widget.dart';
 
 class ArtistWidget extends StatefulWidget {
   final Controller controller;
@@ -17,12 +18,10 @@ class ArtistWidget extends StatefulWidget {
 
 class _ArtistWidget extends State<ArtistWidget> {
   String duration = "0 seconds";
-  late Future imageFuture;
 
 
   @override
   void initState() {
-    imageFuture = widget.controller.imageRetrieve(widget.artist.songs.first.path, false);
     int totalDuration = 0;
     for(int i = 0; i < widget.artist.songs.length; i++){
       totalDuration += widget.artist.songs[i].duration;
@@ -55,7 +54,7 @@ class _ArtistWidget extends State<ArtistWidget> {
           alignment: Alignment.center,
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               IconButton(
                 onPressed: (){
@@ -80,7 +79,6 @@ class _ArtistWidget extends State<ArtistWidget> {
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children:[
                       Hero(
-                        transitionOnUserGestures: true,
                         tag: widget.artist.name,
                         child: AnimatedContainer(
                           duration: const Duration(milliseconds: 500),
@@ -90,37 +88,14 @@ class _ArtistWidget extends State<ArtistWidget> {
                             bottom: height * 0.01,
                           ),
                           //color: Colors.red,
-                          child: AspectRatio(
-                            aspectRatio: 1.0,
-                            child: FutureBuilder(
-                              future: imageFuture,
-                                builder: (context, snapshot){
-                                  if(snapshot.hasData) {
-                                    return DecoratedBox(
-                                      decoration: BoxDecoration(
-                                        color: Colors.black,
-                                        borderRadius: BorderRadius.circular(width * 0.025),
-                                        image: DecorationImage(
-                                          image: Image.memory(snapshot.data!).image,
-                                          fit: BoxFit.cover,
-                                        ),
-                                      ),
-                                    );
-                                  }
-                                  else{
-                                    return DecoratedBox(
-                                      decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(10),
-                                        image: DecorationImage(
-                                          image: Image.memory(File("assets/bg.png").readAsBytesSync()).image,
-                                          fit: BoxFit.cover,
-                                        ),
-                                      ),
-                                    );
-                                  }
-                                }
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(width * 0.025),
+                            child: ImageWidget(
+                              controller: widget.controller,
+                              path: widget.artist.songs.first.path,
                             ),
                           ),
+
                         ),
                       ),
                       Text(
@@ -437,6 +412,9 @@ class _ArtistWidget extends State<ArtistWidget> {
                     );
                   },
                 ),
+              ),
+              SizedBox(
+                width: width * 0.02,
               ),
             ],
           ),
