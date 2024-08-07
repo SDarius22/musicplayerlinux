@@ -123,9 +123,22 @@ class _TracksState extends State<Tracks>{
                               ),
                               IconButton(
                                 onPressed: (){
-                                  Navigator.push(context, MaterialPageRoute(builder: (context){
-                                    return AlbumWidget(controller: widget.controller, album: widget.controller.albumBox.query(AlbumType_.name.equals(song.album)).build().find().first);
-                                  }));
+                                  Navigator.push(
+                                      context,
+                                      PageRouteBuilder(
+                                        pageBuilder: (context, animation1, animation2) => AlbumWidget(controller: widget.controller, album: widget.controller.albumBox.query(AlbumType_.name.equals(song.album)).build().find().first),
+                                        transitionDuration: const Duration(milliseconds: 500),
+                                        reverseTransitionDuration: const Duration(milliseconds: 500),
+                                        transitionsBuilder: (context, animation1, animation2, child) {
+                                          animation1 = CurvedAnimation(parent: animation1, curve: Curves.linear);
+                                          return ScaleTransition(
+                                            alignment: Alignment.center,
+                                            scale: animation1,
+                                            child: child,
+                                          );
+                                        },
+                                      )
+                                  );
                                 },
                                 padding: const EdgeInsets.all(0),
                                 icon: Icon(

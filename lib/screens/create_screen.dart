@@ -170,7 +170,7 @@ class _CreateScreenState extends State<CreateScreen> {
                               return AnimatedContainer(
                                 duration: const Duration(milliseconds: 500),
                                 curve: Curves.easeInOut,
-                                height: height * 0.1,
+                                height: height * 0.125,
                                 padding: EdgeInsets.only(right: width * 0.01),
                                 child: MouseRegion(
                                   cursor: SystemMouseCursors.click,
@@ -295,7 +295,7 @@ class _CreateScreenState extends State<CreateScreen> {
                                         child: Container(
                                           padding: EdgeInsets.all(width * 0.005),
                                           decoration: BoxDecoration(
-                                            borderRadius: BorderRadius.circular(height * 0.01),
+                                            borderRadius: BorderRadius.circular(width * 0.01),
                                             color: const Color(0xFF0E0E0E),
                                           ),
                                           child: Row(

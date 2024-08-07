@@ -34,6 +34,8 @@ class Controller{
   final SystemTray _systemTray = SystemTray();
   final Menu _menuMain = Menu();
 
+  ValueNotifier<String> userMessageNotifier = ValueNotifier<String>('');
+  ValueNotifier<double> userMessageProgressNotifier = ValueNotifier<double>(3500);
   ValueNotifier<double> volumeNotifier = ValueNotifier<double>(0.5);
   ValueNotifier<double> speedNotifier = ValueNotifier<double>(1);
   ValueNotifier<int> indexNotifier = ValueNotifier<int>(0);
@@ -43,6 +45,7 @@ class Controller{
   ValueNotifier<bool> minimizedNotifier = ValueNotifier<bool>(true);
   ValueNotifier<bool> hiddenNotifier = ValueNotifier<bool>(false);
   ValueNotifier<bool> listNotifier = ValueNotifier<bool>(false);
+  ValueNotifier<bool> listChangeNotifier = ValueNotifier<bool>(false);
   ValueNotifier<bool> playingNotifier = ValueNotifier<bool>(false);
   ValueNotifier<bool> repeatNotifier = ValueNotifier<bool>(false);
   ValueNotifier<bool> shuffleNotifier = ValueNotifier<bool>(false);
@@ -108,6 +111,49 @@ class Controller{
     }
     settingsBox.put(settings);
     loadingNotifier.value = false;
+  }
+
+  Future<void> removeFromQueue(MetadataType song) async {
+    if(settings.playingSongs.length == 1){
+      userMessageNotifier.value = "The queue cannot be empty!";
+      Timer.periodic(
+        const Duration(milliseconds: 10),
+        (timer) {
+          if(userMessageProgressNotifier.value > 0){
+            userMessageProgressNotifier.value -= 10;
+          }
+          else{
+            userMessageNotifier.value = "";
+            userMessageProgressNotifier.value = 3500;
+            timer.cancel();
+          }
+        },
+      );
+      print("The queue cannot be empty");
+      return;
+    }
+
+    int index = settings.playingSongs.indexOf(song);
+    if (index == indexNotifier.value){
+      if (index == settings.playingSongs.length - 1){
+        indexNotifier.value = 0;
+      }
+      else{
+        indexNotifier.value = index + 1;
+      }
+      await indexChange(settings.playingSongs[indexNotifier.value]);
+      await playSong();
+      indexNotifier.value -= 1;
+    }
+    else{
+      if (index < indexNotifier.value){
+        indexNotifier.value -= 1;
+      }
+    }
+    settings.playingSongs.removeAt(index);
+    settings.playingSongsUnShuffled.removeAt(index);
+    settingsBox.put(settings);
+    listChangeNotifier.value = !listChangeNotifier.value;
   }
 
 
@@ -611,20 +657,16 @@ class Controller{
     playSong();
   }
 
-  void filter(String enteredKeyword, bool search) {
+  Future<void> filter(String enteredKeyword, bool search) async {
     List<MetadataType> results = [];
-
-    if (enteredKeyword.isEmpty) {
-      results = songBox.query().order(MetadataType_.title).build().find();
-    } else {
-      results = songBox.query(MetadataType_.title.contains(enteredKeyword, caseSensitive: false) | MetadataType_.artists.contains(enteredKeyword, caseSensitive: false) | MetadataType_.album.contains(enteredKeyword, caseSensitive: false)).build().find();
-    }
+    var query = songBox.query(MetadataType_.title.contains(enteredKeyword, caseSensitive: false) | MetadataType_.artists.contains(enteredKeyword, caseSensitive: false) | MetadataType_.album.contains(enteredKeyword, caseSensitive: false)).build();
+    results = query.find();
     if(search) {
-      found.value = results;
+      found.value = List.from(results);
     }
     else{
       //print("found2");
-      found2.value = results;
+      found2.value = List.from(results);
     }
   }
 
@@ -647,6 +689,7 @@ class Controller{
     }
     settingsBox.put(settings);
   }
+
   Future<void> initSystemTray() async {
     await _systemTray.initSystemTray(iconPath: 'assets/bg.png');
     _systemTray.registerSystemTrayEventHandler((eventName) {

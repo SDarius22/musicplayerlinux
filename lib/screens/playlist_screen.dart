@@ -1,12 +1,8 @@
-import 'dart:io';
 import 'package:collection/collection.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:musicplayer/utils/hover_widget/hover_container.dart';
 import '../domain/metadata_type.dart';
-import '../utils/hover_widget/hover_widget.dart';
 import 'package:musicplayer/domain/playlist_type.dart';
 import '../controller/controller.dart';
 import '../utils/objectbox.g.dart';
@@ -314,7 +310,7 @@ class _PlaylistWidget extends State<PlaylistWidget> {
                               child: GestureDetector(
                                   behavior: HitTestBehavior.translucent,
                                   onTap: () async {
-                                    if(widget.controller.settings.playingSongs.equals( songs.value) == false){
+                                    if(widget.controller.settings.playingSongs.equals(songs.value) == false){
                                       widget.controller.updatePlaying( songs.value);
                                     }
                                     await widget.controller.indexChange(widget.controller.settings.playingSongsUnShuffled[index]);

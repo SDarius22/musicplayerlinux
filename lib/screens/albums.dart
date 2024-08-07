@@ -65,7 +65,8 @@ class _AlbumsState extends State<Albums>{
                               child: child,
                             );
                           },
-                        ));
+                        )
+                    );
                   },
                   child: Column(
                     children: [

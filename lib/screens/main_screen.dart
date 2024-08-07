@@ -3,6 +3,7 @@ import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:musicplayer/screens/search_widget.dart';
 import 'package:musicplayer/screens/song_player_widget.dart';
+import 'package:musicplayer/screens/user_message_widget.dart';
 import '../controller/controller.dart';
 import 'settings_screen.dart';
 import 'home.dart';
@@ -281,22 +282,41 @@ class _MyAppState extends State<MyApp>{
                       ValueListenableBuilder(
                           valueListenable: widget.controller.searchNotifier,
                           builder: (context, value, child){
-                            return Visibility(
-                              visible: value,
-                              child: GestureDetector(
+                            return AnimatedSwitcher(
+                              duration: const Duration(milliseconds: 500),
+                              child: value ? GestureDetector(
+                                key: const Key("Search Widget"),
                                 onTap: (){
                                   widget.controller.searchNotifier.value = false;
                                 },
-                                child: AnimatedContainer(
-                                  duration: const Duration(milliseconds: 500),
+                                child: Container(
                                   width: width,
                                   height: height,
-                                  color: value ? Colors.black.withOpacity(0.3) : Colors.transparent,
+                                  color: Colors.black.withOpacity(0.3),
                                   child: SearchWidget(controller: widget.controller),
                                 ),
+                              ) : Container(
+                                key: const Key("Search Off"),
                               ),
                             );
                           }
+                      ),
+                      ValueListenableBuilder(
+                        valueListenable: widget.controller.userMessageNotifier,
+                        builder: (context, value, child){
+                          return AnimatedSwitcher(
+                            duration: const Duration(milliseconds: 500),
+                            child: value.isNotEmpty ?
+                            SizedBox(
+                              key: const Key("User Message Widget"),
+                              width: width,
+                              height: height,
+                              child: UserMessageWidget(controller: widget.controller),
+                            ) : Container(
+                              key: const Key("User Message Off"),
+                            ),
+                          );
+                        }
                       ),
                     ],
                   ),

@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:collection/collection.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
+import 'package:musicplayer/utils/hover_widget/hover_container.dart';
 import '../utils/hover_widget/hover_widget.dart';
 import 'package:musicplayer/domain/album_type.dart';
 import '../controller/controller.dart';
@@ -407,264 +408,66 @@ class _AlbumWidget extends State<AlbumWidget> {
                             await widget.controller.playSong();
 
                           },
-                          child: FutureBuilder(
-                            future: widget.controller.imageRetrieve(widget.album.songs[index].path, false),
-                            builder: (context, snapshot){
-                              return HoverWidget(
-                                hoverChild: Container(
-                                  padding: EdgeInsets.only(
-                                    left: width * 0.0075,
-                                    right: width * 0.0075,
-                                    top: height * 0.005,
-                                    bottom: height * 0.005,
-                                  ),
-                                  decoration: BoxDecoration(
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(width * 0.01),
+                            child: HoverContainer(
+                              padding: EdgeInsets.only(
+                                left: width * 0.0075,
+                                right: width * 0.025,
+                                top: height * 0.0075,
+                                bottom: height * 0.0075,
+                              ),
+                              hoverColor: const Color(0xFF242424),
+                              normalColor: const Color(0xFF0E0E0E),
+                              height: height * 0.125,
+                              child: Row(
+                                children: [
+                                  ClipRRect(
                                     borderRadius: BorderRadius.circular(height * 0.02),
-                                    color: const Color(0xFF242424),
+                                    child: ImageWidget(
+                                      controller: widget.controller,
+                                      path: widget.album.songs[index].path,
+                                    ),
                                   ),
-                                  child: Row(
+                                  SizedBox(
+                                    width: width * 0.01,
+                                  ),
+                                  Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      if(snapshot.hasData)
-                                        AnimatedContainer(
-                                          duration: const Duration(milliseconds: 500),
-                                          height: height * 0.1,
-                                          width: height * 0.1,
-                                          child: AspectRatio(
-                                            aspectRatio: 1.0,
-                                            child: Container(
-                                              decoration: BoxDecoration(
-                                                color: Colors.black,
-                                                borderRadius: BorderRadius.circular(height * 0.02),
-                                                image: DecorationImage(
-                                                  fit: BoxFit.cover,
-                                                  image: Image.memory(snapshot.data!).image,
-                                                )
-                                              ),
-                                              child: ClipRRect(
-                                                // Clip it cleanly.
-                                                child: BackdropFilter(
-                                                  filter: ImageFilter.blur(
-                                                      sigmaX: 1, sigmaY: 1
-                                                  ),
-                                                  child: Container(
-                                                    alignment: Alignment.center,
-                                                    decoration: BoxDecoration(
-                                                      color: Colors.black.withOpacity(0.3),
-                                                      borderRadius: BorderRadius.circular(height * 0.02),
-                                                    ),
-                                                    child: Text(
-                                                      widget.album.songs[index].trackNumber.toString(),
-                                                      style: TextStyle(
-                                                        color: Colors.white,
-                                                        fontSize: boldSize,
-                                                        fontWeight: FontWeight.normal,
-                                                      ),
-                                                      textAlign: TextAlign.center,
-                                                    ),
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                        )
-                                      else if (snapshot.hasError)
-                                        SizedBox(
-                                          height: height * 0.1,
-                                          width: height * 0.1,
-                                          child: Center(
-                                            child: Text(
-                                              '${snapshot.error} occurred',
-                                              style: TextStyle(fontSize: normalSize),
-                                            ),
-                                          ),
-                                        )
-                                      else
-                                        AnimatedContainer(
-                                          duration: const Duration(milliseconds: 500),
-                                          height: height * 0.1,
-                                          width: height * 0.1,
-                                          child: AspectRatio(
-                                            aspectRatio: 1.0,
-                                            child: Container(
-                                              decoration: BoxDecoration(
-                                                color: Colors.black,
-                                                borderRadius: BorderRadius.circular(height * 0.01),
-                                                image: DecorationImage(
-                                                  fit: BoxFit.cover,
-                                                  image: Image.memory(File("./assets/bg.png").readAsBytesSync()).image,
-                                                )
-                                              ),
-                                              child: const Center(
-                                                child: CircularProgressIndicator(
-                                                  color: Colors.white,
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      SizedBox(
-                                        width: width * 0.01,
-                                      ),
-                                      Column(
-                                        mainAxisAlignment: MainAxisAlignment.center,
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            widget.album.songs[index].title.toString().length > 60 ? "${widget.album.songs[index].title.toString().substring(0, 60)}..." : widget.album.songs[index].title.toString(),
-                                            style: TextStyle(
-                                              color: Colors.white,
-                                              fontSize: normalSize,
-                                            )
-                                          ),
-                                          SizedBox(
-                                            height: height * 0.005,
-                                          ),
-                                          Text(
-                                            widget.album.songs[index].artists.toString().length > 60 ? "${widget.album.songs[index].artists.toString().substring(0, 60)}..." : widget.album.songs[index].artists.toString(),
-                                            style: TextStyle(
-                                              color: Colors.white,
-                                              fontSize: smallSize,
-                                            )
-                                          ),
-                                        ]
-                                      ),
-                                      const Spacer(),
                                       Text(
-                                        "${widget.album.songs[index].duration ~/ 60}:${(widget.album.songs[index].duration % 60).toString().padLeft(2, '0')}",
+                                        widget.album.songs[index].title.toString().length > 60 ? "${widget.album.songs[index].title.toString().substring(0, 60)}..." : widget.album.songs[index].title.toString(),
                                         style: TextStyle(
                                           color: Colors.white,
                                           fontSize: normalSize,
                                         )
                                       ),
-                                    ],
-                                  ),
-                                ),
-                                onHover: (event){
-                                  return;
-                                  //print("Hovering");
-                                },
-                                child: Container(
-                                  padding: EdgeInsets.only(
-                                    left: width * 0.0075,
-                                    right: width * 0.0075,
-                                    top: height * 0.005,
-                                    bottom: height * 0.005,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(height * 0.01),
-                                    color: Colors.transparent,
-                                  ),
-                                  child: Row(
-                                    children: [
-                                      if(snapshot.hasData)
-                                        AnimatedContainer(
-                                          duration: const Duration(milliseconds: 500),
-                                          height: height * 0.1,
-                                          width: height * 0.1,
-                                          child: AspectRatio(
-                                            aspectRatio: 1.0,
-                                            child: Container(
-                                              decoration: BoxDecoration(
-                                                color: Colors.black,
-                                                borderRadius: BorderRadius.circular(height * 0.02),
-                                                image: DecorationImage(
-                                                  fit: BoxFit.cover,
-                                                  image: Image.memory(snapshot.data!).image,
-                                                )
-                                              ),
-                                              child: ClipRRect(
-                                                // Clip it cleanly.
-                                                child: BackdropFilter(
-                                                  filter: ImageFilter.blur(
-                                                      sigmaX: 1, sigmaY: 1
-                                                  ),
-                                                  child: Container(
-                                                    color: Colors.black.withOpacity(0.3),
-                                                    alignment: Alignment.center,
-                                                    child: Text(
-                                                      widget.album.songs[index].trackNumber.toString(),
-                                                      style: TextStyle(
-                                                        color: Colors.white,
-                                                        fontSize: boldSize,
-                                                        fontWeight: FontWeight.normal,
-                                                      ),
-                                                      textAlign: TextAlign.center,
-                                                    ),
-                                                  ),
-                                            ),
-                                          ),
-                                        )
-                                          ),
-                                        )
-                                      else if (snapshot.hasError)
-                                        SizedBox(
-                                          height: height * 0.1,
-                                          width: height * 0.1,
-                                          child: Center(
-                                            child: Text(
-                                              '${snapshot.error} occurred',
-                                              style: TextStyle(fontSize: normalSize),
-                                            ),
-                                          ),
-                                        )
-                                      else
-                                        AnimatedContainer(
-                                          duration: const Duration(milliseconds: 500),
-                                          height: height * 0.1,
-                                          width: height * 0.1,
-                                          child: AspectRatio(
-                                            aspectRatio: 1.0,
-                                            child: Container(
-                                              decoration: BoxDecoration(
-                                                  borderRadius: BorderRadius.circular(height * 0.02),
-                                                  image: DecorationImage(
-                                                    fit: BoxFit.cover,
-                                                    image: Image.memory(File("assets/bg.png").readAsBytesSync()).image,
-                                                  )
-                                              ),
-                                            ),
-                                          ),
-                                        ),
                                       SizedBox(
-                                        width: width * 0.01,
+                                        height: height * 0.005,
                                       ),
-                                      Column(
-                                        mainAxisAlignment: MainAxisAlignment.center,
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            widget.album.songs[index].title.toString().length > 60 ? "${widget.album.songs[index].title.toString().substring(0, 60)}..." : widget.album.songs[index].title.toString(),
-                                            style: TextStyle(
-                                              color: Colors.white,
-                                              fontSize: normalSize,
-                                            )
-                                          ),
-                                          SizedBox(
-                                            height: height * 0.005,
-                                          ),
-                                          Text(
-                                            widget.album.songs[index].artists.toString().length > 60 ? "${widget.album.songs[index].artists.toString().substring(0, 60)}..." : widget.album.songs[index].artists.toString(),
-                                            style: TextStyle(
-                                              color: Colors.white,
-                                              fontSize: smallSize,
-                                            )
-                                          ),
-                                        ]
-                                      ),
-                                      const Spacer(),
                                       Text(
-                                        "${widget.album.songs[index].duration ~/ 60}:${(widget.album.songs[index].duration % 60).toString().padLeft(2, '0')}",
+                                        widget.album.songs[index].artists.toString().length > 60 ? "${widget.album.songs[index].artists.toString().substring(0, 60)}..." : widget.album.songs[index].artists.toString(),
                                         style: TextStyle(
                                           color: Colors.white,
-                                          fontSize: normalSize,
+                                          fontSize: smallSize,
                                         )
                                       ),
-                                    ],
+                                    ]
                                   ),
-                                ),
-                              );
-                            }
-                          )
+                                  const Spacer(),
+                                  Text(
+                                    "${widget.album.songs[index].duration ~/ 60}:${(widget.album.songs[index].duration % 60).toString().padLeft(2, '0')}",
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: normalSize,
+                                    )
+                                  ),
+                                ],
+                              ),
+
+                            ),
+                          ),
                         ),
                       ),
                     );
