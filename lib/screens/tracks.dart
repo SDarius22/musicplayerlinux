@@ -21,11 +21,6 @@ class Tracks extends StatefulWidget{
 
 class _TracksState extends State<Tracks>{
   int previousLength = 0;
-  @override
-  void initState() {
-    super.initState();
-  }
-
 
   @override
   Widget build(BuildContext context) {
@@ -35,10 +30,9 @@ class _TracksState extends State<Tracks>{
     // var boldSize = height * 0.025;
     // var normalSize = height * 0.02;
     var smallSize = height * 0.015;
-    return StreamBuilder<List<MetadataType>>(
-      stream: widget.controller.songBox.query().order(MetadataType_.title).watch(triggerImmediately: true).map((query) => query.find()),
-      builder: (context, snapshot){
-        if(snapshot.hasData){
+    return ValueListenableBuilder(
+        valueListenable: widget.controller.retrievingChangedNotifier,
+        builder: (context, value, child){
           return GridView.builder(
             padding: EdgeInsets.all(width * 0.01),
             itemCount: query.find().length + 7,
@@ -184,30 +178,6 @@ class _TracksState extends State<Tracks>{
             },
           );
         }
-        else if(snapshot.hasError){
-          return Center(
-            child: Text(
-              '${snapshot.error} occurred',
-              style: const TextStyle(fontSize: 18),
-            ),
-          );
-        }
-        else if (snapshot.connectionState == ConnectionState.waiting){
-          return const Center(
-            child: CircularProgressIndicator(
-              color: Colors.white,
-            ),
-          );
-        }
-        else{
-          return const Center(
-            child: Text(
-              'No data',
-              style: TextStyle(fontSize: 18),
-            ),
-          );
-        }
-      },
     );
   }
 

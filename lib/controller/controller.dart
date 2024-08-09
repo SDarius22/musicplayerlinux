@@ -33,6 +33,7 @@ class Controller{
   AudioPlayer audioPlayer = AudioPlayer();
   final SystemTray _systemTray = SystemTray();
   final Menu _menuMain = Menu();
+  final nestedNavigatorKey = GlobalKey<NavigatorState>();
 
   ValueNotifier<String> userMessageNotifier = ValueNotifier<String>('');
   ValueNotifier<double> userMessageProgressNotifier = ValueNotifier<double>(3500);
@@ -50,6 +51,7 @@ class Controller{
   ValueNotifier<bool> repeatNotifier = ValueNotifier<bool>(false);
   ValueNotifier<bool> shuffleNotifier = ValueNotifier<bool>(false);
   ValueNotifier<bool> searchNotifier = ValueNotifier<bool>(false);
+  ValueNotifier<bool> retrievingChangedNotifier = ValueNotifier<bool>(false);
   ValueNotifier<bool> finishedRetrievingNotifier = ValueNotifier<bool>(false);
   ValueNotifier<LyricsReaderModel> lyricModelNotifier = ValueNotifier<LyricsReaderModel>(LyricsReaderModel());
   ValueNotifier<String> plainLyricNotifier = ValueNotifier<String>('');
@@ -196,8 +198,10 @@ class Controller{
             paths.add(allEntities[i].path);
             var song = await retrieveSong(allEntities[i].path, allEntities);
             song.orderPosition = songs.length;
-            //print(song.lyricsPath);
             songBox.put(song);
+            if (i % 25 == 0){
+              retrievingChangedNotifier.value = !retrievingChangedNotifier.value;
+            }
           }
         }
       }
@@ -219,6 +223,7 @@ class Controller{
         settings.playingSongs.shuffle();
       }
     }
+    retrievingChangedNotifier.value = !retrievingChangedNotifier.value;
 
     //print(settings.playingSongsUnShuffled[settings.lastPlayingIndex].title);
     await indexChange(settings.playingSongs[settings.lastPlayingIndex]);

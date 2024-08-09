@@ -93,16 +93,16 @@ class _SongPlayerWidget extends State<SongPlayerWidget> {
                   width: values[0] ? width * 0.9 : width,
                   alignment: values[0] ? Alignment.centerLeft : Alignment.topCenter,
                   padding: EdgeInsets.only(
-                    left: values[0] ? width * 0.002 : width * 0.01,
-                    right: values[0] ? width * 0.002 : width * 0.01,
-                    top: values[0] ? height * 0.001 : height * 0.15,
+                    left: values[0] ? 0 : width * 0.01,
+                    right: values[0] ? 0 : width * 0.01,
+                    top: values[0] ? 0 : height * 0.15,
                   ),
                   margin: EdgeInsets.only(
-                    bottom: values[0] ? height * 0.02 : 0,
+                    bottom: values[0] ? height * 0.01 : 0,
                   ),
                   decoration: BoxDecoration(
                     color: values[0] ? widget.controller.colorNotifier2.value.withOpacity(values[3] ? 0.0 : 1) : const Color(0xFF0E0E0E),
-                    borderRadius: values[0] ? BorderRadius.circular(height * 0.1) : BorderRadius.circular(0),
+                    borderRadius: values[0] ? BorderRadius.circular(width * 0.1) : BorderRadius.circular(0),
                   ),
                   child: Wrap(
                     alignment: WrapAlignment.center,
@@ -415,9 +415,10 @@ class _SongPlayerWidget extends State<SongPlayerWidget> {
                         AnimatedContainer(
                           duration: const Duration(milliseconds: 500),
                           curve: Curves.easeInOut,
-                          height: values[0]? width * 0.075 : width * 0.275,
-                          width: values[0] ? width * 0.075 : width * 0.275,
+                          height: values[0]? width * 0.08 : width * 0.275,
+                          width: values[0] ? width * 0.08 : width * 0.275,
                           padding: EdgeInsets.all(width * 0.01),
+                          alignment: Alignment.center,
                           //color: Colors.red,
                           child: AspectRatio(
                             aspectRatio: 1.0,
@@ -809,7 +810,7 @@ class _SongPlayerWidget extends State<SongPlayerWidget> {
                     top: values[0] ? 0 : height * 0.15,
                   ),
                   margin: EdgeInsets.only(
-                    bottom: values[0] ? height * 0.02 : 0,
+                    bottom: values[0] ? height * 0.01 : 0,
                   ),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,

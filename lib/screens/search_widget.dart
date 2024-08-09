@@ -160,7 +160,7 @@ class _SearchWidget extends State<SearchWidget> {
                                                   color: Colors.black,
                                                   image: DecorationImage(
                                                     fit: BoxFit.cover,
-                                                    image: Image.memory(File("assets/bg.png").readAsBytesSync()).image,
+                                                    image: Image.asset("assets/bg.png").image,
                                                   )
                                               ),
                                               child: const Center(

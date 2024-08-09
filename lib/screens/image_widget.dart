@@ -1,7 +1,4 @@
-import 'dart:io';
 import 'dart:ui';
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import '../controller/controller.dart';
 
@@ -18,7 +15,7 @@ class ImageWidget extends StatefulWidget {
 
 class _ImageWidget extends State<ImageWidget> {
   ValueNotifier<bool> isHovered = ValueNotifier(false);
-  Image image = Image.memory(File("assets/bg.png").readAsBytesSync());
+  Image image = Image.asset('assets/bg.png', fit: BoxFit.cover,);
 
   @override
   void initState() {
@@ -101,11 +98,6 @@ class _ImageWidget extends State<ImageWidget> {
                       fit: BoxFit.cover,
                       image: image.image,
                     )
-                ),
-                child: const Center(
-                  child: CircularProgressIndicator(
-                    color: Colors.white,
-                  ),
                 ),
               ),
         );

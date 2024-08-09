@@ -243,7 +243,7 @@ class _CreateScreenState extends State<CreateScreen> {
                                                             color: Colors.black,
                                                             image: DecorationImage(
                                                               fit: BoxFit.cover,
-                                                              image: Image.memory(File("assets/bg.png").readAsBytesSync()).image,
+                                                              image: Image.asset("assets/bg.png").image,
                                                             )
                                                         ),
                                                         child: const Center(
