@@ -64,10 +64,11 @@ class _ImageWidget extends State<ImageWidget> {
                             )
                         ),
                       ),
+                    if(widget.buttons != null)
                     ValueListenableBuilder(
                       valueListenable: isHovered,
                       builder: (context, value, child) {
-                        return value && widget.buttons != null?
+                        return value?
                             ClipRRect(
                               child: BackdropFilter(
                                 filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),

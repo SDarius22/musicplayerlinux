@@ -24,118 +24,116 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
     var boldSize = height * 0.025;
     var normalSize = height * 0.02;
     return Scaffold(
-      body: SafeArea(
-        child: Container(
-          width: width,
-          height: height,
-          padding: EdgeInsets.only(
-            top: height * 0.005,
-            left: width * 0.005,
-            right: width * 0.005,
-            bottom: height * 0.005,
-          ),
-          alignment: Alignment.center,
-          child: Column(
-              children: [
-                SizedBox(
-                  height: height * 0.33,
-                ),
-                Text(
-                  "Welcome to Music Player!",
-                  style: TextStyle(
-                    fontSize: boldSize,
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
+      body: Container(
+        width: width,
+        height: height,
+        padding: EdgeInsets.only(
+          top: height * 0.005,
+          left: width * 0.005,
+          right: width * 0.005,
+          bottom: height * 0.005,
+        ),
+        alignment: Alignment.center,
+        child: Column(
+          children: [
+            SizedBox(
+              height: height * 0.33,
+            ),
+            Text(
+              "Welcome to Music Player!",
+              style: TextStyle(
+                fontSize: boldSize,
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            SizedBox(
+              height: height * 0.025,
+            ),
+            Text(
+              "Add music to your library by choosing a folder below:",
+              style: TextStyle(
+                fontSize: normalSize,
+                fontWeight: FontWeight.normal,
+                color: Colors.white,
+              ),
+            ),
+            SizedBox(
+              height: height * 0.025,
+            ),
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 500),
+              width: directory.isNotEmpty ?
+              directory.length * 15 > width/3 ? width/3 :
+              directory.length * 15 : width/10,
+              height: height * 0.06,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.all(0),
+                  foregroundColor: Colors.white, backgroundColor: Colors.grey.shade900,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10.0),
                   ),
                 ),
-                SizedBox(
-                  height: height * 0.025,
-                ),
-                Text(
-                  "Add music to your library by choosing a folder below:",
+                onPressed: () async {
+                  String chosen = await FilePicker.platform.getDirectoryPath() ?? "";
+                  if(chosen != "") {
+                    //print(chosen);
+                    setState(() {
+                      widget.controller.settings.directory = chosen;
+                      directory = chosen;
+                    });
+                  }
+                },
+                child: directory.isNotEmpty ?
+                Text(directory.length < 50 ? directory : "${directory.substring(0, 50)}...",
                   style: TextStyle(
-                      fontSize: normalSize,
+                    fontSize: normalSize,
                     fontWeight: FontWeight.normal,
                     color: Colors.white,
                   ),
+                ) :
+                Icon(
+                  FluentIcons.folder_24_regular,
+                  color: Colors.white,
+                  size: height * 0.03,
                 ),
-                SizedBox(
-                  height: height * 0.025,
-                ),
-                AnimatedContainer(
-                  duration: const Duration(milliseconds: 500),
-                  width: directory.isNotEmpty ?
-                  directory.length * 15 > width/3 ? width/3 :
-                  directory.length * 15 : width/10,
-                  height: height * 0.06,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.all(0),
-                      foregroundColor: Colors.white, backgroundColor: Colors.grey.shade900,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10.0),
-                      ),
-                    ),
-                    onPressed: () async {
-                      String chosen = await FilePicker.platform.getDirectoryPath() ?? "";
-                      if(chosen != "") {
-                        //print(chosen);
-                        setState(() {
-                          widget.controller.settings.directory = chosen;
-                          directory = chosen;
-                        });
-                      }
-                    },
-                    child: directory.isNotEmpty ?
-                    Text(directory.length < 50 ? directory : "${directory.substring(0, 50)}...",
-                      style: TextStyle(
-                        fontSize: normalSize,
-                        fontWeight: FontWeight.normal,
-                        color: Colors.white,
-                      ),
-                    ) :
-                    Icon(
-                      FluentIcons.folder_24_regular,
-                      color: Colors.white,
-                      size: height * 0.03,
-                    ),
-                  ),
-                ),
-                SizedBox(
-                  height: height * 0.01,
-                ),
-                AnimatedContainer(
-                  duration: const Duration(milliseconds: 500),
-                  width: width,
-                  padding: EdgeInsets.only(
-                    top: height * 0.25,
-                    right: width * 0.075,
-                  ),
-                  alignment: Alignment.centerRight,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      padding: EdgeInsets.all(0),
-                      foregroundColor: Colors.white, backgroundColor: Colors.grey.shade900,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10.0),
-                      ),
-                    ),
-                    onPressed: () async {
-                      print("Pressed");
-                      widget.controller.settings.firstTime = false;
-                      widget.controller.settingsBox.put(widget.controller.settings);
-                      print(widget.controller.settings.firstTime);
-                      Navigator.pushReplacement(context, MaterialPageRoute(builder: (BuildContext context){
-                        return HomePage(controller: widget.controller);
-                      }));
-                    },
-                    child: Icon(FluentIcons.arrow_right_12_filled, color: Colors.white, size: 30,),
-                  ),
-                ),
-              ],
+              ),
             ),
+            SizedBox(
+              height: height * 0.01,
+            ),
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 500),
+              width: width,
+              padding: EdgeInsets.only(
+                top: height * 0.25,
+                right: width * 0.075,
+              ),
+              alignment: Alignment.centerRight,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  padding: EdgeInsets.all(0),
+                  foregroundColor: Colors.white, backgroundColor: Colors.grey.shade900,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10.0),
+                  ),
+                ),
+                onPressed: () async {
+                  print("Pressed");
+                  widget.controller.settings.firstTime = false;
+                  widget.controller.settingsBox.put(widget.controller.settings);
+                  print(widget.controller.settings.firstTime);
+                  Navigator.pushReplacement(context, MaterialPageRoute(builder: (BuildContext context){
+                    return HomePage(controller: widget.controller);
+                  }));
+                },
+                child: Icon(FluentIcons.arrow_right_12_filled, color: Colors.white, size: 30,),
+              ),
+            ),
+          ],
         ),
-      )
+      ),
     );
   }
 }

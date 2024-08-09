@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:ui';
 
+import 'package:collection/collection.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:musicplayer/screens/image_widget.dart';
@@ -188,8 +189,13 @@ class _PlaylistsState extends State<Playlists>{
                                 color: Colors.white,
                               ),
                               IconButton(
-                                onPressed: (){
-                                  /// play all the songs of the playlist
+                                onPressed: () async {
+                                  var songs = playlist.paths.map((e) => widget.controller.songBox.query(MetadataType_.path.equals(e)).build().find().first).toList();
+                                  if(widget.controller.settings.playingSongsUnShuffled.equals(songs) == false){
+                                    widget.controller.updatePlaying(songs);
+                                  }
+                                  await widget.controller.indexChange(songs.first);
+                                  await widget.controller.playSong();
                                 },
                                 padding: const EdgeInsets.all(0),
                                 icon: Icon(
