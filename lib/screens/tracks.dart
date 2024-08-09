@@ -41,7 +41,7 @@ class _TracksState extends State<Tracks>{
         if(snapshot.hasData){
           return GridView.builder(
             padding: EdgeInsets.all(width * 0.01),
-            itemCount: snapshot.data!.length + 7,
+            itemCount: query.find().length + 7,
             gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
               childAspectRatio: 0.825,
               maxCrossAxisExtent: width * 0.125,
@@ -50,10 +50,10 @@ class _TracksState extends State<Tracks>{
             ),
             itemBuilder: (BuildContext context, int index) {
               MetadataType song = MetadataType();
-              if(index < snapshot.data!.length){
-                song = snapshot.data![index];
+              if(index < query.find().length){
+                song = query.find()[index];
               }
-              return index < snapshot.data!.length?
+              return index < query.find().length?
               MouseRegion(
                 cursor: SystemMouseCursors.click,
                 child: GestureDetector(

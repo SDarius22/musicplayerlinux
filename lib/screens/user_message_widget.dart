@@ -17,7 +17,7 @@ class _UserMessageWidgetState extends State<UserMessageWidget> {
     var width = MediaQuery.of(context).size.width;
     var height = MediaQuery.of(context).size.height;
     var normalSize = height * 0.02;
-    var smallSize = height * 0.015;
+    //var smallSize = height * 0.015;
     return Container(
       width: width,
       height: height,

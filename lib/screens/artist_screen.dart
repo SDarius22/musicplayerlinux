@@ -1,9 +1,7 @@
-import 'dart:io';
 import 'package:collection/collection.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:musicplayer/utils/hover_widget/hover_container.dart';
-import '../utils/hover_widget/hover_widget.dart';
 import 'package:musicplayer/domain/artist_type.dart';
 import '../controller/controller.dart';
 import 'image_widget.dart';

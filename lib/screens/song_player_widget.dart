@@ -1,9 +1,7 @@
-import 'dart:io';
 import 'dart:ui';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:musicplayer/utils/hover_widget/hover_container.dart';
-import '../utils/hover_widget/hover_widget.dart';
 import '../utils/multivaluelistenablebuilder/mvlb.dart';
 import '../controller/controller.dart';
 import '../utils/lyric_reader/lyrics_reader.dart';
@@ -425,8 +423,9 @@ class _SongPlayerWidget extends State<SongPlayerWidget> {
                             aspectRatio: 1.0,
                             child: Container(
                               decoration: BoxDecoration(
+                                  shape: values[0] ? BoxShape.circle : BoxShape.rectangle,
                                   color: Colors.black.withOpacity(values[3] ? 0.3 : 1),
-                                  borderRadius: values[0] ? BorderRadius.circular(width * 0.1) : BorderRadius.circular(width * 0.03),
+                                  borderRadius: values[0] ? null : BorderRadius.circular(width * 0.025),
                                   image: DecorationImage(
                                     opacity: values[3] ? 0.5 : 1,
                                     fit: BoxFit.cover,

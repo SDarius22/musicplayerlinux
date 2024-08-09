@@ -1,6 +1,7 @@
 import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:musicplayer/screens/search_widget.dart';
 import 'package:musicplayer/screens/song_player_widget.dart';
 import 'package:musicplayer/screens/user_message_widget.dart';
@@ -38,46 +39,80 @@ class _MyAppState extends State<MyApp>{
             height: height,
             child: Column(
               children: [
-                WindowTitleBarBox(
-                  child: ValueListenableBuilder(
-                    valueListenable: widget.controller.colorNotifier2,
-                    builder: (context, value, child){
-                      return AnimatedContainer(
-                        duration: const Duration(milliseconds: 500),
-                        color: widget.controller.colorNotifier2.value,
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Expanded(
-                                child: MoveWindow(
-                                  child: Container(
-                                    padding: EdgeInsets.only(
-                                        left: width * 0.01
-                                     ),
-                                    alignment: Alignment.centerLeft,
-                                    child: Text(
-                                      'Music Player',
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: normalSize,
+                  WindowTitleBarBox(
+                    child: ValueListenableBuilder(
+                      valueListenable: widget.controller.colorNotifier2,
+                      builder: (context, value, child){
+                        return AnimatedContainer(
+                          duration: const Duration(milliseconds: 500),
+                          color: widget.controller.colorNotifier2.value,
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Expanded(
+                                  child: MoveWindow(
+                                    child: Container(
+                                      padding: EdgeInsets.only(
+                                          left: width * 0.01
+                                      ),
+                                      alignment: Alignment.centerLeft,
+                                      child: Text(
+                                        'Music Player',
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: normalSize,
+                                        ),
                                       ),
                                     ),
-                                  ),
-                                )
-                            ),
-                            ValueListenableBuilder(
-                              valueListenable: _visible,
-                              builder: (context, value, child) =>
-                                Row(
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  mainAxisAlignment: MainAxisAlignment.end,
-                                  children: [
-                                    Visibility(
-                                      visible: _visible.value,
-                                      child: SizedBox(
-                                        height: height * 0.05,
-                                        width: width * 0.1,
-                                        child:
+                                  )
+                              ),
+                              ValueListenableBuilder(
+                                valueListenable: _visible,
+                                builder: (context, value, child) =>
+                                    Row(
+                                      crossAxisAlignment: CrossAxisAlignment.center,
+                                      mainAxisAlignment: MainAxisAlignment.end,
+                                      children: [
+                                        Visibility(
+                                          visible: _visible.value,
+                                          child: SizedBox(
+                                            height: height * 0.05,
+                                            width: width * 0.1,
+                                            child:
+                                            MouseRegion(
+                                              onEnter: (event) {
+                                                _visible.value = true;
+                                              },
+                                              onExit: (event) {
+                                                _visible.value = false;
+                                              },
+                                              child: ValueListenableBuilder(
+                                                  valueListenable: widget.controller.volumeNotifier,
+                                                  builder: (context, value, child){
+                                                    return SliderTheme(
+                                                      data: SliderThemeData(
+                                                        trackHeight: 2,
+                                                        thumbShape: RoundSliderThumbShape(enabledThumbRadius: height * 0.0075),
+                                                      ),
+                                                      child: Slider(
+                                                        min: 0.0,
+                                                        max: 1.0,
+                                                        mouseCursor: SystemMouseCursors.click,
+                                                        value: value,
+                                                        activeColor: widget.controller.colorNotifier.value,
+                                                        thumbColor: Colors.white,
+                                                        inactiveColor: Colors.white,
+                                                        onChanged: (double value) {
+                                                          widget.controller.volumeNotifier.value = value;
+                                                          widget.controller.audioPlayer.setVolume(widget.controller.volumeNotifier.value);
+                                                        },
+                                                      ),
+                                                    );
+                                                  }
+                                              ),
+                                            ),
+                                          ),
+                                        ),
                                         MouseRegion(
                                           onEnter: (event) {
                                             _visible.value = true;
@@ -87,143 +122,109 @@ class _MyAppState extends State<MyApp>{
                                           },
                                           child: ValueListenableBuilder(
                                               valueListenable: widget.controller.volumeNotifier,
-                                              builder: (context, value, child){
-                                                return SliderTheme(
-                                                  data: SliderThemeData(
-                                                    trackHeight: 2,
-                                                    thumbShape: RoundSliderThumbShape(enabledThumbRadius: height * 0.0075),
+                                              builder: (context, value, child) {
+                                                return IconButton(
+                                                  icon: volume ? Icon(
+                                                    FluentIcons.speaker_2_16_filled,
+                                                    size: height * 0.02,
+                                                    color: Colors.white,
+                                                  ) :
+                                                  Icon(
+                                                    FluentIcons.speaker_mute_16_filled,
+                                                    size: height * 0.02,
+                                                    color: Colors.white,
                                                   ),
-                                                  child: Slider(
-                                                    min: 0.0,
-                                                    max: 1.0,
-                                                    mouseCursor: SystemMouseCursors.click,
-                                                    value: value,
-                                                    activeColor: widget.controller.colorNotifier.value,
-                                                    thumbColor: Colors.white,
-                                                    inactiveColor: Colors.white,
-                                                    onChanged: (double value) {
-                                                      widget.controller.volumeNotifier.value = value;
-                                                      widget.controller.audioPlayer.setVolume(widget.controller.volumeNotifier.value);
-                                                    },
-                                                  ),
+                                                  onPressed: () {
+                                                    if(volume) {
+                                                      widget.controller.volumeNotifier.value = 0;
+                                                    }
+                                                    else {
+                                                      widget.controller.volumeNotifier.value = 0.1;
+                                                    }
+                                                    volume = !volume;
+                                                    widget.controller.audioPlayer.setVolume(widget.controller.volumeNotifier.value);
+                                                  },
                                                 );
                                               }
                                           ),
                                         ),
-                                      ),
+                                        IconButton(onPressed: (){
+                                          print("Search");
+                                          widget.controller.searchNotifier.value = !widget.controller.searchNotifier.value;
+                                        }, icon: Icon(
+                                          FluentIcons.search_16_filled,
+                                          size: height * 0.02,
+                                          color: Colors.white,
+                                        )
+                                        ),
+                                        IconButton(onPressed: (){
+                                          print("Tapped settings");
+                                          Navigator.push(context, MaterialPageRoute(builder: (BuildContext context){
+                                            return Settings(controller: widget.controller,);
+                                          }));
+                                        }, icon: Icon(
+                                          FluentIcons.settings_16_filled,
+                                          size: height * 0.02,
+                                          color: Colors.white,
+                                        )
+                                        )//Icon(Icons.more_vert)),
+                                      ],
                                     ),
-                                    MouseRegion(
-                                      onEnter: (event) {
-                                        _visible.value = true;
-                                      },
-                                      onExit: (event) {
-                                        _visible.value = false;
-                                      },
-                                      child: ValueListenableBuilder(
-                                          valueListenable: widget.controller.volumeNotifier,
-                                          builder: (context, value, child) {
-                                            return IconButton(
-                                              icon: volume ? Icon(
-                                                FluentIcons.speaker_2_16_filled,
-                                                size: height * 0.02,
-                                                color: Colors.white,
-                                              ) :
-                                              Icon(
-                                                FluentIcons.speaker_mute_16_filled,
-                                                size: height * 0.02,
-                                                color: Colors.white,
-                                              ),
-                                              onPressed: () {
-                                                if(volume) {
-                                                  widget.controller.volumeNotifier.value = 0;
-                                                }
-                                                else {
-                                                  widget.controller.volumeNotifier.value = 0.1;
-                                                }
-                                                volume = !volume;
-                                                widget.controller.audioPlayer.setVolume(widget.controller.volumeNotifier.value);
-                                              },
-                                            );
-                                          }
-                                      ),
-                                    ),
-                                    IconButton(onPressed: (){
-                                      print("Search");
-                                      widget.controller.searchNotifier.value = !widget.controller.searchNotifier.value;
-                                    }, icon: Icon(
-                                      FluentIcons.search_16_filled,
-                                      size: height * 0.02,
-                                      color: Colors.white,
-                                    )
-                                    ),
-                                    IconButton(onPressed: (){
-                                      print("Tapped settings");
-                                      Navigator.push(context, MaterialPageRoute(builder: (BuildContext context){
-                                        return Settings(controller: widget.controller,);
-                                      }));
-                                    }, icon: Icon(
-                                      FluentIcons.settings_16_filled,
-                                      size: height * 0.02,
-                                      color: Colors.white,
-                                    )
-                                    )//Icon(Icons.more_vert)),
-                                  ],
+                              ),
+                              Icon(
+                                FluentIcons.divider_tall_16_regular,
+                                size: height * 0.02,
+                                color: Colors.white,
+                              ),
+                              MinimizeWindowButton(
+                                animate: true,
+                                colors: WindowButtonColors(
+                                  normal: Colors.transparent,
+                                  iconNormal: Colors.white,
+                                  iconMouseOver: Colors.white,
+                                  mouseOver: Colors.grey,
+                                  mouseDown: Colors.grey,
                                 ),
-                            ),
-                            Icon(
-                              FluentIcons.divider_tall_16_regular,
-                              size: height * 0.02,
-                              color: Colors.white,
-                            ),
-                            MinimizeWindowButton(
-                              animate: true,
-                              colors: WindowButtonColors(
-                                normal: Colors.transparent,
-                                iconNormal: Colors.white,
-                                iconMouseOver: Colors.white,
-                                mouseOver: Colors.grey,
-                                mouseDown: Colors.grey,
                               ),
-                            ),
-                            appWindow.isMaximized ?
-                            RestoreWindowButton(
-                              animate: true,
-                              colors: WindowButtonColors(
-                                normal: Colors.transparent,
-                                iconNormal: Colors.white,
-                                iconMouseOver: Colors.white,
-                                mouseOver: Colors.grey,
-                                mouseDown: Colors.grey,
+                              appWindow.isMaximized ?
+                              RestoreWindowButton(
+                                animate: true,
+                                colors: WindowButtonColors(
+                                  normal: Colors.transparent,
+                                  iconNormal: Colors.white,
+                                  iconMouseOver: Colors.white,
+                                  mouseOver: Colors.grey,
+                                  mouseDown: Colors.grey,
+                                ),
+                              ) :
+                              MaximizeWindowButton(
+                                animate: true,
+                                colors: WindowButtonColors(
+                                  normal: Colors.transparent,
+                                  iconNormal: Colors.white,
+                                  iconMouseOver: Colors.white,
+                                  mouseOver: Colors.grey,
+                                  mouseDown: Colors.grey,
+                                ),
                               ),
-                            ) :
-                            MaximizeWindowButton(
-                              animate: true,
-                              colors: WindowButtonColors(
-                                normal: Colors.transparent,
-                                iconNormal: Colors.white,
-                                iconMouseOver: Colors.white,
-                                mouseOver: Colors.grey,
-                                mouseDown: Colors.grey,
+                              CloseWindowButton(
+                                animate: true,
+                                onPressed: () => appWindow.hide(),
+                                colors: WindowButtonColors(
+                                  normal: Colors.transparent,
+                                  iconNormal: Colors.white,
+                                  iconMouseOver: Colors.white,
+                                  mouseOver: Colors.grey,
+                                  mouseDown: Colors.grey,
+                                ),
                               ),
-                            ),
-                            CloseWindowButton(
-                              animate: true,
-                              onPressed: () => appWindow.hide(),
-                              colors: WindowButtonColors(
-                                normal: Colors.transparent,
-                                iconNormal: Colors.white,
-                                iconMouseOver: Colors.white,
-                                mouseOver: Colors.grey,
-                                mouseDown: Colors.grey,
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
+                            ],
+                          ),
+                        );
 
-                    },
+                      },
+                    ),
                   ),
-                ),
                 Expanded(
                   child: Stack(
                     children: [
@@ -245,8 +246,8 @@ class _MyAppState extends State<MyApp>{
                               duration: const Duration(milliseconds: 500),
                               alignment: Alignment.bottomCenter,
                               child: !widget.controller.settings.firstTime ? value?
-                              SongPlayerWidget(controller: widget.controller) :
-                              AnimatedContainer(
+                                SongPlayerWidget(controller: widget.controller) :
+                                AnimatedContainer(
                                 duration: const Duration(milliseconds: 500),
                                 padding: EdgeInsets.only(
                                   left: width * 0.01,
@@ -327,8 +328,26 @@ class _MyAppState extends State<MyApp>{
         ),
       );
   }
+}
 
+class IgnoreTransparentPointer extends SingleChildRenderObjectWidget {
+  IgnoreTransparentPointer({required Widget child}) : super(child: child);
 
+  @override
+  RenderObject createRenderObject(BuildContext context) {
+    return RenderIgnoreTransparentPointer();
+  }
+}
 
+class RenderIgnoreTransparentPointer extends RenderProxyBox {
+  @override
+  bool hitTest(BoxHitTestResult result, {required Offset position}) {
+    return ignoreTransparent(position) && super.hitTest(result, position: position);
+  }
 
+  bool ignoreTransparent(Offset position) {
+    var opaqueChild = child!.paintBounds;
+    //print(opaqueChild);
+    return opaqueChild.contains(position);
+  }
 }
