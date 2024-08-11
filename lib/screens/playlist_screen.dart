@@ -216,10 +216,10 @@ class _PlaylistWidget extends State<PlaylistWidget> {
                         children: [
                           IconButton(
                             onPressed: () async {
-                              if(widget.controller.settings.playingSongsUnShuffled.equals( songs.value) == false){
-                                widget.controller.updatePlaying( songs.value);
+                              if(widget.controller.settings.playingSongsUnShuffled.equals(songs.value) == false){
+                                widget.controller.updatePlaying(songs.value);
                               }
-                              await widget.controller.indexChange( songs.value.first);
+                              widget.controller.indexChange(songs.value.first);
                               await widget.controller.playSong();
 
                             },
@@ -311,7 +311,7 @@ class _PlaylistWidget extends State<PlaylistWidget> {
                                 if(widget.controller.settings.playingSongs.equals(songs.value) == false){
                                   widget.controller.updatePlaying( songs.value);
                                 }
-                                await widget.controller.indexChange(widget.controller.settings.playingSongsUnShuffled[index]);
+                                widget.controller.indexChange(widget.controller.settings.playingSongsUnShuffled[index]);
                                 await widget.controller.playSong();
                               },
                               child: ClipRRect(

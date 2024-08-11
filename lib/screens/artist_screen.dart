@@ -132,7 +132,7 @@ class _ArtistWidget extends State<ArtistWidget> {
                               if(widget.controller.settings.playingSongsUnShuffled.equals(widget.artist.songs) == false){
                                 widget.controller.updatePlaying(widget.artist.songs);
                               }
-                              await widget.controller.indexChange(widget.artist.songs.first);
+                              widget.controller.indexChange(widget.artist.songs.first);
                               await widget.controller.playSong();
                             },
                             icon: Icon(
@@ -198,7 +198,7 @@ class _ArtistWidget extends State<ArtistWidget> {
                           if(widget.controller.settings.playingSongsUnShuffled.equals(widget.artist.songs) == false){
                             widget.controller.updatePlaying(widget.artist.songs);
                           }
-                          await widget.controller.indexChange(widget.controller.settings.playingSongsUnShuffled[index]);
+                          widget.controller.indexChange(widget.controller.settings.playingSongsUnShuffled[index]);
                           await widget.controller.playSong();
                         },
                         child: ClipRRect(

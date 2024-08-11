@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'dart:ui';
 
 import 'package:collection/collection.dart';
@@ -86,7 +85,7 @@ class _SearchWidget extends State<SearchWidget> {
                               if(widget.controller.settings.playingSongs.equals(widget.controller.found.value) == false){
                                 widget.controller.updatePlaying(widget.controller.found.value);
                               }
-                              await widget.controller.indexChange(widget.controller.settings.playingSongsUnShuffled[index]);
+                              widget.controller.indexChange(widget.controller.settings.playingSongsUnShuffled[index]);
                               await widget.controller.playSong();
                             },
                             child: ClipRRect(

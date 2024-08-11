@@ -1,4 +1,5 @@
 import 'dart:ui';
+import 'package:audioplayers/audioplayers.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:musicplayer/utils/hover_widget/hover_container.dart';
@@ -56,6 +57,13 @@ class _SongPlayerWidget extends State<SongPlayerWidget> {
         );
       });
     });
+  }
+
+  @override
+  void dispose() {
+    itemScrollController.dispose();
+    widget.controller.colorNotifier.removeListener(() {});
+    super.dispose();
   }
 
 
@@ -132,7 +140,7 @@ class _SongPlayerWidget extends State<SongPlayerWidget> {
                                         onTap: () async {
                                           //print(widget.controller.settings.playingSongsUnShuffled[index].title);
                                           //widget.controller.audioPlayer.stop();
-                                          await widget.controller.indexChange(widget.controller.settings.playingSongs[index]);
+                                          widget.controller.indexChange(widget.controller.settings.playingSongsUnShuffled[index]);
                                           await widget.controller.playSong();
                                         },
                                         child: ClipRRect(
@@ -188,7 +196,7 @@ class _SongPlayerWidget extends State<SongPlayerWidget> {
                                                 ),
                                                 const Spacer(),
                                                 Text(
-                                                    "${widget.controller.settings.playingSongs[index].duration ~/ 60}:${(widget.controller.settings.playingSongs[index].duration % 60).toString().padLeft(2, '0')}",
+                                                    "${widget.controller.settings.playingSongsUnShuffled[index].duration ~/ 60}:${(widget.controller.settings.playingSongsUnShuffled[index].duration % 60).toString().padLeft(2, '0')}",
                                                     style: TextStyle(
                                                       color: widget.controller.settings.playingSongsUnShuffled[index] != widget.controller.settings.playingSongs[widget.controller.indexNotifier.value] ? Colors.white : Colors.blue,
                                                       fontSize: normalSize,
@@ -198,213 +206,6 @@ class _SongPlayerWidget extends State<SongPlayerWidget> {
                                             ),
                                           ),
                                         )
-                                      // child: FutureBuilder(
-                                      //     future: widget.controller.imageRetrieve(widget.controller.settings.playingSongsUnShuffled[index].path, false),
-                                      //     builder: (context, snapshot){
-                                      //       return HoverWidget(
-                                      //         hoverChild: Container(
-                                      //           padding: EdgeInsets.all(width * 0.005),
-                                      //           decoration: BoxDecoration(
-                                      //             borderRadius: BorderRadius.circular(height * 0.01),
-                                      //             color: const Color(0xFF242424),
-                                      //           ),
-                                      //           child: Row(
-                                      //             children: [
-                                      //               if(snapshot.hasData)
-                                      //                 AnimatedContainer(
-                                      //                   duration: const Duration(milliseconds: 500),
-                                      //                   height: height * 0.1,
-                                      //                   width: height * 0.1,
-                                      //                   child: AspectRatio(
-                                      //                     aspectRatio: 1.0,
-                                      //                     child: Container(
-                                      //                       decoration: BoxDecoration(
-                                      //                           color: Colors.black,
-                                      //                           borderRadius: BorderRadius.circular(height * 0.01),
-                                      //                           image: DecorationImage(
-                                      //                             fit: BoxFit.cover,
-                                      //                             image: Image.memory(snapshot.data!).image,
-                                      //                           )
-                                      //                       ),
-                                      //                     ),
-                                      //                   ),
-                                      //                 )
-                                      //               else if (snapshot.hasError)
-                                      //                 SizedBox(
-                                      //                   height: height * 0.1,
-                                      //                   width: height * 0.1,
-                                      //                   child: Center(
-                                      //                     child: Text(
-                                      //                       '${snapshot.error} occurred',
-                                      //                       style: TextStyle(fontSize: normalSize),
-                                      //                     ),
-                                      //                   ),
-                                      //                 )
-                                      //               else
-                                      //                 AnimatedContainer(
-                                      //                   duration: const Duration(milliseconds: 500),
-                                      //                   height: height * 0.1,
-                                      //                   width: height * 0.1,
-                                      //                   child: AspectRatio(
-                                      //                     aspectRatio: 1.0,
-                                      //                     child: Container(
-                                      //                       decoration: BoxDecoration(
-                                      //                           color: Colors.black,
-                                      //                           borderRadius: BorderRadius.circular(height * 0.01),
-                                      //                           image: DecorationImage(
-                                      //                             fit: BoxFit.cover,
-                                      //                             image: Image.memory(File("./assets/bg.png").readAsBytesSync()).image,
-                                      //                           )
-                                      //                       ),
-                                      //                       child: const Center(
-                                      //                         child: CircularProgressIndicator(
-                                      //                           color: Colors.white,
-                                      //                         ),
-                                      //                       ),
-                                      //                     ),
-                                      //                   ),
-                                      //                 ),
-                                      //               SizedBox(
-                                      //                 width: width * 0.01,
-                                      //               ),
-                                      //               Column(
-                                      //                   mainAxisAlignment: MainAxisAlignment.center,
-                                      //                   crossAxisAlignment: CrossAxisAlignment.start,
-                                      //                   children: [
-                                      //                     Text(
-                                      //                         widget.controller.settings.playingSongsUnShuffled[index].title.toString().length > 60 ? "${widget.controller.settings.playingSongsUnShuffled[index].title.toString().substring(0, 60)}..." : widget.controller.settings.playingSongsUnShuffled[index].title.toString(),
-                                      //                         style: TextStyle(
-                                      //                           color: widget.controller.settings.playingSongsUnShuffled[index] != widget.controller.settings.playingSongs[widget.controller.indexNotifier.value] ? Colors.white : Colors.blue,
-                                      //                           fontSize: normalSize,
-                                      //                         )
-                                      //                     ),
-                                      //                     SizedBox(
-                                      //                       height: height * 0.005,
-                                      //                     ),
-                                      //                     Text(widget.controller.settings.playingSongsUnShuffled[index].artists.toString().length > 60 ? "${widget.controller.settings.playingSongsUnShuffled[index].artists.toString().substring(0, 60)}..." : widget.controller.settings.playingSongsUnShuffled[index].artists.toString(),
-                                      //                         style: TextStyle(
-                                      //                           color: widget.controller.settings.playingSongsUnShuffled[index] != widget.controller.settings.playingSongs[widget.controller.indexNotifier.value] ? Colors.white : Colors.blue,
-                                      //                           fontSize: smallSize,
-                                      //                         )
-                                      //                     ),
-                                      //                   ]
-                                      //               ),
-                                      //               const Spacer(),
-                                      //               Text(
-                                      //                   "${widget.controller.settings.playingSongs[index].duration ~/ 60}:${(widget.controller.settings.playingSongs[index].duration % 60).toString().padLeft(2, '0')}",
-                                      //                   style: TextStyle(
-                                      //                     color: widget.controller.settings.playingSongsUnShuffled[index] != widget.controller.settings.playingSongs[widget.controller.indexNotifier.value] ? Colors.white : Colors.blue,
-                                      //                     fontSize: normalSize,
-                                      //                   )
-                                      //               ),
-                                      //               Container(
-                                      //                 width: 35,
-                                      //               ),
-                                      //             ],
-                                      //           ),
-                                      //         ),
-                                      //         onHover: (event){
-                                      //           return;
-                                      //           //print("Hovering");
-                                      //         },
-                                      //         child: Container(
-                                      //           padding: EdgeInsets.all(width * 0.005),
-                                      //           decoration: BoxDecoration(
-                                      //             borderRadius: BorderRadius.circular(height * 0.01),
-                                      //             color: Colors.transparent,
-                                      //           ),
-                                      //           child: Row(
-                                      //             children: [
-                                      //               if(snapshot.hasData)
-                                      //                 AnimatedContainer(
-                                      //                   duration: const Duration(milliseconds: 500),
-                                      //                   height: height * 0.1,
-                                      //                   width: height * 0.1,
-                                      //                   child: AspectRatio(
-                                      //                     aspectRatio: 1.0,
-                                      //                     child: Container(
-                                      //                       decoration: BoxDecoration(
-                                      //                           color: Colors.black,
-                                      //                           borderRadius: BorderRadius.circular(height * 0.01),
-                                      //                           image: DecorationImage(
-                                      //                             fit: BoxFit.cover,
-                                      //                             image: Image.memory(snapshot.data!).image,
-                                      //                           )
-                                      //                       ),
-                                      //                     ),
-                                      //                   ),
-                                      //                 )
-                                      //               else if (snapshot.hasError)
-                                      //                 SizedBox(
-                                      //                   height: height * 0.1,
-                                      //                   width: height * 0.1,
-                                      //                   child: Center(
-                                      //                     child: Text(
-                                      //                       '${snapshot.error} occurred',
-                                      //                       style: TextStyle(fontSize: normalSize),
-                                      //                     ),
-                                      //                   ),
-                                      //                 )
-                                      //               else
-                                      //                 AnimatedContainer(
-                                      //                   duration: const Duration(milliseconds: 500),
-                                      //                   height: height * 0.1,
-                                      //                   width: height * 0.1,
-                                      //                   child: AspectRatio(
-                                      //                     aspectRatio: 1.0,
-                                      //                     child: Container(
-                                      //                       decoration: BoxDecoration(
-                                      //                           borderRadius: BorderRadius.circular(height * 0.01),
-                                      //                           image: DecorationImage(
-                                      //                             fit: BoxFit.cover,
-                                      //                             image: Image.memory(File("assets/bg.png").readAsBytesSync()).image,
-                                      //                           )
-                                      //                       ),
-                                      //                     ),
-                                      //                   ),
-                                      //                 ),
-                                      //               SizedBox(
-                                      //                 width: width * 0.01,
-                                      //               ),
-                                      //               Column(
-                                      //                   mainAxisAlignment: MainAxisAlignment.center,
-                                      //                   crossAxisAlignment: CrossAxisAlignment.start,
-                                      //                   children: [
-                                      //                     Text(
-                                      //                         widget.controller.settings.playingSongsUnShuffled[index].title.toString().length > 60 ? "${widget.controller.settings.playingSongsUnShuffled[index].title.toString().substring(0, 60)}..." : widget.controller.settings.playingSongsUnShuffled[index].title.toString(),
-                                      //                         style: TextStyle(
-                                      //                           color: widget.controller.settings.playingSongsUnShuffled[index] != widget.controller.settings.playingSongs[widget.controller.indexNotifier.value] ? Colors.white : Colors.blue,
-                                      //                           fontSize: normalSize,
-                                      //                         )
-                                      //                     ),
-                                      //                     SizedBox(
-                                      //                       height: height * 0.005,
-                                      //                     ),
-                                      //                     Text(widget.controller.settings.playingSongsUnShuffled[index].artists.toString().length > 60 ? "${widget.controller.settings.playingSongsUnShuffled[index].artists.toString().substring(0, 60)}..." : widget.controller.settings.playingSongsUnShuffled[index].artists.toString(),
-                                      //                         style: TextStyle(
-                                      //                           color: widget.controller.settings.playingSongsUnShuffled[index] != widget.controller.settings.playingSongs[widget.controller.indexNotifier.value] ? Colors.white : Colors.blue,
-                                      //                           fontSize: smallSize,
-                                      //                         )
-                                      //                     ),
-                                      //                   ]
-                                      //               ),
-                                      //               const Spacer(),
-                                      //               Text(
-                                      //                   "${widget.controller.settings.playingSongs[index].duration ~/ 60}:${(widget.controller.settings.playingSongs[index].duration % 60).toString().padLeft(2, '0')}",
-                                      //                   style: TextStyle(
-                                      //                     color: widget.controller.settings.playingSongsUnShuffled[index] != widget.controller.settings.playingSongs[widget.controller.indexNotifier.value] ? Colors.white : Colors.blue,
-                                      //                     fontSize: normalSize,
-                                      //                   )
-                                      //               ),
-                                      //               Container(
-                                      //                 width: 35,
-                                      //               ),
-                                      //             ],
-                                      //           ),
-                                      //         ),
-                                      //       );
-                                      //     }
-                                      // )
                                     ),
                                   ),
                                 );
@@ -478,7 +279,7 @@ class _SongPlayerWidget extends State<SongPlayerWidget> {
                                 height: height * 0.03,
                               ),
                               Text(
-                                "Artists:",
+                                "Artist:",
                                 textAlign: TextAlign.left,
                                 style: TextStyle(
                                   fontSize: normalSize,
@@ -637,7 +438,7 @@ class _SongPlayerWidget extends State<SongPlayerWidget> {
                                       Future.delayed(const Duration(milliseconds: 200), () {
                                         if (itemScrollController.hasClients) {
                                           itemScrollController.animateTo(
-                                            widget.controller.indexNotifier.value * height * 0.125,
+                                            widget.controller.settings.playingSongsUnShuffled.indexOf(widget.controller.settings.playingSongs[widget.controller.indexNotifier.value]) * height * 0.125,
                                             duration: const Duration(milliseconds: 250),
                                             curve: Curves.easeInOut,
                                           );
@@ -726,9 +527,7 @@ class _SongPlayerWidget extends State<SongPlayerWidget> {
                                     builder: (context, value, child){
                                       return IconButton(
                                           onPressed: () {
-                                            setState(() {
                                               widget.controller.setShuffle();
-                                            });
                                           },
                                           icon: value == false ?
                                           Icon(FluentIcons.arrow_shuffle_off_16_filled, size: height * 0.024, color: Colors.white.withOpacity(widget.controller.hiddenNotifier.value ? 0.0 : 1)) :

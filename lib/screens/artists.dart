@@ -113,7 +113,7 @@ class _ArtistsState extends State<Artists>{
                                   if(widget.controller.settings.playingSongsUnShuffled.equals(artist.songs) == false){
                                     widget.controller.updatePlaying(artist.songs);
                                   }
-                                  await widget.controller.indexChange(artist.songs.first);
+                                  widget.controller.indexChange(artist.songs.first);
                                   await widget.controller.playSong();
                                 },
                                 padding: const EdgeInsets.all(0),

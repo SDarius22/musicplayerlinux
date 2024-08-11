@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:collection/collection.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
@@ -22,6 +24,7 @@ class _AlbumWidget extends State<AlbumWidget> {
 
   @override
   void initState() {
+    widget.album.songs.sort((a, b) => a.trackNumber.compareTo(b.trackNumber));
     int totalDuration = 0;
     for (int i = 0; i < widget.album.songs.length; i++){
       totalDuration += widget.album.songs[i].duration;
@@ -125,7 +128,7 @@ class _AlbumWidget extends State<AlbumWidget> {
                       height: height * 0.005,
                     ),
                     Text(
-                      duration,
+                      "$duration    |  ${widget.album.songs.length} song${widget.album.songs.length > 1 ? "s" : ""}",
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       textAlign: TextAlign.center,
@@ -148,7 +151,7 @@ class _AlbumWidget extends State<AlbumWidget> {
                               if(widget.controller.settings.playingSongsUnShuffled.equals(widget.album.songs) == false){
                                 widget.controller.updatePlaying(widget.album.songs);
                               }
-                              await widget.controller.indexChange(widget.album.songs.first);
+                              widget.controller.indexChange(widget.album.songs.first);
                               await widget.controller.playSong();
                             },
                             icon: Icon(
@@ -214,9 +217,9 @@ class _AlbumWidget extends State<AlbumWidget> {
                           if(widget.controller.settings.playingSongs.equals(widget.album.songs) == false){
                             widget.controller.updatePlaying(widget.album.songs);
                           }
-                          await widget.controller.indexChange(widget.controller.settings.playingSongsUnShuffled[index]);
+                          widget.controller.indexChange(widget.controller.settings.playingSongsUnShuffled[index]);
                           await widget.controller.playSong();
-
+                          // widget.album.name.substring(0, widget.album.name.length > 60 ? 60 : widget.album.name.length);
                         },
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(width * 0.01),
@@ -232,12 +235,27 @@ class _AlbumWidget extends State<AlbumWidget> {
                             height: height * 0.125,
                             child: Row(
                               children: [
-                                ClipRRect(
-                                  borderRadius: BorderRadius.circular(height * 0.02),
-                                  child: ImageWidget(
-                                    controller: widget.controller,
-                                    path: widget.album.songs[index].path,
-                                  ),
+                                Stack(
+                                  alignment: Alignment.center,
+                                  children: [
+                                    ClipRRect(
+                                      borderRadius: BorderRadius.circular(height * 0.02),
+                                      child: ImageWidget(
+                                        controller: widget.controller,
+                                        path: widget.album.songs[index].path,
+                                      ),
+                                    ),
+                                    BackdropFilter(
+                                        filter: ImageFilter.blur(sigmaX: 1, sigmaY: 1),
+                                        child: Text(
+                                            "${widget.album.songs[index].trackNumber}",
+                                            style: TextStyle(
+                                              color: Colors.white,
+                                              fontSize: boldSize,
+                                            )
+                                        )
+                                    )
+                                  ],
                                 ),
                                 SizedBox(
                                   width: width * 0.01,
@@ -247,7 +265,7 @@ class _AlbumWidget extends State<AlbumWidget> {
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
                                       Text(
-                                          widget.album.songs[index].title.toString().length > 60 ? "${widget.album.songs[index].title.toString().substring(0, 60)}..." : widget.album.songs[index].title.toString(),
+                                          widget.album.songs[index].title.toString().length > 40 ? "${widget.album.songs[index].title.toString().substring(0, 40)}..." : widget.album.songs[index].title.toString(),
                                           style: TextStyle(
                                             color: Colors.white,
                                             fontSize: normalSize,

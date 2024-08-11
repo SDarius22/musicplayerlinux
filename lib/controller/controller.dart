@@ -36,12 +36,14 @@ class Controller{
   final nestedNavigatorKey = GlobalKey<NavigatorState>();
 
   ValueNotifier<String> userMessageNotifier = ValueNotifier<String>('');
-  ValueNotifier<double> userMessageProgressNotifier = ValueNotifier<double>(3500);
+  ValueNotifier<int> userMessageProgressNotifier = ValueNotifier<int>(3500);
+  ValueNotifier<String> timerNotifier = ValueNotifier<String>('Off');
+  ValueNotifier<int> sleepTimerNotifier = ValueNotifier<int>(0);
   ValueNotifier<double> volumeNotifier = ValueNotifier<double>(0.5);
   ValueNotifier<double> speedNotifier = ValueNotifier<double>(1);
+  ValueNotifier<double> balanceNotifier = ValueNotifier<double>(0);
   ValueNotifier<int> indexNotifier = ValueNotifier<int>(0);
   ValueNotifier<int> sliderNotifier = ValueNotifier<int>(0);
-  ValueNotifier<int> sleepTimerNotifier = ValueNotifier<int>(0);
   ValueNotifier<bool> loadingNotifier = ValueNotifier<bool>(false);
   ValueNotifier<bool> minimizedNotifier = ValueNotifier<bool>(true);
   ValueNotifier<bool> hiddenNotifier = ValueNotifier<bool>(false);
@@ -74,11 +76,11 @@ class Controller{
       //   print(setting.playingSongsUnShuffled.first.title);
       // }
     }
+
     songBox = objectBox.store.box<MetadataType>();
     albumBox = objectBox.store.box<AlbumType>();
     artistBox = objectBox.store.box<ArtistType>();
     playlistBox = objectBox.store.box<PlaylistType>();
-
     audioPlayer.onPositionChanged.listen((Duration event){
         sliderNotifier.value = event.inMilliseconds;
     });
@@ -99,6 +101,89 @@ class Controller{
     });
   }
 
+  void setTimer(String time) {
+    timerNotifier.value = time;
+    switch(time){
+      case '1 minute':
+        print("1 minute");
+        sleepTimerNotifier.value = 1 * 60 * 1000;
+        startTimer();
+        showNotification("Sleep timer set to 1 minute", 3500);
+        break;
+      case '15 minutes':
+        sleepTimerNotifier.value = 15 * 60 * 1000;
+        startTimer();
+        showNotification("Sleep timer set to 15 minutes", 3500);
+        break;
+      case '30 minutes':
+        sleepTimerNotifier.value = 30 * 60 * 1000;
+        startTimer();
+        showNotification("Sleep timer set to 30 minutes", 3500);
+        break;
+      case '45 minutes':
+        sleepTimerNotifier.value = 45 * 60 * 1000;
+        startTimer();
+        showNotification("Sleep timer set to 45 minutes", 3500);
+        break;
+      case '1 hour':
+        sleepTimerNotifier.value = 1 * 60 * 60 * 1000;
+        startTimer();
+        showNotification("Sleep timer set to 1 hour", 3500);
+        break;
+      case '2 hours':
+        sleepTimerNotifier.value = 2 * 60 * 60 * 1000;
+        startTimer();
+        showNotification("Sleep timer set to 2 hours", 3500);
+        break;
+      case '3 hours':
+        sleepTimerNotifier.value = 3 * 60 * 60 * 1000;
+        startTimer();
+        showNotification("Sleep timer set to 3 hours", 3500);
+        break;
+      case '4 hours':
+        sleepTimerNotifier.value = 4 * 60 * 60 * 1000;
+        startTimer();
+        showNotification("Sleep timer set to 4 hours", 3500);
+        break;
+      default:
+        sleepTimerNotifier.value = 0;
+        showNotification("Sleep timer has been turned off", 3500);
+        break;
+    }
+  }
+
+  void startTimer(){
+    Timer.periodic(const Duration(milliseconds: 10), (timer) {
+      if(sleepTimerNotifier.value > 0){
+        sleepTimerNotifier.value -= 10;
+      }
+      else{
+        timer.cancel();
+        audioPlayer.pause();
+        playingNotifier.value = false;
+        timerNotifier.value = 'Off';
+        showNotification("Sleep timer has ended", 3500);
+      }
+    });
+  }
+
+  void showNotification(String message, int duration) {
+    userMessageNotifier.value = message;
+    Timer.periodic(
+      const Duration(milliseconds: 10),
+          (timer) {
+        if(userMessageProgressNotifier.value > 0){
+          userMessageProgressNotifier.value -= 10;
+        }
+        else{
+          timer.cancel();
+          userMessageNotifier.value = "";
+          userMessageProgressNotifier.value = duration;
+        }
+      },
+    );
+  }
+
 
   Future<void> addToQueue(List<MetadataType> songs) async {
     loadingNotifier.value = true;
@@ -117,20 +202,7 @@ class Controller{
 
   Future<void> removeFromQueue(MetadataType song) async {
     if(settings.playingSongs.length == 1){
-      userMessageNotifier.value = "The queue cannot be empty!";
-      Timer.periodic(
-        const Duration(milliseconds: 10),
-        (timer) {
-          if(userMessageProgressNotifier.value > 0){
-            userMessageProgressNotifier.value -= 10;
-          }
-          else{
-            userMessageNotifier.value = "";
-            userMessageProgressNotifier.value = 3500;
-            timer.cancel();
-          }
-        },
-      );
+      showNotification("The queue cannot be empty.", 3500);
       print("The queue cannot be empty");
       return;
     }
@@ -143,7 +215,7 @@ class Controller{
       else{
         indexNotifier.value = index + 1;
       }
-      await indexChange(settings.playingSongs[indexNotifier.value]);
+      indexChange(settings.playingSongs[indexNotifier.value]);
       await playSong();
       indexNotifier.value -= 1;
     }
@@ -226,7 +298,7 @@ class Controller{
     retrievingChangedNotifier.value = !retrievingChangedNotifier.value;
 
     //print(settings.playingSongsUnShuffled[settings.lastPlayingIndex].title);
-    await indexChange(settings.playingSongs[settings.lastPlayingIndex]);
+    indexChange(settings.playingSongs[settings.lastPlayingIndex]);
     finishedRetrievingNotifier.value = true;
   }
 
@@ -278,8 +350,7 @@ class Controller{
         metadataVariable.album = tags.album ?? 'Unknown Album';
         metadataVariable.discNumber = int.parse(tags.trackNumber ?? "0");
         metadataVariable.trackNumber = int.parse(tags.track ?? "0");
-        String durationFromTag = tags.duration?.inMilliseconds.toString() ?? "0";
-        metadataVariable.duration = int.parse(durationFromTag);
+        metadataVariable.duration = tags.duration?.inMilliseconds ?? 0;
       }
     }
     else {
@@ -646,7 +717,7 @@ class Controller{
       } else {
         newIndex = indexNotifier.value - 1;
       }
-      await indexChange(settings.playingSongs[newIndex]);
+      indexChange(settings.playingSongs[newIndex]);
       playSong();
     }
   }
@@ -658,7 +729,7 @@ class Controller{
     } else {
       newIndex = indexNotifier.value + 1;
     }
-    await indexChange(settings.playingSongs[newIndex]);
+    indexChange(settings.playingSongs[newIndex]);
     playSong();
   }
 
@@ -682,13 +753,16 @@ class Controller{
   }
 
   void setShuffle() {
+    int currentIndex = indexNotifier.value;
     shuffleNotifier.value = !shuffleNotifier.value;
     initSystemTray();
     print("shuffle: ${shuffleNotifier.value}");
     if (shuffleNotifier.value){
       settings.playingSongs.shuffle();
+      indexNotifier.value = settings.playingSongs.indexOf(settings.playingSongsUnShuffled[currentIndex]);
     }
     else{
+      indexNotifier.value = settings.playingSongsUnShuffled.indexOf(settings.playingSongs[currentIndex]);
       settings.playingSongs.clear();
       settings.playingSongs.addAll(settings.playingSongsUnShuffled);
     }

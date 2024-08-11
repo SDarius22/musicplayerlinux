@@ -194,7 +194,7 @@ class _PlaylistsState extends State<Playlists>{
                                   if(widget.controller.settings.playingSongsUnShuffled.equals(songs) == false){
                                     widget.controller.updatePlaying(songs);
                                   }
-                                  await widget.controller.indexChange(songs.first);
+                                  widget.controller.indexChange(songs.first);
                                   await widget.controller.playSong();
                                 },
                                 padding: const EdgeInsets.all(0),

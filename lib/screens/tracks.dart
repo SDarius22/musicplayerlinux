@@ -60,7 +60,7 @@ class _TracksState extends State<Tracks>{
                         print("Updating playing songs");
                         widget.controller.updatePlaying(query.find());
                       }
-                      await widget.controller.indexChange(song);
+                      widget.controller.indexChange(song);
                     }
                     await widget.controller.playSong();
                     widget.controller.loadingNotifier.value = false;

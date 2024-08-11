@@ -39,7 +39,7 @@ class _AlbumsState extends State<Albums>{
               childAspectRatio: 0.825,
               maxCrossAxisExtent: width * 0.125,
               crossAxisSpacing: width * 0.0125,
-              mainAxisSpacing: width * 0.0125,
+              //mainAxisSpacing: width * 0.01,
             ),
             itemBuilder: (BuildContext context, int index) {
               AlbumType album = AlbumType();
@@ -117,7 +117,7 @@ class _AlbumsState extends State<Albums>{
                                   if(widget.controller.settings.playingSongsUnShuffled.equals(album.songs) == false){
                                     widget.controller.updatePlaying(album.songs);
                                   }
-                                  await widget.controller.indexChange(album.songs.first);
+                                  widget.controller.indexChange(album.songs.first);
                                   await widget.controller.playSong();
                                 },
                                 padding: const EdgeInsets.all(0),
@@ -133,7 +133,7 @@ class _AlbumsState extends State<Albums>{
                       ),
 
                       SizedBox(
-                        height: width * 0.002,
+                        height: width * 0.0025,
                       ),
                       Text(
                         album.name,
@@ -141,6 +141,7 @@ class _AlbumsState extends State<Albums>{
                         overflow: TextOverflow.ellipsis,
                         textAlign: TextAlign.center,
                         style: TextStyle(
+                          height: 1,
                           color: Colors.white,
                           fontSize: smallSize,
                           fontWeight: FontWeight.normal,

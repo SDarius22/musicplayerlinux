@@ -8,6 +8,10 @@ class Settings{
   String directory = '/';
   int lastPlayingIndex = 0;
   bool firstTime = true;
+  bool showSystemTray = true;
+  bool showAppNotifications = true;
+  String deezerToken = '';
+  String queueAdd = 'last';
   final playingSongs = ToMany<MetadataType>();
   final playingSongsUnShuffled = ToMany<MetadataType>();
 }
