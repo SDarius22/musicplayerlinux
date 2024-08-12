@@ -83,7 +83,6 @@ class _CreateScreenState extends State<CreateScreen> {
                       newPlaylist.name = playlistName;
                       newPlaylist.paths = selected.map((e) => e.path).toList();
                       newPlaylist.nextAdded = playlistAdd;
-                      ///TODO : Add to playlist function
                       widget.controller.createPlaylist(newPlaylist);
                       Navigator.pop(context);
                     },
@@ -136,17 +135,31 @@ class _CreateScreenState extends State<CreateScreen> {
                 ),
                 const Spacer(),
                 DropdownButton<String>(
-                  ///TODO: Style
                     value: playlistAdd,
-                    icon: Icon(FluentIcons.chevron_down_16_regular),
-                    items: [
+                    icon: Icon(
+                      FluentIcons.chevron_down_16_filled,
+                      color: Colors.white,
+                      size: height * 0.025,
+                    ),
+                    style: TextStyle(
+                      fontSize: normalSize,
+                      fontWeight: FontWeight.normal,
+                      color: Colors.white,
+                    ),
+                    underline: Container(
+                      height: 0,
+                    ),
+                    borderRadius: BorderRadius.circular(width * 0.01),
+                    padding: EdgeInsets.zero,
+                    alignment: Alignment.center,
+                    items: const [
                       DropdownMenuItem(
-                        child: Text("At the beginning"),
                         value: 'first',
+                        child: Text("At the beginning"),
                       ),
                       DropdownMenuItem(
-                        child: Text("At the end"),
                         value: 'last',
+                        child: Text("At the end"),
                       ),
                     ],
                     onChanged: (String? newValue){

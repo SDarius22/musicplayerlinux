@@ -75,12 +75,7 @@ class _AddScreenState extends State<AddScreen> {
                         }
                         else{
                           var playlist = query.find()[i-1];
-                          for(MetadataType song in widget.songs){
-                            if(!playlist.paths.contains(song.path)) {
-                              playlist.paths.add(song.path);
-                            }
-                          }
-                          widget.controller.playlistBox.put(playlist);
+                          widget.controller.addToPlaylist(playlist, widget.songs);
                         }
                       }
                       Navigator.pop(context);
