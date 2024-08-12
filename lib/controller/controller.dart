@@ -64,7 +64,6 @@ class Controller{
   ValueNotifier<Uint8List> imageNotifier = ValueNotifier<Uint8List>(File("./assets/bg.png").readAsBytesSync());
 
   Controller(ObjectBox objectBox) {
-    initSystemTray();
     settingsBox = objectBox.store.box<Settings>();
     if (settingsBox.isEmpty()) {
       print("Initialising settings");
@@ -75,6 +74,9 @@ class Controller{
       // for (Settings setting in settingsBox.getAll()){
       //   print(setting.playingSongsUnShuffled.first.title);
       // }
+    }
+    if(settings.showSystemTray){
+      initSystemTray();
     }
 
     songBox = objectBox.store.box<MetadataType>();
@@ -99,6 +101,26 @@ class Controller{
         }
       }
     });
+  }
+
+  Future<void> createPlaylist(PlaylistType playlist) async {
+    playlistBox.put(playlist);
+    var file = File("${settings.directory}/${playlist.name}.m3u");
+    file.writeAsStringSync("#EXTM3U\n");
+    for (var song in playlist.paths){
+      file.writeAsStringSync('$song\n', mode: FileMode.append);
+    }
+  }
+
+  Future<void> deletePlaylist(PlaylistType playlist) async {
+    playlistBox.remove(playlist.id);
+    try {
+      var file = File("${settings.directory}/${playlist.name}.m3u");
+      file.delete();
+    }
+    catch(e){
+      print(e);
+    }
   }
 
   void setTimer(String time) {
@@ -168,6 +190,9 @@ class Controller{
   }
 
   void showNotification(String message, int duration) {
+    if(settings.showAppNotifications == false){
+      return;
+    }
     userMessageNotifier.value = message;
     Timer.periodic(
       const Duration(milliseconds: 10),
@@ -187,16 +212,45 @@ class Controller{
 
   Future<void> addToQueue(List<MetadataType> songs) async {
     loadingNotifier.value = true;
-    for(int i = 0; i < songs.length; i++){
-      songs[i].orderPosition = settings.playingSongs.length + i;
-      songBox.put(songs[i]);
+    if (settings.queueAdd == 'last') {
+      for (int i = 0; i < songs.length; i++) {
+        songs[i].orderPosition = settings.playingSongs.length + i;
+        songBox.put(songs[i]);
+      }
+      settings.playingSongs.addAll(songs);
+      settings.playingSongsUnShuffled.addAll(songs);
+      if (shuffleNotifier.value) {
+        settings.playingSongs.shuffle();
+      }
+      settingsBox.put(settings);
     }
-    settings.playingSongs.addAll(songs);
-    settings.playingSongsUnShuffled.addAll(songs);
-    if (shuffleNotifier.value){
-      settings.playingSongs.shuffle();
+    else if (settings.queueAdd == 'next') {
+      // change the order position of the songs in the queue to make space for the new songs
+      for (int i = 0; i < songs.length; i++) {
+        songs[i].orderPosition = indexNotifier.value + 1 + i;
+        songBox.put(songs[i]);
+      }
+      for (int i = indexNotifier.value + 1; i < settings.playingSongs.length; i++) {
+        settings.playingSongs[i].orderPosition += songs.length;
+        songBox.put(settings.playingSongs[i]);
+      }
+      settings.playingSongs.insertAll(indexNotifier.value + 1, songs);
+      settings.playingSongsUnShuffled.insertAll(indexNotifier.value + 1, songs);
+      settingsBox.put(settings);
     }
-    settingsBox.put(settings);
+    else if (settings.queueAdd == 'first') {
+      for (int i = 0; i < songs.length; i++) {
+        songs[i].orderPosition = i;
+        songBox.put(songs[i]);
+      }
+      for (int i = 0; i < settings.playingSongs.length; i++) {
+        settings.playingSongs[i].orderPosition += songs.length;
+        songBox.put(settings.playingSongs[i]);
+      }
+      settings.playingSongs.insertAll(0, songs);
+      settings.playingSongsUnShuffled.insertAll(0, songs);
+      settingsBox.put(settings);
+    }
     loadingNotifier.value = false;
   }
 
@@ -496,7 +550,7 @@ class Controller{
 
   Future<void> searchLyrics() async {
     plainLyricNotifier.value = 'Searching for lyrics...';
-    final Map<String, String> cookies = {'arl': '8436641c809f643da885ce7eb45e39e6a9514f882b1541a05282a33485f6f96fc56ddb724424ec3518e25bbaa08de4e7521e5f289a14c512dd65dc2ec0ad10b83138e5d02c1531a5bf5766ecfd492d0157815bafa5f08b90dcfe51a1eba1bbbf'};
+    final Map<String, String> cookies = {'arl': settings.deezerToken};
     final Map<String, String> params = {'jo': 'p', 'rto': 'c', 'i': 'c'};
     const String loginUrl = 'https://auth.deezer.com/login/arl';
     const String deezerApiUrl = 'https://pipe.deezer.com/api';
@@ -703,7 +757,9 @@ class Controller{
       await audioPlayer.play(DeviceFileSource(settings.playingSongs[indexNotifier.value].path), position: Duration(milliseconds: sliderNotifier.value));
       playingNotifier.value = true;
     }
-    initSystemTray();
+    if (settings.showSystemTray) {
+      initSystemTray();
+    }
   }
 
   Future<void> previousSong() async {
@@ -748,14 +804,18 @@ class Controller{
 
   void setRepeat() {
     repeatNotifier.value = !repeatNotifier.value;
-    initSystemTray();
+    if (settings.showSystemTray) {
+      initSystemTray();
+    }
     print("repeat: ${repeatNotifier.value}");
   }
 
   void setShuffle() {
     int currentIndex = indexNotifier.value;
     shuffleNotifier.value = !shuffleNotifier.value;
-    initSystemTray();
+    if (settings.showSystemTray) {
+      initSystemTray();
+    }
     print("shuffle: ${shuffleNotifier.value}");
     if (shuffleNotifier.value){
       settings.playingSongs.shuffle();
@@ -770,80 +830,86 @@ class Controller{
   }
 
   Future<void> initSystemTray() async {
-    await _systemTray.initSystemTray(iconPath: 'assets/bg.png');
-    _systemTray.registerSystemTrayEventHandler((eventName) {
-     // debugPrint("eventName: $eventName");
-      if (eventName == kSystemTrayEventClick) {
-        _systemTray.popUpContextMenu();
-      }
-    });
+    if (settings.showSystemTray == false){
+      await _systemTray.destroy();
+    }
+    else{
+      await _systemTray.initSystemTray(iconPath: 'assets/bg.png');
+      _systemTray.registerSystemTrayEventHandler((eventName) {
+        // debugPrint("eventName: $eventName");
+        if (eventName == kSystemTrayEventClick) {
+          _systemTray.popUpContextMenu();
+        }
+      });
 
-    await _menuMain.buildFrom(
-      [
-        MenuItemLabel(
-          label: 'Music Player',
-          image: 'bg.png',
-          enabled: false,
-        ),
-        MenuSeparator(),
-        MenuItemLabel(
-          label: 'Previous',
-          //image: getImagePath('darts_icon'),
-          onClicked: (menuItem) async {
-            debugPrint("click 'Previous'");
-            await previousSong();
-          },
-        ),
-        MenuItemLabel(
-          label: playingNotifier.value ? 'Pause' : 'Play',
-          //image: getImagePath('darts_icon'),
-          onClicked: (menuItem) async {
-            debugPrint("click 'Play'");
-            await playSong();
-          },
-        ),
-        MenuItemLabel(
-          label: 'Next',
-          //image: getImagePath('darts_icon'),
-          onClicked: (menuItem) async {
-            debugPrint("click 'Next'");
-            await nextSong();
-          },
-        ),
-        MenuSeparator(),
-        MenuItemCheckbox(
-          label: 'Repeat',
-          name: 'repeat',
-          checked: repeatNotifier.value,
-          onClicked: (menuItem) async {
-            debugPrint("click 'Repeat'");
-            await menuItem.setCheck(!menuItem.checked);
-            setRepeat();
-          },
-        ),
-        MenuItemCheckbox(
-          label: 'Shuffle',
-          name: 'shuffle',
-          checked: shuffleNotifier.value,
-          onClicked: (menuItem) async {
-            debugPrint("click 'Shuffle'");
-            await menuItem.setCheck(!menuItem.checked);
-            setShuffle();
-          },
-        ),
-        MenuSeparator(),
-        MenuItemLabel(
-            label: 'Show',
+      await _menuMain.buildFrom(
+        [
+          MenuItemLabel(
+            label: 'Music Player',
+            image: 'bg.png',
+            enabled: false,
+          ),
+          MenuSeparator(),
+          MenuItemLabel(
+            label: 'Previous',
             //image: getImagePath('darts_icon'),
-            onClicked: (menuItem) => appWindow.show()
-        ),
-        MenuItemLabel(
-            label: 'Exit',
+            onClicked: (menuItem) async {
+              debugPrint("click 'Previous'");
+              await previousSong();
+            },
+          ),
+          MenuItemLabel(
+            label: playingNotifier.value ? 'Pause' : 'Play',
             //image: getImagePath('darts_icon'),
-            onClicked: (menuItem) => appWindow.close()
-        ),
-      ],
-    );
-    _systemTray.setContextMenu(_menuMain);
+            onClicked: (menuItem) async {
+              debugPrint("click 'Play'");
+              await playSong();
+            },
+          ),
+          MenuItemLabel(
+            label: 'Next',
+            //image: getImagePath('darts_icon'),
+            onClicked: (menuItem) async {
+              debugPrint("click 'Next'");
+              await nextSong();
+            },
+          ),
+          MenuSeparator(),
+          MenuItemCheckbox(
+            label: 'Repeat',
+            name: 'repeat',
+            checked: repeatNotifier.value,
+            onClicked: (menuItem) async {
+              debugPrint("click 'Repeat'");
+              await menuItem.setCheck(!menuItem.checked);
+              setRepeat();
+            },
+          ),
+          MenuItemCheckbox(
+            label: 'Shuffle',
+            name: 'shuffle',
+            checked: shuffleNotifier.value,
+            onClicked: (menuItem) async {
+              debugPrint("click 'Shuffle'");
+              await menuItem.setCheck(!menuItem.checked);
+              setShuffle();
+            },
+          ),
+          MenuSeparator(),
+          MenuItemLabel(
+              label: 'Show',
+              //image: getImagePath('darts_icon'),
+              onClicked: (menuItem) => appWindow.show()
+          ),
+          MenuItemLabel(
+              label: 'Exit',
+              //image: getImagePath('darts_icon'),
+              onClicked: (menuItem) => appWindow.close()
+          ),
+        ],
+      );
+      _systemTray.setContextMenu(_menuMain);
+    }
+
   }
 }

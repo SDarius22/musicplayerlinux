@@ -259,7 +259,7 @@ class _PlaylistWidget extends State<PlaylistWidget> {
                           IconButton(
                             onPressed: () {
                               print("Delete ${widget.playlist.name}");
-                              widget.controller.playlistBox.remove(widget.playlist.id);
+                              widget.controller.deletePlaylist(widget.playlist);
                               Navigator.pop(context);
                             },
                             icon: Icon(

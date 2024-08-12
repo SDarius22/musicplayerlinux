@@ -20,9 +20,9 @@ Future<void> main() async {
           brightness: Brightness.dark,
           scaffoldBackgroundColor: const Color(0xFF0E0E0E),
         ),
-          debugShowCheckedModeBanner: false,
-          //showPerformanceOverlay: true,
-          home: MyApp(controller: controller),
+        debugShowCheckedModeBanner: false,
+        //showPerformanceOverlay: true,
+        home: MyApp(controller: controller),
       )
   );
 

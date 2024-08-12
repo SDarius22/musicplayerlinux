@@ -1,5 +1,4 @@
 import 'dart:ui';
-import 'package:audioplayers/audioplayers.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:musicplayer/utils/hover_widget/hover_container.dart';

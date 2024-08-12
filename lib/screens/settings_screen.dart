@@ -5,8 +5,6 @@ import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:musicplayer/screens/main_screen.dart';
 import 'package:musicplayer/screens/user_message_widget.dart';
 import '../controller/controller.dart';
-import 'home.dart';
-
 
 class Settings extends StatefulWidget {
   final Controller controller;
@@ -142,6 +140,30 @@ class _SettingsState extends State<Settings> {
                             alignment: Alignment.center,
                             child: ListView(
                               children: [
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                        "Library Settings",
+                                      style: TextStyle(
+                                        fontSize: smallSize,
+                                        fontWeight: FontWeight.normal,
+                                        color: Colors.grey.shade400,
+                                      ),
+                                    ),
+                                    SizedBox(
+                                      height: height * 0.01,
+                                    ),
+                                    Container(
+                                      height: 1,
+                                      color: Colors.grey.shade400,
+                                    ),
+                                    SizedBox(
+                                      height: height * 0.01,
+                                    ),
+                                  ],
+                                ),
+                                ///Music Directory
                                 Row(
                                   children: [
                                     Column(
@@ -171,7 +193,7 @@ class _SettingsState extends State<Settings> {
                                       style: ElevatedButton.styleFrom(
                                         foregroundColor: Colors.white, backgroundColor: Colors.grey.shade900,
                                         shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(10.0),
+                                          borderRadius: BorderRadius.circular(width * 0.01),
                                         ),
                                       ),
                                       onPressed: () async {
@@ -205,16 +227,108 @@ class _SettingsState extends State<Settings> {
                                   ],
                                 ),
                                 SizedBox(
-                                  height: height * 0.01,
-                                ),
-                                Container(
-                                  height: 1,
-                                  color: Colors.grey.shade600,
-                                ),
-                                SizedBox(
-                                  height: height * 0.01,
+                                  height: height * 0.02,
                                 ),
 
+                                ///Queue Settings
+                                Row(
+                                  children: [
+                                    Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        Text(
+                                          "Queue Settings",
+                                          style: TextStyle(
+                                            fontSize: normalSize,
+                                            fontWeight: FontWeight.normal,
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                        SizedBox(
+                                          height: height * 0.005,
+                                        ),
+                                        Text("Choose where the tracks are added to the queue", style: TextStyle(
+                                          fontSize: smallSize,
+                                          fontWeight: FontWeight.normal,
+                                          color: Colors.grey.shade50,
+                                        ),),
+                                      ],
+                                    ),
+                                    const Spacer(),
+                                    DropdownButton<String>(
+                                        value: widget.controller.settings.queueAdd,
+                                        icon: Icon(
+                                          FluentIcons.chevron_down_16_filled,
+                                          color: Colors.white,
+                                          size: height * 0.025,
+                                        ),
+                                        style: TextStyle(
+                                          fontSize: normalSize,
+                                          fontWeight: FontWeight.normal,
+                                          color: Colors.white,
+                                        ),
+                                        underline: Container(
+                                          height: 0,
+                                        ),
+                                        borderRadius: BorderRadius.circular(width * 0.01),
+                                        padding: EdgeInsets.zero,
+                                        alignment: Alignment.center,
+                                        items: const [
+                                          DropdownMenuItem(
+                                            value: 'first',
+                                            child: Text("At the beginning"),
+                                          ),
+                                          DropdownMenuItem(
+                                            value: 'next',
+                                            child: Text("After Current"),
+                                          ),
+                                          DropdownMenuItem(
+                                            value: 'last',
+                                            child: Text("At the end"),
+                                          ),
+                                        ],
+                                        onChanged: (String? newValue){
+                                          setState(() {
+                                            widget.controller.settings.queueAdd = newValue ?? "last";
+                                          });
+                                          widget.controller.settingsBox.put(widget.controller.settings);
+                                        }
+                                    ),
+
+
+
+                                  ],
+                                ),
+                                SizedBox(
+                                  height: height * 0.025,
+                                ),
+
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      "Playback Settings",
+                                      style: TextStyle(
+                                        fontSize: smallSize,
+                                        fontWeight: FontWeight.normal,
+                                        color: Colors.grey.shade400,
+                                      ),
+                                    ),
+                                    SizedBox(
+                                      height: height * 0.01,
+                                    ),
+                                    Container(
+                                      height: 1,
+                                      color: Colors.grey.shade400,
+                                    ),
+                                    SizedBox(
+                                      height: height * 0.01,
+                                    ),
+                                  ],
+                                ),
+
+                                ///Playback Rate
                                 Row(
                                   children: [
                                     Column(
@@ -249,7 +363,7 @@ class _SettingsState extends State<Settings> {
                                               thumbColor: Colors.white,
                                               thumbShape: RoundSliderThumbShape(enabledThumbRadius: height * 0.0075),
                                               showValueIndicator: ShowValueIndicator.always,
-                                              activeTrackColor: widget.controller.colorNotifier.value,
+                                              activeTrackColor: widget.controller.colorNotifier2.value,
                                               inactiveTrackColor: Colors.white,
                                               valueIndicatorColor: Colors.white,
                                               valueIndicatorTextStyle: TextStyle(
@@ -276,16 +390,10 @@ class _SettingsState extends State<Settings> {
                                   ],
                                 ),
                                 SizedBox(
-                                  height: height * 0.01,
-                                ),
-                                Container(
-                                  height: 1,
-                                  color: Colors.grey.shade600,
-                                ),
-                                SizedBox(
-                                  height: height * 0.01,
+                                  height: height * 0.02,
                                 ),
 
+                                ///Balance
                                 Row(
                                   children: [
                                     Column(
@@ -320,7 +428,7 @@ class _SettingsState extends State<Settings> {
                                               thumbColor: Colors.white,
                                               thumbShape: RoundSliderThumbShape(enabledThumbRadius: height * 0.0075),
                                               showValueIndicator: ShowValueIndicator.always,
-                                              activeTrackColor: widget.controller.colorNotifier.value,
+                                              activeTrackColor: widget.controller.colorNotifier2.value,
                                               inactiveTrackColor: Colors.white,
                                               valueIndicatorColor: Colors.white,
                                               valueIndicatorTextStyle: TextStyle(
@@ -347,16 +455,10 @@ class _SettingsState extends State<Settings> {
                                   ],
                                 ),
                                 SizedBox(
-                                  height: height * 0.01,
-                                ),
-                                Container(
-                                  height: 1,
-                                  color: Colors.grey.shade600,
-                                ),
-                                SizedBox(
-                                  height: height * 0.01,
+                                  height: height * 0.02,
                                 ),
 
+                                ///Timer
                                 Row(
                                   children: [
                                     Column(
@@ -386,45 +488,59 @@ class _SettingsState extends State<Settings> {
                                         valueListenable: widget.controller.timerNotifier,
                                         builder: (context, value, child){
                                           return DropdownButton<String>(
-                                            ///TODO: Style
                                               value: value,
-                                              icon: Icon(FluentIcons.chevron_down_16_regular),
-                                              items: [
+                                              icon: Icon(
+                                                FluentIcons.chevron_down_16_filled,
+                                                color: Colors.white,
+                                                size: height * 0.025,
+                                              ),
+                                              style: TextStyle(
+                                                fontSize: normalSize,
+                                                fontWeight: FontWeight.normal,
+                                                color: Colors.white,
+                                              ),
+                                              underline: Container(
+                                                height: 0,
+                                              ),
+                                              borderRadius: BorderRadius.circular(width * 0.01),
+                                              padding: EdgeInsets.zero,
+                                              alignment: Alignment.center,
+                                              items: const [
                                                 DropdownMenuItem(
-                                                  child: Text("Off"),
                                                   value: 'Off',
+                                                  child: Text("Off"),
                                                 ),
                                                 DropdownMenuItem(
-                                                  child: Text("1 minute"),
                                                   value: '1 minute',
+                                                  child: Text("1 minute"),
                                                 ),
                                                 DropdownMenuItem(
-                                                  child: Text("15 minutes"),
                                                   value: '15 minutes',
+                                                  child: Text("15 minutes"),
                                                 ),
                                                 DropdownMenuItem(
-                                                  child: Text("30 minutes"),
                                                   value: '30 minutes',
+                                                  child: Text("30 minutes"),
                                                 ),
                                                 DropdownMenuItem(
-                                                  child: Text("45 minutes"),
                                                   value: '45 minutes',
+                                                  child: Text("45 minutes"),
                                                 ),
                                                 DropdownMenuItem(
-                                                  child: Text("1 hour"),
                                                   value: '1 hour',
+                                                  child: Text("1 hour"),
                                                 ),
                                                 DropdownMenuItem(
-                                                  child: Text("2 hours"),
                                                   value: '2 hours',
+                                                  child: Text("2 hours"),
                                                 ),
                                                 DropdownMenuItem(
-                                                  child: Text("3 hours"),
                                                   value: '3 hours',
+                                                  child: Text("3 hours"),
                                                 ),
                                                 DropdownMenuItem(
-                                                  child: Text("4 hours"),
                                                   value: '4 hours',
+                                                  child: Text("4 hours"),
                                                 ),
                                               ],
                                               onChanged: (String? newValue){
@@ -437,16 +553,34 @@ class _SettingsState extends State<Settings> {
                                   ],
                                 ),
                                 SizedBox(
-                                  height: height * 0.01,
-                                ),
-                                Container(
-                                  height: 1,
-                                  color: Colors.grey.shade600,
-                                ),
-                                SizedBox(
-                                  height: height * 0.01,
+                                  height: height * 0.025,
                                 ),
 
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      "Application Settings",
+                                      style: TextStyle(
+                                        fontSize: smallSize,
+                                        fontWeight: FontWeight.normal,
+                                        color: Colors.grey.shade400,
+                                      ),
+                                    ),
+                                    SizedBox(
+                                      height: height * 0.01,
+                                    ),
+                                    Container(
+                                      height: 1,
+                                      color: Colors.grey.shade400,
+                                    ),
+                                    SizedBox(
+                                      height: height * 0.01,
+                                    ),
+                                  ],
+                                ),
+
+                                ///System Tray
                                 Row(
                                   children: [
                                     Column(
@@ -472,81 +606,197 @@ class _SettingsState extends State<Settings> {
                                       ],
                                     ),
                                     const Spacer(),
-                                    ValueListenableBuilder(
-                                        valueListenable: widget.controller.timerNotifier,
-                                        builder: (context, value, child){
-                                          return DropdownButton<String>(
-                                            ///TODO: Style
-                                              value: value,
-                                              icon: Icon(FluentIcons.chevron_down_16_regular),
-                                              items: [
-                                                DropdownMenuItem(
-                                                  child: Text("Off"),
-                                                  value: 'Off',
-                                                ),
-                                                DropdownMenuItem(
-                                                  child: Text("1 minute"),
-                                                  value: '1 minute',
-                                                ),
-                                                DropdownMenuItem(
-                                                  child: Text("15 minutes"),
-                                                  value: '15 minutes',
-                                                ),
-                                                DropdownMenuItem(
-                                                  child: Text("30 minutes"),
-                                                  value: '30 minutes',
-                                                ),
-                                                DropdownMenuItem(
-                                                  child: Text("45 minutes"),
-                                                  value: '45 minutes',
-                                                ),
-                                                DropdownMenuItem(
-                                                  child: Text("1 hour"),
-                                                  value: '1 hour',
-                                                ),
-                                                DropdownMenuItem(
-                                                  child: Text("2 hours"),
-                                                  value: '2 hours',
-                                                ),
-                                                DropdownMenuItem(
-                                                  child: Text("3 hours"),
-                                                  value: '3 hours',
-                                                ),
-                                                DropdownMenuItem(
-                                                  child: Text("4 hours"),
-                                                  value: '4 hours',
-                                                ),
-                                              ],
-                                              onChanged: (String? newValue){
-                                                widget.controller.setTimer(newValue ?? "Off");
-                                              }
-                                          );
-                                        }
+                                    Switch(
+                                      value: widget.controller.settings.showSystemTray,
+                                      onChanged: (value){
+                                        setState(() {
+                                          widget.controller.settings.showSystemTray = value;
+                                        });
+                                        widget.controller.settingsBox.put(widget.controller.settings);
+                                        widget.controller.initSystemTray();
+                                      },
+                                      trackColor: WidgetStateProperty.all(widget.controller.colorNotifier2.value),
+                                      thumbColor: WidgetStateProperty.all(Colors.white),
+                                      thumbIcon: WidgetStateProperty.all(widget.controller.settings.showSystemTray ? const Icon(Icons.check, color: Colors.black,) : const Icon(Icons.close, color: Colors.black,)),
+                                      activeColor: Colors.white,
                                     ),
+
 
                                   ],
                                 ),
                                 SizedBox(
-                                  height: height * 0.01,
-                                ),
-                                Container(
-                                  height: 1,
-                                  color: Colors.grey.shade600,
-                                ),
-                                SizedBox(
-                                  height: height * 0.01,
+                                  height: height * 0.02,
                                 ),
 
+                                ///In-App Notifications
+                                Row(
+                                  children: [
+                                    Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        Text(
+                                          "In-App Notifications",
+                                          style: TextStyle(
+                                            fontSize: normalSize,
+                                            fontWeight: FontWeight.normal,
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                        SizedBox(
+                                          height: height * 0.005,
+                                        ),
+                                        Text("Show notifications in the app", style: TextStyle(
+                                          fontSize: smallSize,
+                                          fontWeight: FontWeight.normal,
+                                          color: Colors.grey.shade50,
+                                        ),),
+                                      ],
+                                    ),
+                                    const Spacer(),
+                                    Switch(
+                                      value: widget.controller.settings.showAppNotifications,
+                                      onChanged: (value){
+                                        setState(() {
+                                          widget.controller.settings.showAppNotifications = value;
+                                        });
+                                        widget.controller.settingsBox.put(widget.controller.settings);
+                                      },
+                                      trackColor: WidgetStateProperty.all(widget.controller.colorNotifier2.value),
+                                      thumbColor: WidgetStateProperty.all(Colors.white),
+                                      thumbIcon: WidgetStateProperty.all(widget.controller.settings.showSystemTray ? const Icon(Icons.check, color: Colors.black,) : const Icon(Icons.close, color: Colors.black,)),
+                                      activeColor: Colors.white,
+                                    ),
+
+
+                                  ],
+                                ),
+                                SizedBox(
+                                  height: height * 0.02,
+                                ),
+
+                                ///Deezer ARL
+                                Row(
+                                  children: [
+                                    Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        Text(
+                                          "Deezer ARL",
+                                          style: TextStyle(
+                                            fontSize: normalSize,
+                                            fontWeight: FontWeight.normal,
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                        SizedBox(
+                                          height: height * 0.005,
+                                        ),
+                                        Text("Your Deezer ARL token", style: TextStyle(
+                                          fontSize: smallSize,
+                                          fontWeight: FontWeight.normal,
+                                          color: Colors.grey.shade50,
+                                        ),),
+                                      ],
+                                    ),
+                                    const Spacer(),
+                                    SizedBox(
+                                      width: width * 0.3,
+                                      child: TextField(
+                                        controller: TextEditingController(text: widget.controller.settings.deezerToken),
+                                        onChanged: (value){
+                                          widget.controller.settings.deezerToken = value;
+                                          widget.controller.settingsBox.put(widget.controller.settings);
+                                        },
+                                        style: TextStyle(
+                                          fontSize: normalSize,
+                                          fontWeight: FontWeight.normal,
+                                          color: Colors.white,
+                                        ),
+                                        decoration: InputDecoration(
+                                          isDense: true,
+                                          hintText: "Deezer ARL",
+                                          hintStyle: TextStyle(
+                                            color: Colors.grey.shade50,
+                                          ),
+                                          enabledBorder: OutlineInputBorder(
+                                            borderRadius: BorderRadius.circular(width * 0.01),
+                                            borderSide: const BorderSide(
+                                              color: Colors.grey,
+                                            ),
+                                          ),
+                                          focusedBorder: const OutlineInputBorder(
+                                            borderSide: BorderSide(
+                                              color: Colors.white,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                SizedBox(
+                                  height: height * 0.02,
+                                ),
 
                                 ///Possible more settings:
                                 ///Crossfade between songs -> not sure if this is possible
-                                ///System Tray on or off
-                                ///Show notifications on or off
-                                ///Change deezer arl
-                                ///queue settings - play all tracks or just selected, choose where the track is added to the queue
-                                ///playlist settings - choose where the tracks are added
-                                ///theme settings - light or dark -> to be decided
-
+                                ///Theme settings - maybe in the future
+                                // Row(
+                                //   children: [
+                                //     Column(
+                                //       crossAxisAlignment: CrossAxisAlignment.start,
+                                //       mainAxisAlignment: MainAxisAlignment.center,
+                                //       children: [
+                                //         Text(
+                                //           "Theme Settings",
+                                //           style: TextStyle(
+                                //             fontSize: normalSize,
+                                //             fontWeight: FontWeight.normal,
+                                //             color: Colors.white,
+                                //           ),
+                                //         ),
+                                //         SizedBox(
+                                //           height: height * 0.005,
+                                //         ),
+                                //         Text("Choose between light and dark theme", style: TextStyle(
+                                //           fontSize: smallSize,
+                                //           fontWeight: FontWeight.normal,
+                                //           color: Colors.grey.shade50,
+                                //         ),),
+                                //       ],
+                                //     ),
+                                //     const Spacer(),
+                                //     Switch(
+                                //       value: widget.controller.settings.theme,
+                                //       onChanged: (value){
+                                //         setState(() {
+                                //           widget.controller.settings.theme = value;
+                                //           widget.controller.themeNotifier.value = value;
+                                //         });
+                                //
+                                //         widget.controller.settingsBox.put(widget.controller.settings);
+                                //       },
+                                //       trackColor: WidgetStateProperty.all(widget.controller.colorNotifier2.value),
+                                //       thumbColor: WidgetStateProperty.all(Colors.white),
+                                //       thumbIcon: WidgetStateProperty.all(widget.controller.settings.theme ? const Icon(Icons.sunny, color: Colors.black,) : const Icon(Icons.nightlight, color: Colors.black,)),
+                                //       activeColor: Colors.white,
+                                //     ),
+                                //
+                                //
+                                //   ],
+                                // ),
+                                // SizedBox(
+                                //   height: height * 0.01,
+                                // ),
+                                // Container(
+                                //   height: 1,
+                                //   color: Colors.grey.shade600,
+                                // ),
+                                // SizedBox(
+                                //   height: height * 0.01,
+                                // ),
                               ],
                             ),
                           ),

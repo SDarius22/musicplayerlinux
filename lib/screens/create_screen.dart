@@ -18,7 +18,8 @@ class CreateScreen extends StatefulWidget {
 
 class _CreateScreenState extends State<CreateScreen> {
   List<MetadataType> selected = [];
-  String playlistName = "New playlist";
+  String playlistName = "New playlist name";
+  String playlistAdd = "last";
   FocusNode searchNode = FocusNode();
   FocusNode nameNode = FocusNode();
 
@@ -81,7 +82,9 @@ class _CreateScreenState extends State<CreateScreen> {
                       PlaylistType newPlaylist = PlaylistType();
                       newPlaylist.name = playlistName;
                       newPlaylist.paths = selected.map((e) => e.path).toList();
-                      widget.controller.playlistBox.put(newPlaylist);
+                      newPlaylist.nextAdded = playlistAdd;
+                      ///TODO : Add to playlist function
+                      widget.controller.createPlaylist(newPlaylist);
                       Navigator.pop(context);
                     },
                     child: Text(
@@ -96,7 +99,6 @@ class _CreateScreenState extends State<CreateScreen> {
             ),
             TextFormField(
               maxLength: 50,
-              initialValue: playlistName,
               decoration: InputDecoration(
                 border: const UnderlineInputBorder(
                   borderSide: BorderSide(
@@ -120,7 +122,43 @@ class _CreateScreenState extends State<CreateScreen> {
               },
             ),
             SizedBox(
-              height: height * 0.025,
+              height: height * 0.01,
+            ),
+
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Text("Where to add new songs?",
+                  style: TextStyle(
+                      color: Colors.white,
+                      fontSize: normalSize
+                  ),
+                ),
+                const Spacer(),
+                DropdownButton<String>(
+                  ///TODO: Style
+                    value: playlistAdd,
+                    icon: Icon(FluentIcons.chevron_down_16_regular),
+                    items: [
+                      DropdownMenuItem(
+                        child: Text("At the beginning"),
+                        value: 'first',
+                      ),
+                      DropdownMenuItem(
+                        child: Text("At the end"),
+                        value: 'last',
+                      ),
+                    ],
+                    onChanged: (String? newValue){
+                      setState(() {
+                        playlistAdd = newValue ?? 'last';
+                      });
+                    }
+                ),
+              ],
+            ),
+            SizedBox(
+              height: height * 0.01,
             ),
             AnimatedContainer(
               duration: const Duration(milliseconds: 500),
