@@ -2,9 +2,11 @@ import 'dart:ui';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:musicplayer/utils/hover_widget/hover_container.dart';
+import '../domain/metadata_type.dart';
 import '../utils/multivaluelistenablebuilder/mvlb.dart';
 import '../controller/controller.dart';
 import '../utils/lyric_reader/lyrics_reader.dart';
+import '../utils/objectbox.g.dart';
 import '../utils/progress_bar/audio_video_progress_bar.dart';
 import 'image_widget.dart';
 
@@ -88,6 +90,7 @@ class _SongPlayerWidgetState extends State<SongPlayerWidget> {
     return MultiValueListenableBuilder(
         valueListenables: [widget.controller.minimizedNotifier, widget.controller.indexNotifier, widget.controller.imageNotifier, widget.controller.hiddenNotifier, widget.controller.listChangeNotifier],
         builder: (context, values, child){
+          MetadataType currentSong = widget.controller.songBox.query(MetadataType_.path.equals(widget.controller.settings.playingSongs[widget.controller.indexNotifier.value])).build().find().first;
           return Stack(
             alignment: Alignment.center,
             children: [
@@ -128,6 +131,7 @@ class _SongPlayerWidgetState extends State<SongPlayerWidget> {
                                   right: width * 0.01
                               ),
                               itemBuilder: (context, int index) {
+                                var song = widget.controller.songBox.query(MetadataType_.path.equals(widget.controller.settings.playingSongsUnShuffled[index])).build().find().first;
                                 return AnimatedContainer(
                                   duration: const Duration(milliseconds: 500),
                                   curve: Curves.easeInOut,
@@ -154,7 +158,7 @@ class _SongPlayerWidgetState extends State<SongPlayerWidget> {
                                                   borderRadius: BorderRadius.circular(width * 0.01),
                                                   child: ImageWidget(
                                                     controller: widget.controller,
-                                                    path: widget.controller.settings.playingSongsUnShuffled[index].path,
+                                                    path: widget.controller.settings.playingSongsUnShuffled[index],
                                                     buttons: IconButton(
                                                       onPressed: () async {
                                                         print("Delete song from queue");
@@ -176,7 +180,7 @@ class _SongPlayerWidgetState extends State<SongPlayerWidget> {
                                                     crossAxisAlignment: CrossAxisAlignment.start,
                                                     children: [
                                                       Text(
-                                                          widget.controller.settings.playingSongsUnShuffled[index].title.toString().length > 60 ? "${widget.controller.settings.playingSongsUnShuffled[index].title.toString().substring(0, 60)}..." : widget.controller.settings.playingSongsUnShuffled[index].title.toString(),
+                                                          song.title.toString().length > 60 ? "${song.title.toString().substring(0, 60)}..." : song.title.toString(),
                                                           style: TextStyle(
                                                             color: widget.controller.settings.playingSongsUnShuffled[index] != widget.controller.settings.playingSongs[widget.controller.indexNotifier.value] ? Colors.white : Colors.blue,
                                                             fontSize: normalSize,
@@ -185,7 +189,7 @@ class _SongPlayerWidgetState extends State<SongPlayerWidget> {
                                                       SizedBox(
                                                         height: height * 0.005,
                                                       ),
-                                                      Text(widget.controller.settings.playingSongsUnShuffled[index].artists.toString().length > 60 ? "${widget.controller.settings.playingSongsUnShuffled[index].artists.toString().substring(0, 60)}..." : widget.controller.settings.playingSongsUnShuffled[index].artists.toString(),
+                                                      Text(song.artists.toString().length > 60 ? "${song.artists.toString().substring(0, 60)}..." : song.artists.toString(),
                                                           style: TextStyle(
                                                             color: widget.controller.settings.playingSongsUnShuffled[index] != widget.controller.settings.playingSongs[widget.controller.indexNotifier.value] ? Colors.white : Colors.blue,
                                                             fontSize: smallSize,
@@ -195,7 +199,7 @@ class _SongPlayerWidgetState extends State<SongPlayerWidget> {
                                                 ),
                                                 const Spacer(),
                                                 Text(
-                                                    "${widget.controller.settings.playingSongsUnShuffled[index].duration ~/ 60}:${(widget.controller.settings.playingSongsUnShuffled[index].duration % 60).toString().padLeft(2, '0')}",
+                                                    "${song.duration ~/ 60}:${(song.duration % 60).toString().padLeft(2, '0')}",
                                                     style: TextStyle(
                                                       color: widget.controller.settings.playingSongsUnShuffled[index] != widget.controller.settings.playingSongs[widget.controller.indexNotifier.value] ? Colors.white : Colors.blue,
                                                       fontSize: normalSize,
@@ -264,7 +268,7 @@ class _SongPlayerWidgetState extends State<SongPlayerWidget> {
                                 height: height * 0.005,
                               ),
                               Text(
-                                widget.controller.settings.playingSongs[widget.controller.indexNotifier.value].title.toString(),
+                                currentSong.title.toString(),
                                 maxLines: 2,
                                 overflow: TextOverflow.ellipsis,
                                 textAlign: TextAlign.center,
@@ -289,7 +293,7 @@ class _SongPlayerWidgetState extends State<SongPlayerWidget> {
                                 height: height * 0.005,
                               ),
                               Text(
-                                widget.controller.settings.playingSongs[widget.controller.indexNotifier.value].artists.toString(),
+                                currentSong.artists.toString(),
                                 maxLines: 2,
                                 overflow: TextOverflow.ellipsis,
                                 textAlign: TextAlign.center,
@@ -313,7 +317,7 @@ class _SongPlayerWidgetState extends State<SongPlayerWidget> {
                                 height: height * 0.005,
                               ),
                               Text(
-                                widget.controller.settings.playingSongs[widget.controller.indexNotifier.value].album.toString(),
+                                currentSong.album.toString(),
                                 maxLines: 2,
                                 overflow: TextOverflow.ellipsis,
                                 textAlign: TextAlign.center,
@@ -470,7 +474,7 @@ class _SongPlayerWidgetState extends State<SongPlayerWidget> {
                               ),
                               child: Text(
                                 // Song Title - Artist with maximum 65 characters
-                                "${widget.controller.settings.playingSongs[widget.controller.indexNotifier.value].title} - ${widget.controller.settings.playingSongs[widget.controller.indexNotifier.value].artists}",
+                                "${currentSong.title} - ${currentSong.artists}",
                                 style: TextStyle(
                                   color: Colors.white.withOpacity(values[3] ? 0.0 : 1),
                                   fontSize: normalSize,
@@ -493,7 +497,7 @@ class _SongPlayerWidgetState extends State<SongPlayerWidget> {
                                   ),
                                   child: ProgressBar(
                                     progress: Duration(milliseconds: values[0]),
-                                    total: Duration(seconds: widget.controller.settings.playingSongs.isNotEmpty? widget.controller.settings.playingSongs[widget.controller.indexNotifier.value].duration : 0),
+                                    total: Duration(seconds: widget.controller.settings.playingSongs.isNotEmpty? currentSong.duration : 0),
                                     progressBarColor: values[1].withOpacity(widget.controller.hiddenNotifier.value ? 0.0 : 1.0),
                                     baseBarColor: Colors.white.withOpacity(widget.controller.hiddenNotifier.value ? 0.0 : 0.24),
                                     bufferedBarColor: Colors.white.withOpacity(widget.controller.hiddenNotifier.value ? 0.0 : 0.24),

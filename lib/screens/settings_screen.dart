@@ -142,7 +142,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             widget.controller.songBox.removeAll();
                             widget.controller.albumBox.removeAll();
                             widget.controller.artistBox.removeAll();
-
                             widget.controller.finishedRetrievingNotifier.value = false;
                             Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => MyApp(controller: widget.controller,)));
 

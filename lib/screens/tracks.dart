@@ -54,13 +54,14 @@ class _TracksState extends State<Tracks>{
                   onTap: () async {
                     widget.controller.loadingNotifier.value = true;
                     //print("Playing ${widget.controller.indexNotifier.value}");
-                    if (widget.controller.settings.playingSongs[widget.controller.indexNotifier.value].path != song.path) {
+                    if (widget.controller.settings.playingSongs[widget.controller.indexNotifier.value] != song.path) {
                       //print("path match");
-                      if(widget.controller.settings.playingSongsUnShuffled.equals(query.find()) == false){
+                      var songPaths = query.find().map((e) => e.path).toList();
+                      if(widget.controller.settings.playingSongsUnShuffled.equals(songPaths) == false){
                         print("Updating playing songs");
-                        widget.controller.updatePlaying(query.find(), index);
+                        widget.controller.updatePlaying(songPaths, index);
                       }
-                      widget.controller.indexChange(song);
+                      widget.controller.indexChange(song.path);
                     }
                     await widget.controller.playSong();
                     widget.controller.loadingNotifier.value = false;
@@ -98,7 +99,7 @@ class _TracksState extends State<Tracks>{
                                 valueListenable: widget.controller.playingNotifier,
                                 builder: (context, value, child){
                                   return Icon(
-                                    widget.controller.settings.playingSongs.isNotEmpty && widget.controller.settings.playingSongs[widget.controller.indexNotifier.value] == song && widget.controller.playingNotifier.value == true ?
+                                    widget.controller.settings.playingSongs.isNotEmpty && widget.controller.settings.playingSongs[widget.controller.indexNotifier.value] == song.path && widget.controller.playingNotifier.value == true ?
                                     FluentIcons.pause_32_filled : FluentIcons.play_32_filled,
                                     size: height * 0.1,
                                     color: Colors.white,
@@ -135,7 +136,7 @@ class _TracksState extends State<Tracks>{
                               overflow: TextOverflow.ellipsis,
                               textAlign: TextAlign.center,
                               style: TextStyle(
-                                color: widget.controller.settings.playingSongs.isNotEmpty && widget.controller.settings.playingSongs[widget.controller.indexNotifier.value] == song ? Colors.blue : Colors.white,
+                                color: widget.controller.settings.playingSongs.isNotEmpty && widget.controller.settings.playingSongs[widget.controller.indexNotifier.value] == song.path ? Colors.blue : Colors.white,
                                 fontSize: smallSize,
                                 fontWeight: FontWeight.normal,
                               ),

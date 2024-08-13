@@ -129,10 +129,11 @@ class _ArtistScreenState extends State<ArtistScreen> {
                           IconButton(
                             onPressed: () async {
                               //print("Playing ${widget.controller.indexNotifier.value}");
-                              if(widget.controller.settings.playingSongsUnShuffled.equals(widget.artist.songs) == false){
-                                widget.controller.updatePlaying(widget.artist.songs, 0);
+                              var songPaths = widget.artist.songs.map((e) => e.path).toList();
+                              if(widget.controller.settings.playingSongsUnShuffled.equals(songPaths) == false){
+                                widget.controller.updatePlaying(songPaths, 0);
                               }
-                              widget.controller.indexChange(widget.artist.songs.first);
+                              widget.controller.indexChange(songPaths.first);
                               await widget.controller.playSong();
                             },
                             icon: Icon(
@@ -185,8 +186,9 @@ class _ArtistScreenState extends State<ArtistScreen> {
                         behavior: HitTestBehavior.translucent,
                         onTap: () async {
                           //print(widget.controller.playingSongsUnShuffled[index].title);
-                          if(widget.controller.settings.playingSongsUnShuffled.equals(widget.artist.songs) == false){
-                            widget.controller.updatePlaying(widget.artist.songs, index);
+                          var songPaths = widget.artist.songs.map((e) => e.path).toList();
+                          if(widget.controller.settings.playingSongsUnShuffled.equals(songPaths) == false){
+                            widget.controller.updatePlaying(songPaths, index);
                           }
                           widget.controller.indexChange(widget.controller.settings.playingSongsUnShuffled[index]);
                           await widget.controller.playSong();

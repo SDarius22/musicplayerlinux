@@ -152,11 +152,10 @@ class _PlaylistsState extends State<Playlists>{
                               ),
                               IconButton(
                                 onPressed: () async {
-                                  var songs = playlist.paths.map((e) => widget.controller.songBox.query(MetadataType_.path.equals(e)).build().find().first).toList();
-                                  if(widget.controller.settings.playingSongsUnShuffled.equals(songs) == false){
-                                    widget.controller.updatePlaying(songs, 0);
+                                  if(widget.controller.settings.playingSongsUnShuffled.equals(playlist.paths) == false){
+                                    widget.controller.updatePlaying(playlist.paths, 0);
                                   }
-                                  widget.controller.indexChange(songs.first);
+                                  widget.controller.indexChange(playlist.paths.first);
                                   await widget.controller.playSong();
                                 },
                                 padding: const EdgeInsets.all(0),

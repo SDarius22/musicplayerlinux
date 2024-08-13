@@ -86,10 +86,11 @@ class _ArtistsState extends State<Artists>{
                               ),
                               IconButton(
                                 onPressed: () async {
-                                  if(widget.controller.settings.playingSongsUnShuffled.equals(artist.songs) == false){
-                                    widget.controller.updatePlaying(artist.songs, 0);
+                                  var songPaths = artist.songs.map((e) => e.path).toList();
+                                  if(widget.controller.settings.playingSongsUnShuffled.equals(songPaths) == false){
+                                    widget.controller.updatePlaying(songPaths, 0);
                                   }
-                                  widget.controller.indexChange(artist.songs.first);
+                                  widget.controller.indexChange(songPaths.first);
                                   await widget.controller.playSong();
                                 },
                                 padding: const EdgeInsets.all(0),

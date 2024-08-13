@@ -6,7 +6,6 @@ import 'package:musicplayer/screens/image_widget.dart';
 import 'package:musicplayer/utils/hover_widget/stack_hover_widget.dart';
 import 'package:musicplayer/utils/objectbox.g.dart';
 import '../domain/playlist_type.dart';
-import 'package:musicplayer/domain/metadata_type.dart';
 import '../controller/controller.dart';
 
 class ExportScreen extends StatefulWidget {
@@ -72,7 +71,7 @@ class _ExportScreenState extends State<ExportScreen> {
                         if(i == 0){
                           PlaylistType queuePlaylist = PlaylistType();
                           queuePlaylist.name = "Current Queue";
-                          queuePlaylist.paths = widget.controller.settings.playingSongsUnShuffled.map((e) => e.path).toList();
+                          queuePlaylist.paths = widget.controller.settings.playingSongsUnShuffled;
                           widget.controller.exportPlaylist(queuePlaylist);
                         }
                         else{

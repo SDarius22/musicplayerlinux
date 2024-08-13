@@ -237,13 +237,9 @@ class Controller{
   }
 
 
-  Future<void> addToQueue(List<MetadataType> songs) async {
+  Future<void> addToQueue(List<String> songs) async {
     loadingNotifier.value = true;
     if (settings.queueAdd == 'last') {
-      for (int i = 0; i < songs.length; i++) {
-        songs[i].orderPosition = settings.playingSongs.length + i;
-        songBox.put(songs[i]);
-      }
       settings.playingSongs.addAll(songs);
       settings.playingSongsUnShuffled.addAll(songs);
       if (shuffleNotifier.value) {
@@ -252,28 +248,11 @@ class Controller{
       settingsBox.put(settings);
     }
     else if (settings.queueAdd == 'next') {
-      // change the order position of the songs in the queue to make space for the new songs
-      for (int i = 0; i < songs.length; i++) {
-        songs[i].orderPosition = indexNotifier.value + 1 + i;
-        songBox.put(songs[i]);
-      }
-      for (int i = indexNotifier.value + 1; i < settings.playingSongs.length; i++) {
-        settings.playingSongs[i].orderPosition += songs.length;
-        songBox.put(settings.playingSongs[i]);
-      }
       settings.playingSongs.insertAll(indexNotifier.value + 1, songs);
       settings.playingSongsUnShuffled.insertAll(indexNotifier.value + 1, songs);
       settingsBox.put(settings);
     }
     else if (settings.queueAdd == 'first') {
-      for (int i = 0; i < songs.length; i++) {
-        songs[i].orderPosition = i;
-        songBox.put(songs[i]);
-      }
-      for (int i = 0; i < settings.playingSongs.length; i++) {
-        settings.playingSongs[i].orderPosition += songs.length;
-        songBox.put(settings.playingSongs[i]);
-      }
       settings.playingSongs.insertAll(0, songs);
       settings.playingSongsUnShuffled.insertAll(0, songs);
       settingsBox.put(settings);
@@ -281,7 +260,7 @@ class Controller{
     loadingNotifier.value = false;
   }
 
-  Future<void> removeFromQueue(MetadataType song) async {
+  Future<void> removeFromQueue(String song) async {
     if(settings.playingSongs.length == 1){
       showNotification("The queue cannot be empty.", 3500);
       print("The queue cannot be empty");
@@ -312,15 +291,11 @@ class Controller{
   }
 
 
-  Future<void> updatePlaying(List<MetadataType> songs, int index) async {
+  Future<void> updatePlaying(List<String> songs, int index) async {
     loadingNotifier.value = true;
     if(settings.queuePlay == 'all'){
       settings.playingSongs.clear();
       settings.playingSongsUnShuffled.clear();
-      for(int i = 0; i < songs.length; i++){
-        songs[i].orderPosition = i;
-        songBox.put(songs[i]);
-      }
       settings.playingSongs.addAll(songs);
       settings.playingSongsUnShuffled.addAll(songs);
       if (shuffleNotifier.value){
@@ -355,7 +330,6 @@ class Controller{
           else{
             paths.add(allEntities[i].path);
             var song = await retrieveSong(allEntities[i].path, allEntities);
-            song.orderPosition = songs.length;
             songBox.put(song);
             if (i % 25 == 0){
               retrievingChangedNotifier.value = !retrievingChangedNotifier.value;
@@ -371,12 +345,10 @@ class Controller{
 
     if (settings.playingSongs.isEmpty){
       //print("empty");
-      updatePlaying(songBox.query().order(MetadataType_.orderPosition).build().find(), 0);
+      updatePlaying(songBox.query().order(MetadataType_.title).build().find().map((e) => e.path).toList(), 0);
     }
     else{
       //print("not empty");
-      settings.playingSongsUnShuffled.sort((a, b) => a.orderPosition.compareTo(b.orderPosition));
-      settings.playingSongs.sort((a, b) => a.orderPosition.compareTo(b.orderPosition));
       if (shuffleNotifier.value) {
         settings.playingSongs.shuffle();
       }
@@ -586,7 +558,7 @@ class Controller{
     final Map<String, String> params = {'jo': 'p', 'rto': 'c', 'i': 'c'};
     const String loginUrl = 'https://auth.deezer.com/login/arl';
     const String deezerApiUrl = 'https://pipe.deezer.com/api';
-    MetadataType song = settings.playingSongs[indexNotifier.value];
+    MetadataType song = songBox.query(MetadataType_.path.equals(settings.playingSongs[indexNotifier.value])).build().find().first;
     String title = song.title;
     String artist = song.artists;
     String path = song.path;
@@ -733,8 +705,9 @@ class Controller{
 
   void lyricModelReset() {
     //print(settings.playingSongs[indexNotifier.value].lyricsPath);
-    if (settings.playingSongs[indexNotifier.value].lyricsPath.contains(".lrc")) {
-      File lyrFile = File(settings.playingSongs[indexNotifier.value].lyricsPath);
+    var song = songBox.query(MetadataType_.path.equals(settings.playingSongs[indexNotifier.value])).build().find().first;
+    if (song.lyricsPath.contains(".lrc")) {
+      File lyrFile = File(song.lyricsPath);
       lyricModelNotifier.value = LyricsModelBuilder.create().bindLyricToMain(lyrFile.readAsStringSync()).getModel();
       if (lyricModelNotifier.value.lyrics.isEmpty) {
         lyricModelNotifier.value = LyricsModelBuilder.create().bindLyricToMain("No lyrics").getModel();
@@ -747,14 +720,14 @@ class Controller{
     }
   }
 
-  Future<void> indexChange(MetadataType song) async{
+  Future<void> indexChange(String song) async{
     sliderNotifier.value = 0;
     playingNotifier.value = false;
     indexNotifier.value = settings.playingSongs.indexOf(song);
     settings.lastPlayingIndex = indexNotifier.value;
     settingsBox.put(settings);
 
-    await imageRetrieve(song.path, true);
+    await imageRetrieve(song, true);
     DominantColors extractor = DominantColors(bytes: imageNotifier.value, dominantColorsCount: 2);
     var colors = extractor.extractDominantColors();
     if(colors.first.computeLuminance() > 0.179 && colors.last.computeLuminance() > 0.179){
@@ -786,7 +759,7 @@ class Controller{
     }
     else{
       print("resume");
-      await audioPlayer.play(DeviceFileSource(settings.playingSongs[indexNotifier.value].path), position: Duration(milliseconds: sliderNotifier.value));
+      await audioPlayer.play(DeviceFileSource(settings.playingSongs[indexNotifier.value]), position: Duration(milliseconds: sliderNotifier.value));
       playingNotifier.value = true;
     }
     if (settings.showSystemTray) {

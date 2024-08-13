@@ -71,7 +71,7 @@ class _AddScreenState extends State<AddScreen> {
                       print("Add to new playlist");
                       for(int i in selected){
                         if(i == 0){
-                          widget.controller.addToQueue(widget.songs);
+                          widget.controller.addToQueue(widget.songs.map((e) => e.path).toList());
                         }
                         else{
                           var playlist = query.find()[i-1];

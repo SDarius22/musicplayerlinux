@@ -76,14 +76,15 @@ class _SearchWidgetState extends State<SearchWidget> {
                     ),
                     itemCount: widget.controller.found.value.length,
                     itemBuilder: (context, int index) {
-                      return Container(
+                      return SizedBox(
                         height: height * 0.1,
                         child: MouseRegion(
                           cursor: SystemMouseCursors.click,
                           child: GestureDetector(
                             onTap: () async {
-                              if(widget.controller.settings.playingSongs.equals(widget.controller.found.value) == false){
-                                widget.controller.updatePlaying(widget.controller.found.value, index);
+                              var songPaths = widget.controller.found.value.map((e) => e.path).toList();
+                              if(widget.controller.settings.playingSongs.equals(songPaths) == false){
+                                widget.controller.updatePlaying(songPaths, index);
                               }
                               widget.controller.indexChange(widget.controller.settings.playingSongsUnShuffled[index]);
                               await widget.controller.playSong();

@@ -148,10 +148,11 @@ class _AlbumScreenState extends State<AlbumScreen> {
                             onPressed: () async {
                               //print("Playing ${widget.controller.indexNotifier.value}");
                               //widget.controller.audioPlayer.stop();
-                              if(widget.controller.settings.playingSongsUnShuffled.equals(widget.album.songs) == false){
-                                widget.controller.updatePlaying(widget.album.songs, 0);
+                              var songPaths = widget.album.songs.map((e) => e.path).toList();
+                              if(widget.controller.settings.playingSongsUnShuffled.equals(songPaths) == false){
+                                widget.controller.updatePlaying(songPaths, 0);
                               }
-                              widget.controller.indexChange(widget.album.songs.first);
+                              widget.controller.indexChange(songPaths.first);
                               await widget.controller.playSong();
                             },
                             icon: Icon(
@@ -204,8 +205,9 @@ class _AlbumScreenState extends State<AlbumScreen> {
                       child: GestureDetector(
                         behavior: HitTestBehavior.translucent,
                         onTap: () async {
-                          if(widget.controller.settings.playingSongs.equals(widget.album.songs) == false){
-                            widget.controller.updatePlaying(widget.album.songs, index);
+                          var songPaths = widget.album.songs.map((e) => e.path).toList();
+                          if(widget.controller.settings.playingSongs.equals(songPaths) == false){
+                            widget.controller.updatePlaying(songPaths, index);
                           }
                           widget.controller.indexChange(widget.controller.settings.playingSongsUnShuffled[index]);
                           await widget.controller.playSong();

@@ -4,8 +4,6 @@ import 'package:objectbox/objectbox.dart';
 class MetadataType{
   @Id()
   int id = 0;
-  int orderPosition = 0;
-
   String title = "Unknown Song";
   String artists = "Unknown artist";
   String album = "Unknown album";

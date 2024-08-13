@@ -92,10 +92,11 @@ class _AlbumsState extends State<Albums>{
                               ),
                               IconButton(
                                 onPressed: () async {
-                                  if(widget.controller.settings.playingSongsUnShuffled.equals(album.songs) == false){
-                                    widget.controller.updatePlaying(album.songs, 0);
+                                  var songPaths = album.songs.map((e) => e.path).toList();
+                                  if(widget.controller.settings.playingSongsUnShuffled.equals(songPaths) == false){
+                                    widget.controller.updatePlaying(songPaths, 0);
                                   }
-                                  widget.controller.indexChange(album.songs.first);
+                                  widget.controller.indexChange(songPaths.first);
                                   await widget.controller.playSong();
                                 },
                                 padding: const EdgeInsets.all(0),

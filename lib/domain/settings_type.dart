@@ -1,5 +1,4 @@
 import 'package:objectbox/objectbox.dart';
-import 'metadata_type.dart';
 
 @Entity()
 class Settings{
@@ -13,6 +12,6 @@ class Settings{
   String deezerToken = '';
   String queueAdd = 'last';
   String queuePlay = 'all';
-  final playingSongs = ToMany<MetadataType>();
-  final playingSongsUnShuffled = ToMany<MetadataType>();
+  List<String> playingSongs = [];
+  List<String> playingSongsUnShuffled = [];
 }

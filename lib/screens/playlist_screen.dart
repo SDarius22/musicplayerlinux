@@ -22,7 +22,7 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
   ValueNotifier<bool> editMode = ValueNotifier<bool>(false);
   String featuredArtists = "";
   String duration = "0 seconds";
-  ValueNotifier<List<MetadataType>>  songs = ValueNotifier<List<MetadataType>>([]);
+  ValueNotifier<List<MetadataType>> songs = ValueNotifier<List<MetadataType>>([]);
 
 
   @override
@@ -216,10 +216,10 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
                         children: [
                           IconButton(
                             onPressed: () async {
-                              if(widget.controller.settings.playingSongsUnShuffled.equals(songs.value) == false){
-                                widget.controller.updatePlaying(songs.value, 0);
+                              if(widget.controller.settings.playingSongsUnShuffled.equals(widget.playlist.paths) == false){
+                                widget.controller.updatePlaying(widget.playlist.paths, 0);
                               }
-                              widget.controller.indexChange(songs.value.first);
+                              widget.controller.indexChange(widget.playlist.paths.first);
                               await widget.controller.playSong();
 
                             },
@@ -298,8 +298,8 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
                             child: GestureDetector(
                               behavior: HitTestBehavior.translucent,
                               onTap: () async {
-                                if(widget.controller.settings.playingSongs.equals(songs.value) == false){
-                                  widget.controller.updatePlaying(songs.value, index);
+                                if(widget.controller.settings.playingSongs.equals(widget.playlist.paths) == false){
+                                  widget.controller.updatePlaying(widget.playlist.paths, index);
                                 }
                                 widget.controller.indexChange(widget.controller.settings.playingSongsUnShuffled[index]);
                                 await widget.controller.playSong();
