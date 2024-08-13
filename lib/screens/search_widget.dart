@@ -14,10 +14,10 @@ class SearchWidget extends StatefulWidget {
   const SearchWidget({super.key, required this.controller});
 
   @override
-  _SearchWidget createState() => _SearchWidget();
+  _SearchWidgetState createState() => _SearchWidgetState();
 }
 
-class _SearchWidget extends State<SearchWidget> {
+class _SearchWidgetState extends State<SearchWidget> {
   FocusNode searchNode = FocusNode();
 
   @override
@@ -83,7 +83,7 @@ class _SearchWidget extends State<SearchWidget> {
                           child: GestureDetector(
                             onTap: () async {
                               if(widget.controller.settings.playingSongs.equals(widget.controller.found.value) == false){
-                                widget.controller.updatePlaying(widget.controller.found.value);
+                                widget.controller.updatePlaying(widget.controller.found.value, index);
                               }
                               widget.controller.indexChange(widget.controller.settings.playingSongsUnShuffled[index]);
                               await widget.controller.playSong();
@@ -117,18 +117,8 @@ class _SearchWidget extends State<SearchWidget> {
                                                               print("Add");
                                                               Navigator.push(
                                                                   context,
-                                                                  PageRouteBuilder(
-                                                                    pageBuilder: (context, animation1, animation2) => AddScreen(controller: widget.controller, songs: [widget.controller.found.value[index]]),
-                                                                    transitionDuration: const Duration(milliseconds: 500),
-                                                                    reverseTransitionDuration: const Duration(milliseconds: 500),
-                                                                    transitionsBuilder: (context, animation1, animation2, child) {
-                                                                      animation1 = CurvedAnimation(parent: animation1, curve: Curves.linear);
-                                                                      return ScaleTransition(
-                                                                        alignment: Alignment.center,
-                                                                        scale: animation1,
-                                                                        child: child,
-                                                                      );
-                                                                    },
+                                                                  MaterialPageRoute(
+                                                                      builder: (context) => AddScreen(controller: widget.controller, songs: [widget.controller.found.value[index]])
                                                                   )
                                                               );
                                                             },

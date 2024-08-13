@@ -30,7 +30,6 @@ class _MyAppState extends State<MyApp>{
     Widget finalWidget = widget.controller.settings.firstTime ?
     WelcomeScreen(controller: widget.controller) :
     HomePage(controller: widget.controller);
-
     return Scaffold(
       body: SizedBox(
           width: width,
@@ -157,9 +156,12 @@ class _MyAppState extends State<MyApp>{
                                     ),
                                     IconButton(onPressed: (){
                                       print("Tapped settings");
-                                      Navigator.push(context, MaterialPageRoute(builder: (BuildContext context){
-                                        return Settings(controller: widget.controller,);
+                                      widget.controller.navigatorKey.currentState!.push(MaterialPageRoute(builder: (BuildContext context){
+                                        return SettingsScreen(controller: widget.controller,);
                                       }));
+                                      // Navigator.push(context, MaterialPageRoute(builder: (BuildContext context){
+                                      //   return Settings(controller: widget.controller,);
+                                      // }));
                                     }, icon: Icon(
                                       FluentIcons.settings_16_filled,
                                       size: height * 0.02,
@@ -226,17 +228,29 @@ class _MyAppState extends State<MyApp>{
               Expanded(
                 child: Stack(
                   children: [
-                    PopScope(
-                      child: MaterialApp(
-                        theme: ThemeData(
-                          fontFamily: 'Bahnschrift',
-                          brightness: Brightness.dark,
-                          scaffoldBackgroundColor: const Color(0xFF0E0E0E),
-                        ),
-                        debugShowCheckedModeBanner: false,
-                        home: finalWidget,
+                    HeroControllerScope(
+                      controller: MaterialApp.createMaterialHeroController(),
+                      child: Navigator(
+                        key: widget.controller.navigatorKey,
+                        onGenerateRoute: (settings) {
+                          return MaterialPageRoute(
+                            builder: (context) => finalWidget,
+                          );
+                        },
                       ),
                     ),
+
+                    // PopScope(
+                    //   child: MaterialApp(
+                    //     theme: ThemeData(
+                    //       fontFamily: 'Bahnschrift',
+                    //       brightness: Brightness.dark,
+                    //       scaffoldBackgroundColor: const Color(0xFF0E0E0E),
+                    //     ),
+                    //     debugShowCheckedModeBanner: false,
+                    //     home: finalWidget,
+                    //   ),
+                    // ),
                     ValueListenableBuilder(
                         valueListenable: widget.controller.finishedRetrievingNotifier,
                         builder: (context, value, child) {

@@ -12,6 +12,7 @@ class Settings{
   bool showAppNotifications = true;
   String deezerToken = '';
   String queueAdd = 'last';
+  String queuePlay = 'all';
   final playingSongs = ToMany<MetadataType>();
   final playingSongsUnShuffled = ToMany<MetadataType>();
 }

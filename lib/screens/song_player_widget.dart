@@ -16,10 +16,10 @@ class SongPlayerWidget extends StatefulWidget {
       });
 
   @override
-  _SongPlayerWidget createState() => _SongPlayerWidget();
+  _SongPlayerWidgetState createState() => _SongPlayerWidgetState();
 }
 
-class _SongPlayerWidget extends State<SongPlayerWidget> {
+class _SongPlayerWidgetState extends State<SongPlayerWidget> {
   late ScrollController itemScrollController;
   var lyricUI = UINetease(
       defaultSize : 20,

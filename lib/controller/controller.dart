@@ -33,7 +33,7 @@ class Controller{
   AudioPlayer audioPlayer = AudioPlayer();
   final SystemTray _systemTray = SystemTray();
   final Menu _menuMain = Menu();
-  final nestedNavigatorKey = GlobalKey<NavigatorState>();
+  final navigatorKey = GlobalKey<NavigatorState>();
 
   ValueNotifier<String> userMessageNotifier = ValueNotifier<String>('');
   ValueNotifier<int> userMessageProgressNotifier = ValueNotifier<int>(3500);
@@ -323,20 +323,25 @@ class Controller{
   }
 
 
-  Future<void> updatePlaying(List<MetadataType> songs) async {
+  Future<void> updatePlaying(List<MetadataType> songs, int index) async {
     loadingNotifier.value = true;
-    settings.playingSongs.clear();
-    settings.playingSongsUnShuffled.clear();
-    for(int i = 0; i < songs.length; i++){
-      songs[i].orderPosition = i;
-      songBox.put(songs[i]);
+    if(settings.queuePlay == 'all'){
+      settings.playingSongs.clear();
+      settings.playingSongsUnShuffled.clear();
+      for(int i = 0; i < songs.length; i++){
+        songs[i].orderPosition = i;
+        songBox.put(songs[i]);
+      }
+      settings.playingSongs.addAll(songs);
+      settings.playingSongsUnShuffled.addAll(songs);
+      if (shuffleNotifier.value){
+        settings.playingSongs.shuffle();
+      }
+      settingsBox.put(settings);
     }
-    settings.playingSongs.addAll(songs);
-    settings.playingSongsUnShuffled.addAll(songs);
-    if (shuffleNotifier.value){
-      settings.playingSongs.shuffle();
+    else{
+      addToQueue([songs[index]]);
     }
-    settingsBox.put(settings);
     loadingNotifier.value = false;
   }
 
@@ -377,7 +382,7 @@ class Controller{
 
     if (settings.playingSongs.isEmpty){
       //print("empty");
-      updatePlaying(songBox.query().order(MetadataType_.orderPosition).build().find());
+      updatePlaying(songBox.query().order(MetadataType_.orderPosition).build().find(), 0);
     }
     else{
       //print("not empty");

@@ -10,10 +10,10 @@ class ImageWidget extends StatefulWidget {
   const ImageWidget({super.key, required this.controller, required this.path, this.buttons, this.heroTag});
 
   @override
-  _ImageWidget createState() => _ImageWidget();
+  _ImageWidgetState createState() => _ImageWidgetState();
 }
 
-class _ImageWidget extends State<ImageWidget> {
+class _ImageWidgetState extends State<ImageWidget> {
   ValueNotifier<bool> isHovered = ValueNotifier(false);
   Image image = Image.asset('assets/bg.png', fit: BoxFit.cover,);
 

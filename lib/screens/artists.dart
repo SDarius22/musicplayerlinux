@@ -48,21 +48,7 @@ class _ArtistsState extends State<Artists>{
                 child: GestureDetector(
                   onTap: () {
                     //print(artist.name);
-                    Navigator.push(
-                        context,
-                        PageRouteBuilder(
-                          pageBuilder: (context, animation1, animation2) => ArtistWidget(controller: widget.controller, artist: artist),
-                          transitionDuration: const Duration(milliseconds: 500),
-                          reverseTransitionDuration: const Duration(milliseconds: 500),
-                          transitionsBuilder: (context, animation1, animation2, child) {
-                            animation1 = CurvedAnimation(parent: animation1, curve: Curves.linear);
-                            return ScaleTransition(
-                              scale: animation1,
-                              alignment: Alignment.center,
-                              child: child,
-                            );
-                          },
-                        ));
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => ArtistScreen(controller: widget.controller, artist: artist)));
                   },
                   child: Column(
                     children: [
@@ -81,18 +67,8 @@ class _ArtistsState extends State<Artists>{
                                   print("Add $index");
                                   Navigator.push(
                                       context,
-                                      PageRouteBuilder(
-                                        pageBuilder: (context, animation1, animation2) => AddScreen(controller: widget.controller, songs: artist.songs),
-                                        transitionDuration: const Duration(milliseconds: 500),
-                                        reverseTransitionDuration: const Duration(milliseconds: 500),
-                                        transitionsBuilder: (context, animation1, animation2, child) {
-                                          animation1 = CurvedAnimation(parent: animation1, curve: Curves.linear);
-                                          return ScaleTransition(
-                                            alignment: Alignment.center,
-                                            scale: animation1,
-                                            child: child,
-                                          );
-                                        },
+                                      MaterialPageRoute(
+                                          builder: (context) => AddScreen(controller: widget.controller, songs: artist.songs)
                                       )
                                   );
                                 },
@@ -111,7 +87,7 @@ class _ArtistsState extends State<Artists>{
                               IconButton(
                                 onPressed: () async {
                                   if(widget.controller.settings.playingSongsUnShuffled.equals(artist.songs) == false){
-                                    widget.controller.updatePlaying(artist.songs);
+                                    widget.controller.updatePlaying(artist.songs, 0);
                                   }
                                   widget.controller.indexChange(artist.songs.first);
                                   await widget.controller.playSong();

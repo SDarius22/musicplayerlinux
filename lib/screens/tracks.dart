@@ -58,7 +58,7 @@ class _TracksState extends State<Tracks>{
                       //print("path match");
                       if(widget.controller.settings.playingSongsUnShuffled.equals(query.find()) == false){
                         print("Updating playing songs");
-                        widget.controller.updatePlaying(query.find());
+                        widget.controller.updatePlaying(query.find(), index);
                       }
                       widget.controller.indexChange(song);
                     }
@@ -82,18 +82,8 @@ class _TracksState extends State<Tracks>{
                                   print("Add $index");
                                   Navigator.push(
                                       context,
-                                      PageRouteBuilder(
-                                        pageBuilder: (context, animation1, animation2) => AddScreen(controller: widget.controller, songs: [song]),
-                                        transitionDuration: const Duration(milliseconds: 500),
-                                        reverseTransitionDuration: const Duration(milliseconds: 500),
-                                        transitionsBuilder: (context, animation1, animation2, child) {
-                                          animation1 = CurvedAnimation(parent: animation1, curve: Curves.linear);
-                                          return ScaleTransition(
-                                            alignment: Alignment.center,
-                                            scale: animation1,
-                                            child: child,
-                                          );
-                                        },
+                                      MaterialPageRoute(
+                                          builder: (context) => AddScreen(controller: widget.controller, songs: [song])
                                       )
                                   );
                                 },
@@ -119,19 +109,7 @@ class _TracksState extends State<Tracks>{
                                 onPressed: (){
                                   Navigator.push(
                                       context,
-                                      PageRouteBuilder(
-                                        pageBuilder: (context, animation1, animation2) => AlbumWidget(controller: widget.controller, album: widget.controller.albumBox.query(AlbumType_.name.equals(song.album)).build().find().first),
-                                        transitionDuration: const Duration(milliseconds: 500),
-                                        reverseTransitionDuration: const Duration(milliseconds: 500),
-                                        transitionsBuilder: (context, animation1, animation2, child) {
-                                          animation1 = CurvedAnimation(parent: animation1, curve: Curves.linear);
-                                          return ScaleTransition(
-                                            alignment: Alignment.center,
-                                            scale: animation1,
-                                            child: child,
-                                          );
-                                        },
-                                      )
+                                      MaterialPageRoute(builder: (context) => AlbumScreen(controller: widget.controller, album: widget.controller.albumBox.query(AlbumType_.name.equals(song.album)).build().find().first))
                                   );
                                 },
                                 padding: const EdgeInsets.all(0),

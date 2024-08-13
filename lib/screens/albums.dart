@@ -53,19 +53,7 @@ class _AlbumsState extends State<Albums>{
                   onTap: () {
                     Navigator.push(
                         context,
-                        PageRouteBuilder(
-                          pageBuilder: (context, animation1, animation2) => AlbumWidget(controller: widget.controller, album: album),
-                          transitionDuration: const Duration(milliseconds: 500),
-                          reverseTransitionDuration: const Duration(milliseconds: 500),
-                          transitionsBuilder: (context, animation1, animation2, child) {
-                            animation1 = CurvedAnimation(parent: animation1, curve: Curves.linear);
-                            return ScaleTransition(
-                              alignment: Alignment.center,
-                              scale: animation1,
-                              child: child,
-                            );
-                          },
-                        )
+                        MaterialPageRoute(builder: (context) => AlbumScreen(controller: widget.controller, album: album))
                     );
                   },
                   child: Column(
@@ -85,18 +73,8 @@ class _AlbumsState extends State<Albums>{
                                   print("Add $index");
                                   Navigator.push(
                                       context,
-                                      PageRouteBuilder(
-                                        pageBuilder: (context, animation1, animation2) => AddScreen(controller: widget.controller, songs: album.songs),
-                                        transitionDuration: const Duration(milliseconds: 500),
-                                        reverseTransitionDuration: const Duration(milliseconds: 500),
-                                        transitionsBuilder: (context, animation1, animation2, child) {
-                                          animation1 = CurvedAnimation(parent: animation1, curve: Curves.linear);
-                                          return ScaleTransition(
-                                            alignment: Alignment.center,
-                                            scale: animation1,
-                                            child: child,
-                                          );
-                                        },
+                                      MaterialPageRoute(
+                                          builder: (context) => AddScreen(controller: widget.controller, songs: album.songs)
                                       )
                                   );
                                 },
@@ -115,7 +93,7 @@ class _AlbumsState extends State<Albums>{
                               IconButton(
                                 onPressed: () async {
                                   if(widget.controller.settings.playingSongsUnShuffled.equals(album.songs) == false){
-                                    widget.controller.updatePlaying(album.songs);
+                                    widget.controller.updatePlaying(album.songs, 0);
                                   }
                                   widget.controller.indexChange(album.songs.first);
                                   await widget.controller.playSong();

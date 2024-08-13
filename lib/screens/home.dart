@@ -22,7 +22,6 @@ class _HomePageState extends State<HomePage>{
 
   int currentPage = 3;
   String userMessage = "No message";
-  final ScrollController _scrollController = ScrollController(initialScrollOffset: 0.0);
   final PageController _pageController = PageController(initialPage: 4);
 
 
@@ -50,7 +49,7 @@ class _HomePageState extends State<HomePage>{
           children: [
             // artists, albums, playlists, tracks
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Expanded(
                     child: SizedBox(
@@ -62,11 +61,6 @@ class _HomePageState extends State<HomePage>{
                                   duration: const Duration(milliseconds: 500),
                                   curve: Curves.easeIn
                               );
-                              setState(() {
-                                if(_scrollController.positions.isNotEmpty) {
-                                  _scrollController.jumpTo(_scrollController.position.minScrollExtent);
-                                }
-                              });
                             },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: currentPage != 0 ? const Color(0xFF0E0E0E) : const Color(0xFF1b1b1b),
@@ -94,11 +88,6 @@ class _HomePageState extends State<HomePage>{
                                   duration: const Duration(milliseconds: 500),
                                   curve: Curves.easeIn
                               );
-                              setState(() {
-                                if(_scrollController.positions.isNotEmpty) {
-                                  _scrollController.jumpTo(_scrollController.position.minScrollExtent);
-                                }
-                              });
                             },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: currentPage != 1 ? const Color(0xFF0E0E0E) : const Color(0xFF1b1b1b),
@@ -126,11 +115,6 @@ class _HomePageState extends State<HomePage>{
                                   duration: const Duration(milliseconds: 500),
                                   curve: Curves.easeIn
                               );
-                              setState(() {
-                                if(_scrollController.positions.isNotEmpty) {
-                                  _scrollController.jumpTo(_scrollController.position.minScrollExtent);
-                                }
-                              });
                             },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: currentPage != 2 ? const Color(0xFF0E0E0E) : const Color(0xFF1b1b1b),
@@ -158,11 +142,6 @@ class _HomePageState extends State<HomePage>{
                                   duration: const Duration(milliseconds: 500),
                                   curve: Curves.easeIn
                               );
-                              setState(() {
-                                if(_scrollController.positions.isNotEmpty) {
-                                  _scrollController.jumpTo(_scrollController.position.minScrollExtent);
-                                }
-                              });
                             },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: currentPage != 3 ? const Color(0xFF0E0E0E) : const Color(0xFF1b1b1b),
@@ -185,7 +164,12 @@ class _HomePageState extends State<HomePage>{
             // current page
             Expanded(
               child: Container(
-                padding: EdgeInsets.only(left: width * 0.02, right: width * 0.02),
+                padding: EdgeInsets.only(
+                    top: height * 0.02,
+                    left: width * 0.01,
+                    right: width * 0.01,
+                    bottom: height * 0.02
+                ),
                 child: PageView(
                   onPageChanged: (int index){
                     setState(() {

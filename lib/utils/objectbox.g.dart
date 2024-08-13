@@ -167,7 +167,7 @@ final _entities = <obx_int.ModelEntity>[
   obx_int.ModelEntity(
       id: const obx_int.IdUid(5, 3381058623511901147),
       name: 'Settings',
-      lastPropertyId: const obx_int.IdUid(9, 3968858547005123316),
+      lastPropertyId: const obx_int.IdUid(10, 8900690205728653403),
       flags: 0,
       properties: <obx_int.ModelProperty>[
         obx_int.ModelProperty(
@@ -208,6 +208,11 @@ final _entities = <obx_int.ModelEntity>[
         obx_int.ModelProperty(
             id: const obx_int.IdUid(8, 4016030276980065277),
             name: 'queueAdd',
+            type: 9,
+            flags: 0),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(10, 8900690205728653403),
+            name: 'queuePlay',
             type: 9,
             flags: 0)
       ],
@@ -456,7 +461,8 @@ obx_int.ModelDefinition getObjectBoxModel() {
           final directoryOffset = fbb.writeString(object.directory);
           final deezerTokenOffset = fbb.writeString(object.deezerToken);
           final queueAddOffset = fbb.writeString(object.queueAdd);
-          fbb.startTable(10);
+          final queuePlayOffset = fbb.writeString(object.queuePlay);
+          fbb.startTable(11);
           fbb.addInt64(0, object.id);
           fbb.addOffset(1, directoryOffset);
           fbb.addInt64(2, object.lastPlayingIndex);
@@ -465,6 +471,7 @@ obx_int.ModelDefinition getObjectBoxModel() {
           fbb.addBool(5, object.showAppNotifications);
           fbb.addOffset(6, deezerTokenOffset);
           fbb.addOffset(7, queueAddOffset);
+          fbb.addOffset(9, queuePlayOffset);
           fbb.finish(fbb.endTable());
           return object.id;
         },
@@ -487,7 +494,9 @@ obx_int.ModelDefinition getObjectBoxModel() {
             ..deezerToken = const fb.StringReader(asciiOptimization: true)
                 .vTableGet(buffer, rootOffset, 16, '')
             ..queueAdd = const fb.StringReader(asciiOptimization: true)
-                .vTableGet(buffer, rootOffset, 18, '');
+                .vTableGet(buffer, rootOffset, 18, '')
+            ..queuePlay = const fb.StringReader(asciiOptimization: true)
+                .vTableGet(buffer, rootOffset, 22, '');
           obx_int.InternalToManyAccess.setRelInfo<Settings>(object.playingSongs,
               store, obx_int.RelInfo<Settings>.toMany(6, object.id));
           obx_int.InternalToManyAccess.setRelInfo<Settings>(
@@ -630,6 +639,10 @@ class Settings_ {
   /// See [Settings.queueAdd].
   static final queueAdd =
       obx.QueryStringProperty<Settings>(_entities[4].properties[7]);
+
+  /// See [Settings.queuePlay].
+  static final queuePlay =
+      obx.QueryStringProperty<Settings>(_entities[4].properties[8]);
 
   /// see [Settings.playingSongs]
   static final playingSongs = obx.QueryRelationToMany<Settings, MetadataType>(

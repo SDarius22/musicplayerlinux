@@ -54,21 +54,7 @@ class _PlaylistsState extends State<Playlists>{
                 cursor: SystemMouseCursors.click,
                 child: GestureDetector(
                   onTap: (){
-                    Navigator.push(
-                        context,
-                        PageRouteBuilder(
-                          pageBuilder: (context, animation1, animation2) => CreateScreen(controller: widget.controller),
-                          transitionDuration: const Duration(milliseconds: 500),
-                          reverseTransitionDuration: const Duration(milliseconds: 500),
-                          transitionsBuilder: (context, animation1, animation2, child) {
-                            animation1 = CurvedAnimation(parent: animation1, curve: Curves.linear);
-                            return ScaleTransition(
-                              alignment: Alignment.center,
-                              scale: animation1,
-                              child: child,
-                            );
-                          },
-                        ));
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => CreateScreen(controller: widget.controller)));
                   },
                   child: Column(
                     children: [
@@ -124,21 +110,7 @@ class _PlaylistsState extends State<Playlists>{
                 child: GestureDetector(
                   onTap: () {
                     //print(playlist.name);
-                    Navigator.push(
-                        context,
-                        PageRouteBuilder(
-                          pageBuilder: (context, animation1, animation2) => PlaylistWidget(controller: widget.controller, playlist: playlist),
-                          transitionDuration: const Duration(milliseconds: 500),
-                          reverseTransitionDuration: const Duration(milliseconds: 500),
-                          transitionsBuilder: (context, animation1, animation2, child) {
-                            animation1 = CurvedAnimation(parent: animation1, curve: Curves.linear);
-                            return ScaleTransition(
-                              alignment: Alignment.center,
-                              scale: animation1,
-                              child: child,
-                            );
-                          },
-                        ));
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => PlaylistScreen(controller: widget.controller, playlist: playlist)));
                   },
                   child: Column(
                     children: [
@@ -161,18 +133,8 @@ class _PlaylistsState extends State<Playlists>{
                                   }
                                   Navigator.push(
                                       context,
-                                      PageRouteBuilder(
-                                        pageBuilder: (context, animation1, animation2) => AddScreen(controller: widget.controller, songs: songs),
-                                        transitionDuration: const Duration(milliseconds: 500),
-                                        reverseTransitionDuration: const Duration(milliseconds: 500),
-                                        transitionsBuilder: (context, animation1, animation2, child) {
-                                          animation1 = CurvedAnimation(parent: animation1, curve: Curves.linear);
-                                          return ScaleTransition(
-                                            alignment: Alignment.center,
-                                            scale: animation1,
-                                            child: child,
-                                          );
-                                        },
+                                      MaterialPageRoute(
+                                          builder: (context) => AddScreen(controller: widget.controller, songs: songs)
                                       )
                                   );
                                 },
@@ -192,7 +154,7 @@ class _PlaylistsState extends State<Playlists>{
                                 onPressed: () async {
                                   var songs = playlist.paths.map((e) => widget.controller.songBox.query(MetadataType_.path.equals(e)).build().find().first).toList();
                                   if(widget.controller.settings.playingSongsUnShuffled.equals(songs) == false){
-                                    widget.controller.updatePlaying(songs);
+                                    widget.controller.updatePlaying(songs, 0);
                                   }
                                   widget.controller.indexChange(songs.first);
                                   await widget.controller.playSong();

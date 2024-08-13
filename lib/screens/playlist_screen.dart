@@ -9,16 +9,16 @@ import '../utils/objectbox.g.dart';
 import 'add_screen.dart';
 import 'image_widget.dart';
 
-class PlaylistWidget extends StatefulWidget {
+class PlaylistScreen extends StatefulWidget {
   final Controller controller;
   final PlaylistType playlist;
-  const PlaylistWidget({super.key, required this.controller, required this.playlist});
+  const PlaylistScreen({super.key, required this.controller, required this.playlist});
 
   @override
-  _PlaylistWidget createState() => _PlaylistWidget();
+  _PlaylistScreenState createState() => _PlaylistScreenState();
 }
 
-class _PlaylistWidget extends State<PlaylistWidget> {
+class _PlaylistScreenState extends State<PlaylistScreen> {
   ValueNotifier<bool> editMode = ValueNotifier<bool>(false);
   String featuredArtists = "";
   String duration = "0 seconds";
@@ -217,7 +217,7 @@ class _PlaylistWidget extends State<PlaylistWidget> {
                           IconButton(
                             onPressed: () async {
                               if(widget.controller.settings.playingSongsUnShuffled.equals(songs.value) == false){
-                                widget.controller.updatePlaying(songs.value);
+                                widget.controller.updatePlaying(songs.value, 0);
                               }
                               widget.controller.indexChange(songs.value.first);
                               await widget.controller.playSong();
@@ -235,18 +235,8 @@ class _PlaylistWidget extends State<PlaylistWidget> {
                               print("Add ${widget.playlist.name}");
                               Navigator.push(
                                   context,
-                                  PageRouteBuilder(
-                                    pageBuilder: (context, animation1, animation2) => AddScreen(controller: widget.controller, songs: songs.value),
-                                    transitionDuration: const Duration(milliseconds: 500),
-                                    reverseTransitionDuration: const Duration(milliseconds: 500),
-                                    transitionsBuilder: (context, animation1, animation2, child) {
-                                      animation1 = CurvedAnimation(parent: animation1, curve: Curves.linear);
-                                      return ScaleTransition(
-                                        alignment: Alignment.center,
-                                        scale: animation1,
-                                        child: child,
-                                      );
-                                    },
+                                  MaterialPageRoute(
+                                      builder: (context) => AddScreen(controller: widget.controller, songs: songs.value)
                                   )
                               );
                             },
@@ -309,7 +299,7 @@ class _PlaylistWidget extends State<PlaylistWidget> {
                               behavior: HitTestBehavior.translucent,
                               onTap: () async {
                                 if(widget.controller.settings.playingSongs.equals(songs.value) == false){
-                                  widget.controller.updatePlaying( songs.value);
+                                  widget.controller.updatePlaying(songs.value, index);
                                 }
                                 widget.controller.indexChange(widget.controller.settings.playingSongsUnShuffled[index]);
                                 await widget.controller.playSong();

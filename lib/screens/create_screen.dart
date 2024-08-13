@@ -10,7 +10,9 @@ import '../utils/objectbox.g.dart';
 
 class CreateScreen extends StatefulWidget {
   final Controller controller;
-  const CreateScreen({super.key, required this.controller});
+  final List<String>? paths;
+  final String? name;
+  const CreateScreen({super.key, required this.controller, this.paths, this.name});
 
   @override
   _CreateScreenState createState() => _CreateScreenState();
@@ -18,13 +20,20 @@ class CreateScreen extends StatefulWidget {
 
 class _CreateScreenState extends State<CreateScreen> {
   List<MetadataType> selected = [];
-  String playlistName = "New playlist name";
+  String playlistName = "";
   String playlistAdd = "last";
   FocusNode searchNode = FocusNode();
   FocusNode nameNode = FocusNode();
 
   @override
   void initState() {
+    playlistName = widget.name ?? "";
+    if (widget.paths != null && widget.paths!.isNotEmpty) {
+      for (var path in widget.paths!) {
+        print(path);
+        selected.add(widget.controller.songBox.query(MetadataType_.path.equals(path)).build().find().first);
+      }
+    }
     super.initState();
     widget.controller.found2.value = widget.controller.songBox.query().order(MetadataType_.title).build().find();
     nameNode.requestFocus();
@@ -78,6 +87,12 @@ class _CreateScreenState extends State<CreateScreen> {
                 const Spacer(),
                 ElevatedButton(
                     onPressed: (){
+                      if (playlistName.isEmpty) {
+                        return;
+                      }
+                      if (selected.isEmpty) {
+                        return;
+                      }
                       print("Create new playlist");
                       PlaylistType newPlaylist = PlaylistType();
                       newPlaylist.name = playlistName;
@@ -98,6 +113,7 @@ class _CreateScreenState extends State<CreateScreen> {
             ),
             TextFormField(
               maxLength: 50,
+              initialValue: playlistName,
               decoration: InputDecoration(
                 border: const UnderlineInputBorder(
                   borderSide: BorderSide(
