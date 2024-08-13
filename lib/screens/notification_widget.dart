@@ -22,6 +22,8 @@ class _NotificationWidgetState extends State<NotificationWidget> {
     return Container(
       width: width * 0.3,
       height: height * 0.1,
+
+      
       alignment: Alignment.center,
       margin: EdgeInsets.only(
         top: height * 0.05,
