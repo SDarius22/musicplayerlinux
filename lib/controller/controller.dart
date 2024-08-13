@@ -105,6 +105,10 @@ class Controller{
 
   Future<void> createPlaylist(PlaylistType playlist) async {
     playlistBox.put(playlist);
+    exportPlaylist(playlist);
+  }
+
+  Future<void> exportPlaylist(PlaylistType playlist) async {
     var file = File("${settings.directory}/${playlist.name}.m3u");
     file.writeAsStringSync("#EXTM3U\n");
     for (var song in playlist.paths){
@@ -121,19 +125,8 @@ class Controller{
         playlist.paths.add(song.path);
       }
       playlistBox.put(playlist);
-      var file = File("${settings.directory}/${playlist.name}.m3u");
-      for (var song in songs){
-        file.writeAsStringSync('$song\n', mode: FileMode.append);
-      }
     }
     else{
-      try{
-        var file = File("${settings.directory}/${playlist.name}.m3u");
-        file.delete();
-      }
-      catch(e){
-        print(e);
-      }
       for(int i = songs.length - 1; i >= 0; i--){
         if (playlist.paths.contains(songs[i].path)){
           continue;
@@ -141,12 +134,8 @@ class Controller{
         playlist.paths.insert(0, songs[i].path);
       }
       playlistBox.put(playlist);
-      var file = File("${settings.directory}/${playlist.name}.m3u");
-      file.writeAsStringSync("#EXTM3U\n");
-      for (var song in playlist.paths){
-        file.writeAsStringSync('$song\n', mode: FileMode.append);
-      }
     }
+    exportPlaylist(playlist);
 
   }
 

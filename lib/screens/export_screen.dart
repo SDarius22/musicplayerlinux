@@ -11,8 +11,7 @@ import '../controller/controller.dart';
 
 class ExportScreen extends StatefulWidget {
   final Controller controller;
-  final List<MetadataType> songs;
-  const ExportScreen({super.key, required this.controller, required this.songs});
+  const ExportScreen({super.key, required this.controller});
 
   @override
   _ExportScreenState createState() => _ExportScreenState();
@@ -58,7 +57,7 @@ class _ExportScreenState extends State<ExportScreen> {
                   ),
                 ),
                 Text(
-                  "Choose one or more playlists to add the selected songs to:",
+                  "Choose one or more playlists to export:",
                   style: TextStyle(
                       color: Colors.white,
                       fontSize: normalSize,
@@ -68,27 +67,29 @@ class _ExportScreenState extends State<ExportScreen> {
                 const Spacer(),
                 ElevatedButton(
                     onPressed: (){
-                      print("Add to new playlist");
+                      print("Export");
                       for(int i in selected){
                         if(i == 0){
-                          widget.controller.addToQueue(widget.songs);
+                          PlaylistType queuePlaylist = PlaylistType();
+                          queuePlaylist.name = "Current Queue";
+                          queuePlaylist.paths = widget.controller.settings.playingSongsUnShuffled.map((e) => e.path).toList();
+                          widget.controller.exportPlaylist(queuePlaylist);
                         }
                         else{
                           var playlist = query.find()[i-1];
-                          widget.controller.addToPlaylist(playlist, widget.songs);
+                          widget.controller.exportPlaylist(playlist);
                         }
                       }
                       Navigator.pop(context);
                     },
                     child: Text(
-                      "Done",
+                      "Export",
                       style: TextStyle(
                           color: Colors.white,
                           fontSize: normalSize
                       ),
                     )
                 ),
-
               ],
             ),
             SizedBox(

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:musicplayer/screens/create_screen.dart';
+import 'package:musicplayer/screens/export_screen.dart';
 import 'package:musicplayer/screens/main_screen.dart';
 import 'package:musicplayer/screens/user_message_widget.dart';
 import '../controller/controller.dart';
@@ -58,6 +59,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
               alignment: Alignment.center,
               child: ListView(
+                padding: EdgeInsets.only(
+                  bottom: height * 0.05,
+                  right: width * 0.01,
+                ),
                 children: [
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -819,7 +824,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             }
 
                           },
-                          icon: Icon(FluentIcons.open_12_regular)
+                          icon: Icon(FluentIcons.open_12_regular, color: Colors.white, size: height * 0.03,)
                       ),
                     ],
                   ),
@@ -855,9 +860,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       const Spacer(),
                       IconButton(
                           onPressed: (){
-
+                            widget.controller.navigatorKey.currentState!.push(MaterialPageRoute(builder: (context) => ExportScreen(controller: widget.controller,)));
                           },
-                          icon: Icon(FluentIcons.open_12_regular)
+                          icon: Icon(FluentIcons.open_12_regular, color: Colors.white, size: height * 0.03,)
                       ),
                     ],
                   ),

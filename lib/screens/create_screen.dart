@@ -77,7 +77,7 @@ class _CreateScreenState extends State<CreateScreen> {
                   ),
                 ),
                 Text(
-                  "New playlist",
+                  widget.name == null ? "New playlist" : "Import playlist",
                   style: TextStyle(
                       color: Colors.white,
                       fontSize: normalSize,
@@ -102,7 +102,7 @@ class _CreateScreenState extends State<CreateScreen> {
                       Navigator.pop(context);
                     },
                     child: Text(
-                      "Create",
+                      widget.name == null ? "Create" : "Import",
                       style: TextStyle(
                           color: Colors.white,
                           fontSize: normalSize
