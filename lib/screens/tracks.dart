@@ -34,8 +34,13 @@ class _TracksState extends State<Tracks>{
         valueListenable: widget.controller.retrievingChangedNotifier,
         builder: (context, value, child){
           return GridView.builder(
-            padding: EdgeInsets.all(width * 0.01),
-            itemCount: query.find().length + 7,
+            padding: EdgeInsets.only(
+              left: width * 0.01,
+              right: width * 0.01,
+              top: height * 0.01,
+              bottom: width * 0.125,
+            ),
+            itemCount: query.find().length,
             gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
               childAspectRatio: 0.825,
               maxCrossAxisExtent: width * 0.125,
@@ -43,12 +48,8 @@ class _TracksState extends State<Tracks>{
               mainAxisSpacing: width * 0.0125,
             ),
             itemBuilder: (BuildContext context, int index) {
-              MetadataType song = MetadataType();
-              if(index < query.find().length){
-                song = query.find()[index];
-              }
-              return index < query.find().length?
-              MouseRegion(
+              MetadataType song = query.find()[index];
+              return MouseRegion(
                 cursor: SystemMouseCursors.click,
                 child: GestureDetector(
                   onTap: () async {
@@ -148,10 +149,6 @@ class _TracksState extends State<Tracks>{
                   ),
                 ),
 
-              ) :
-              SizedBox(
-                height: width * 0.125,
-                width: width * 0.125,
               );
 
             },

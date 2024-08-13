@@ -3,7 +3,7 @@ import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:musicplayer/screens/search_widget.dart';
 import 'package:musicplayer/screens/song_player_widget.dart';
-import 'package:musicplayer/screens/user_message_widget.dart';
+import 'package:musicplayer/screens/notification_widget.dart';
 import '../controller/controller.dart';
 import 'settings_screen.dart';
 import 'home.dart';
@@ -239,18 +239,6 @@ class _MyAppState extends State<MyApp>{
                         },
                       ),
                     ),
-
-                    // PopScope(
-                    //   child: MaterialApp(
-                    //     theme: ThemeData(
-                    //       fontFamily: 'Bahnschrift',
-                    //       brightness: Brightness.dark,
-                    //       scaffoldBackgroundColor: const Color(0xFF0E0E0E),
-                    //     ),
-                    //     debugShowCheckedModeBanner: false,
-                    //     home: finalWidget,
-                    //   ),
-                    // ),
                     ValueListenableBuilder(
                         valueListenable: widget.controller.finishedRetrievingNotifier,
                         builder: (context, value, child) {
@@ -320,11 +308,11 @@ class _MyAppState extends State<MyApp>{
                           return AnimatedSwitcher(
                             duration: const Duration(milliseconds: 500),
                             child: value.isNotEmpty ?
-                            SizedBox(
+                            AnimatedContainer(
+                              duration: const Duration(milliseconds: 500),
                               key: const Key("User Message Widget"),
-                              width: width,
-                              height: height,
-                              child: UserMessageWidget(controller: widget.controller),
+                              alignment: Alignment.topCenter,
+                              child: NotificationWidget(controller: widget.controller),
                             ) : Container(
                               key: const Key("User Message Off"),
                             ),

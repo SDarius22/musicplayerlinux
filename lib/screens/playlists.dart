@@ -36,8 +36,13 @@ class _PlaylistsState extends State<Playlists>{
       builder: (context, snapshot){
         if(snapshot.hasData){
           return GridView.builder(
-            padding: EdgeInsets.all(width * 0.01),
-            itemCount: query.find().length + 8,
+            padding: EdgeInsets.only(
+              left: width * 0.01,
+              right: width * 0.01,
+              top: height * 0.01,
+              bottom: width * 0.125,
+            ),
+            itemCount: query.find().length + 1,
             gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
               childAspectRatio: 0.825,
               maxCrossAxisExtent: width * 0.125,
@@ -46,7 +51,7 @@ class _PlaylistsState extends State<Playlists>{
             ),
             itemBuilder: (BuildContext context, int index) {
               PlaylistType playlist = PlaylistType();
-              if (index > 0 && index <= query.find().length){
+              if (index > 0){
                 playlist = query.find()[index-1];
               }
               return index == 0 ?
@@ -104,7 +109,6 @@ class _PlaylistsState extends State<Playlists>{
                 ),
 
               ) :
-              index < widget.controller.playlistBox.query().order(PlaylistType_.name).build().find().length + 1?
               MouseRegion(
                 cursor: SystemMouseCursors.click,
                 child: GestureDetector(
@@ -187,10 +191,6 @@ class _PlaylistsState extends State<Playlists>{
                   ),
                 ),
 
-              ) :
-              SizedBox(
-                height: width * 0.125,
-                width: width * 0.125,
               );
 
             },

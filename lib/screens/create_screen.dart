@@ -88,9 +88,11 @@ class _CreateScreenState extends State<CreateScreen> {
                 ElevatedButton(
                     onPressed: (){
                       if (playlistName.isEmpty) {
+                        widget.controller.showNotification("Playlist name cannot be empty", 3500);
                         return;
                       }
                       if (selected.isEmpty) {
+                        widget.controller.showNotification("No songs selected", 3500);
                         return;
                       }
                       print("Create new playlist");

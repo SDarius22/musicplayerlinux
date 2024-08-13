@@ -29,8 +29,13 @@ class _ArtistsState extends State<Artists>{
       builder: (context, snapshot){
         if(snapshot.hasData){
           return GridView.builder(
-            padding: EdgeInsets.all(width * 0.01),
-            itemCount: query.find().length + 7,
+            padding: EdgeInsets.only(
+              left: width * 0.01,
+              right: width * 0.01,
+              top: height * 0.01,
+              bottom: width * 0.125,
+            ),
+            itemCount: query.find().length,
             gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
               childAspectRatio: 0.825,
               maxCrossAxisExtent: width * 0.125,
@@ -38,12 +43,8 @@ class _ArtistsState extends State<Artists>{
               mainAxisSpacing: width * 0.0125,
             ),
             itemBuilder: (BuildContext context, int index) {
-              ArtistType artist = ArtistType();
-              if (index < query.find().length){
-                artist = query.find()[index];
-              }
-              return index < query.find().length ?
-              MouseRegion(
+              ArtistType artist = query.find()[index];
+              return MouseRegion(
                 cursor: SystemMouseCursors.click,
                 child: GestureDetector(
                   onTap: () {
@@ -122,12 +123,7 @@ class _ArtistsState extends State<Artists>{
                   ),
                 ),
 
-              ) :
-              SizedBox(
-                height: width * 0.125,
-                width: width * 0.125,
               );
-
             },
           );
         }

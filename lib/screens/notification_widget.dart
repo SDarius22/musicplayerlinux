@@ -2,34 +2,31 @@ import 'package:flutter/material.dart';
 import '../controller/controller.dart';
 import '../utils/multivaluelistenablebuilder/mvlb.dart';
 
-class UserMessageWidget extends StatefulWidget {
+class NotificationWidget extends StatefulWidget {
   final Controller controller;
-  const UserMessageWidget({super.key, required this.controller});
+  const NotificationWidget({super.key, required this.controller});
 
   @override
-  _UserMessageWidgetState createState() => _UserMessageWidgetState();
+  _NotificationWidgetState createState() => _NotificationWidgetState();
 }
 
-class _UserMessageWidgetState extends State<UserMessageWidget> {
+class _NotificationWidgetState extends State<NotificationWidget> {
 
   @override
   Widget build(BuildContext context) {
     var width = MediaQuery.of(context).size.width;
     var height = MediaQuery.of(context).size.height;
-    var normalSize = height * 0.02;
+    var boldSize = height * 0.025;
+    //var normalSize = height * 0.02;
     //var smallSize = height * 0.015;
     return Container(
-      width: width,
-      height: height,
-      alignment: Alignment.topLeft,
+      width: width * 0.3,
+      height: height * 0.1,
+      alignment: Alignment.center,
       margin: EdgeInsets.only(
         top: height * 0.05,
-        bottom: height * 0.8,
-        left: width * 0.01,
-        right: width * 0.75,
       ),
-      child: Center(
-        child: MultiValueListenableBuilder(
+      child: MultiValueListenableBuilder(
           valueListenables: [widget.controller.userMessageNotifier, widget.controller.userMessageProgressNotifier],
           builder: (context, value, child) {
             return Container(
@@ -51,7 +48,8 @@ class _UserMessageWidgetState extends State<UserMessageWidget> {
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       color: Colors.white,
-                      fontSize: normalSize,
+                      fontSize: boldSize,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
                   SizedBox(height: height * 0.01,),
@@ -65,7 +63,6 @@ class _UserMessageWidgetState extends State<UserMessageWidget> {
             );
           },
         ),
-      )
     );
   }
 }

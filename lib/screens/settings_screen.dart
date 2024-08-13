@@ -5,7 +5,7 @@ import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:musicplayer/screens/create_screen.dart';
 import 'package:musicplayer/screens/export_screen.dart';
 import 'package:musicplayer/screens/main_screen.dart';
-import 'package:musicplayer/screens/user_message_widget.dart';
+import 'package:musicplayer/screens/notification_widget.dart';
 import '../controller/controller.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -397,7 +397,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                 min: 0.0,
                                 max: 2.0,
                                 divisions: 20,
-                                label: value.toStringAsPrecision(2),
+                                label: "${value.toStringAsPrecision(2)}x",
                                 mouseCursor: SystemMouseCursors.click,
                                 value: value,
                                 onChanged: (double value) {

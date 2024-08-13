@@ -94,8 +94,13 @@ class _AddScreenState extends State<AddScreen> {
             SizedBox(
               height: height * 0.8,
               child: GridView.builder(
-                padding: EdgeInsets.all(width * 0.01),
-                itemCount: query.find().length + 8,
+                padding: EdgeInsets.only(
+                  left: width * 0.01,
+                  right: width * 0.01,
+                  top: height * 0.01,
+                  bottom: width * 0.125,
+                ),
+                itemCount: query.find().length + 1,
                 gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
                   childAspectRatio: 0.8275,
                   maxCrossAxisExtent: width * 0.125,
@@ -104,11 +109,10 @@ class _AddScreenState extends State<AddScreen> {
                 ),
                 itemBuilder: (BuildContext context, int index) {
                   PlaylistType playlist = PlaylistType();
-                  if(index > 0 && index <= query.find().length){
+                  if(index > 0){
                     playlist = query.find()[index-1];
                   }
-                  return index <= query.find().length ?
-                  MouseRegion(
+                  return MouseRegion(
                     cursor: SystemMouseCursors.click,
                     child: GestureDetector(
                       onTap: () {
@@ -189,9 +193,6 @@ class _AddScreenState extends State<AddScreen> {
                         ],
                       ),
                     ),
-                  ) : SizedBox(
-                    width: width * 0.125,
-                    height: width * 0.125,
                   );
                 },
               ),
