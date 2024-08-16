@@ -11,6 +11,7 @@ import 'package:http/http.dart' as http;
 import 'package:musicplayer/utils/hover_widget/hover_container.dart';
 import 'package:musicplayer/utils/hover_widget/stack_hover_widget.dart';
 import '../controller/controller.dart';
+import '../domain/metadata_type.dart';
 import '../utils/objectbox.g.dart';
 import 'add_screen.dart';
 import 'image_widget.dart';
@@ -31,7 +32,6 @@ class _SearchWidgetState extends State<SearchWidget> {
   @override
   void initState() {
     super.initState();
-    widget.controller.found.value = widget.controller.songBox.query().order(MetadataType_.title).build().find();
     searchNode.requestFocus();
   }
 
@@ -59,14 +59,9 @@ class _SearchWidgetState extends State<SearchWidget> {
             initialValue: searchValue,
             focusNode: searchNode,
             onChanged: (value) async{
-              if(widget.download){
-                setState(() {
-                  searchValue = value;
-                });
-              }
-              else{
-                await widget.controller.filter(value, true);
-              }
+              setState(() {
+                searchValue = value;
+              });
             },
             cursorColor: Colors.white,
             style: TextStyle(
@@ -90,9 +85,9 @@ class _SearchWidgetState extends State<SearchWidget> {
                 builder: (context, snapshot){
                   if (snapshot.hasData){
                     List<dynamic> songs = snapshot.data;
-                    if(songs.isNotEmpty) {
-                      print(songs.first);
-                    }
+                    // if(songs.isNotEmpty) {
+                    //   print(songs.first);
+                    // }
                     return songs.isNotEmpty?
                     ListView.builder(
                       itemCount: songs.length,
@@ -241,152 +236,175 @@ class _SearchWidgetState extends State<SearchWidget> {
                   }
                 }
               ) :
-              ValueListenableBuilder(
-                valueListenable: widget.controller.found,
-                builder: (context, value, child) {
-                  return widget.controller.found.value.isNotEmpty ?
-                  ListView.builder(
-                    padding: EdgeInsets.only(
-                      right: width * 0.01,
-                    ),
-                    itemCount: widget.controller.found.value.length,
-                    itemBuilder: (context, int index) {
-                      return SizedBox(
-                        height: height * 0.1,
-                        child: MouseRegion(
-                          cursor: SystemMouseCursors.click,
-                          child: GestureDetector(
-                            onTap: () async {
-                              var songPaths = widget.controller.found.value.map((e) => e.path).toList();
-                              if(widget.controller.settings.playingSongs.equals(songPaths) == false){
-                                widget.controller.updatePlaying(songPaths, index);
-                              }
-                              widget.controller.indexChange(widget.controller.settings.playingSongsUnShuffled[index]);
-                              await widget.controller.playSong();
-                            },
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(width * 0.01),
-                              child: HoverContainer(
-                                normalColor: const Color(0xFF0E0E0E),
-                                hoverColor: const Color(0xFF2E2E2E),
-                                padding: EdgeInsets.all(width * 0.005),
-                                child: Row(
-                                  children: [
-                                    ClipRRect(
-                                        borderRadius: BorderRadius.circular(width * 0.01),
-                                        child: FutureBuilder(
-                                            future: widget.controller.imageRetrieve(widget.controller.found.value[index].path, false),
-                                            builder: (context, snapshot) {
-                                              return AspectRatio(
-                                                aspectRatio: 1.0,
-                                                child: snapshot.hasData?
-                                                StackHoverWidget(
-                                                  topWidget: ClipRRect(
-                                                    child: BackdropFilter(
-                                                      filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                                                      child: Container(
-                                                        color: Colors.black.withOpacity(0.3),
-                                                        alignment: Alignment.center,
-                                                        child:  IconButton(
-                                                          icon: Icon(FluentIcons.add_16_filled, color: Colors.white, size: height * 0.03,),
-                                                          onPressed: () {
-                                                            print("Add");
-                                                            Navigator.push(
-                                                                context,
-                                                                MaterialPageRoute(
-                                                                    builder: (context) => AddScreen(controller: widget.controller, songs: [widget.controller.found.value[index]])
-                                                                )
-                                                            );
-                                                          },
+              FutureBuilder(
+                future: widget.controller.filter(searchValue),
+                builder: (context, snapshot) {
+                  if(snapshot.hasData){
+                    List<MetadataType> songs = snapshot.data ?? [];
+                    return songs.isNotEmpty ?
+                    ListView.builder(
+                      padding: EdgeInsets.only(
+                        right: width * 0.01,
+                      ),
+                      itemCount: songs.length,
+                      itemBuilder: (context, int index) {
+                        var song = songs[index];
+                        return SizedBox(
+                          height: height * 0.1,
+                          child: MouseRegion(
+                            cursor: SystemMouseCursors.click,
+                            child: GestureDetector(
+                              onTap: () async {
+                                var songPaths = songs.map((e) => e.path).toList();
+                                if(widget.controller.settings.playingSongs.equals(songPaths) == false){
+                                  widget.controller.updatePlaying(songPaths, index);
+                                }
+                                widget.controller.indexChange(widget.controller.settings.playingSongsUnShuffled[index]);
+                                await widget.controller.playSong();
+                              },
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(width * 0.01),
+                                child: HoverContainer(
+                                  normalColor: const Color(0xFF0E0E0E),
+                                  hoverColor: const Color(0xFF2E2E2E),
+                                  padding: EdgeInsets.all(width * 0.005),
+                                  child: Row(
+                                    children: [
+                                      ClipRRect(
+                                          borderRadius: BorderRadius.circular(width * 0.01),
+                                          child: FutureBuilder(
+                                              future: widget.controller.imageRetrieve(song.path, false),
+                                              builder: (context, snapshot) {
+                                                return AspectRatio(
+                                                  aspectRatio: 1.0,
+                                                  child: snapshot.hasData?
+                                                  StackHoverWidget(
+                                                    topWidget: ClipRRect(
+                                                      child: BackdropFilter(
+                                                        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                                                        child: Container(
+                                                          color: Colors.black.withOpacity(0.3),
+                                                          alignment: Alignment.center,
+                                                          child:  IconButton(
+                                                            icon: Icon(FluentIcons.add_16_filled, color: Colors.white, size: height * 0.03,),
+                                                            onPressed: () {
+                                                              print("Add");
+                                                              Navigator.push(
+                                                                  context,
+                                                                  MaterialPageRoute(
+                                                                      builder: (context) => AddScreen(controller: widget.controller, songs: [song])
+                                                                  )
+                                                              );
+                                                            },
+                                                          ),
                                                         ),
                                                       ),
                                                     ),
-                                                  ),
-                                                  bottomWidget: Container(
+                                                    bottomWidget: Container(
+                                                      decoration: BoxDecoration(
+                                                          color: Colors.black,
+                                                          image: DecorationImage(
+                                                            fit: BoxFit.cover,
+                                                            image: Image.memory(snapshot.data!).image,
+                                                          )
+                                                      ),
+                                                    ),
+                                                  )
+                                                      :
+                                                  snapshot.hasError?
+                                                  Center(
+                                                    child: Text(
+                                                      '${snapshot.error} occurred',
+                                                      style: const TextStyle(fontSize: 18),
+                                                    ),
+                                                  ) :
+                                                  Container(
                                                     decoration: BoxDecoration(
                                                         color: Colors.black,
                                                         image: DecorationImage(
                                                           fit: BoxFit.cover,
-                                                          image: Image.memory(snapshot.data!).image,
+                                                          image: Image.asset("assets/bg.png").image,
                                                         )
                                                     ),
-                                                  ),
-                                                )
-                                                    :
-                                                snapshot.hasError?
-                                                Center(
-                                                  child: Text(
-                                                    '${snapshot.error} occurred',
-                                                    style: const TextStyle(fontSize: 18),
-                                                  ),
-                                                ) :
-                                                Container(
-                                                  decoration: BoxDecoration(
-                                                      color: Colors.black,
-                                                      image: DecorationImage(
-                                                        fit: BoxFit.cover,
-                                                        image: Image.asset("assets/bg.png").image,
-                                                      )
-                                                  ),
-                                                  child: const Center(
-                                                    child: CircularProgressIndicator(
-                                                      color: Colors.white,
+                                                    child: const Center(
+                                                      child: CircularProgressIndicator(
+                                                        color: Colors.white,
+                                                      ),
                                                     ),
                                                   ),
-                                                ),
-                                              );
-                                            }
-                                        )
-                                    ),
-                                    SizedBox(
-                                      width: width * 0.005,
-                                    ),
-                                    Column(
-                                        mainAxisAlignment: MainAxisAlignment.center,
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                              widget.controller.found.value[index].title.toString().length > 30 ? "${widget.controller.found.value[index].title.toString().substring(0, 30)}..." : widget.controller.found.value[index].title.toString(),
-                                              style: TextStyle(
-                                                color: Colors.white,
-                                                fontSize: normalSize,
-                                              )
-                                          ),
-                                          SizedBox(
-                                            height: height * 0.001,
-                                          ),
-                                          Text(widget.controller.found.value[index].artists.toString().length > 30 ? "${widget.controller.found.value[index].artists.toString().substring(0, 30)}..." : widget.controller.found.value[index].artists.toString(),
-                                              style: TextStyle(
-                                                color: Colors.white,
-                                                fontSize: smallSize,
-                                              )
-                                          ),
-                                        ]
-                                    ),
-                                    const Spacer(),
-                                    Text(
-                                        "${widget.controller.found.value[index].duration ~/ 60}:${(widget.controller.found.value[index].duration % 60).toString().padLeft(2, '0')}",
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: normalSize,
-                                        )
-                                    ),
-                                  ],
+                                                );
+                                              }
+                                          )
+                                      ),
+                                      SizedBox(
+                                        width: width * 0.005,
+                                      ),
+                                      Column(
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                                song.title.toString().length > 30 ? "${song.title.toString().substring(0, 30)}..." : song.title.toString(),
+                                                style: TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: normalSize,
+                                                )
+                                            ),
+                                            SizedBox(
+                                              height: height * 0.001,
+                                            ),
+                                            Text(song.artists.toString().length > 30 ? "${song.artists.toString().substring(0, 30)}..." : song.artists.toString(),
+                                                style: TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: smallSize,
+                                                )
+                                            ),
+                                          ]
+                                      ),
+                                      const Spacer(),
+                                      Text(
+                                          "${song.duration ~/ 60}:${(song.duration % 60).toString().padLeft(2, '0')}",
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: normalSize,
+                                          )
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ),
                             ),
                           ),
+                        );
+                      },
+                    ) :
+                    Text(
+                      'No results found',
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontSize: normalSize
+                      ),
+                    );
+                  }
+                  else if(snapshot.hasError){
+                    return Center(
+                      child: Text(
+                        "Error occured. Try again later.",
+                        style: TextStyle(
+                          fontWeight: FontWeight.normal,
+                          fontSize: normalSize,
                         ),
-                      );
-                    },
-                  ) :
-                  Text(
-                    'No results found',
-                    style: TextStyle(
+                      ),
+                    );
+                  }
+                  else{
+                    return const Center(
+                      child: CircularProgressIndicator(
                         color: Colors.white,
-                        fontSize: normalSize
-                    ),
-                  );
+                      ),
+                    );
+                  }
+
                 }
             ),
           ),

@@ -22,6 +22,7 @@ class _CreateScreenState extends State<CreateScreen> {
   List<MetadataType> selected = [];
   String playlistName = "";
   String playlistAdd = "last";
+  String search = "";
   FocusNode searchNode = FocusNode();
   FocusNode nameNode = FocusNode();
 
@@ -35,7 +36,6 @@ class _CreateScreenState extends State<CreateScreen> {
       }
     }
     super.initState();
-    widget.controller.found2.value = widget.controller.songBox.query().order(MetadataType_.title).build().find();
     nameNode.requestFocus();
   }
 
@@ -203,7 +203,11 @@ class _CreateScreenState extends State<CreateScreen> {
                 children: [
                   TextFormField(
                     focusNode: searchNode,
-                    onChanged: (value) => widget.controller.filter(value, false),
+                    onChanged: (value){
+                      setState(() {
+                        search = value;
+                      });
+                    },
                     cursorColor: Colors.white,
                     style: TextStyle(
                       color: Colors.white,
@@ -228,255 +232,277 @@ class _CreateScreenState extends State<CreateScreen> {
                   ),
                   SizedBox(
                     height: height * 0.5,
-                    child: ValueListenableBuilder(
-                      valueListenable: widget.controller.found2,
-                      builder: (context, value, child){
-                        return widget.controller.found2.value.isNotEmpty ?
-                        ListView.builder(
-                          itemCount: widget.controller.found2.value.length,
-                          itemBuilder: (context, int index) {
-                            return AnimatedContainer(
-                              duration: const Duration(milliseconds: 500),
-                              curve: Curves.easeInOut,
-                              height: height * 0.125,
-                              padding: EdgeInsets.only(right: width * 0.01),
-                              child: MouseRegion(
-                                cursor: SystemMouseCursors.click,
-                                child: GestureDetector(
-                                  behavior: HitTestBehavior.translucent,
-                                  onTap: (){
-                                    print("Tapped on $index");
-                                    setState(() {
-                                      selected.contains(widget.controller.found2.value[index]) ? selected.remove(widget.controller.found2.value[index]) : selected.add(widget.controller.found2.value[index]);
-                                    });
-                                  },
-                                  child: HoverWidget(
-                                    hoverChild: Container(
-                                      padding: EdgeInsets.all(width * 0.005),
-                                      decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(width * 0.01),
-                                        color: const Color(0xFF2E2E2E),
-                                      ),
-                                      child: Row(
-                                        children: [
-                                          ClipRRect(
-                                              borderRadius: BorderRadius.circular(width * 0.01),
-                                              child: FutureBuilder(
-                                                future: widget.controller.imageRetrieve(widget.controller.found2.value[index].path, false),
-                                                builder: (context, snapshot) {
-                                                  return AspectRatio(
-                                                    aspectRatio: 1.0,
-                                                    child: snapshot.hasData?
-                                                    Stack(
-                                                      alignment: Alignment.center,
-                                                      children: [
+                    child: FutureBuilder(
+                      future: widget.controller.filter(search),
+                      builder: (context, snapshot) {
+                        if(snapshot.hasData){
+                          List<MetadataType> songs = snapshot.data ?? [];
+                          return songs.isNotEmpty ?
+                            ListView.builder(
+                              itemCount: songs.length,
+                              itemBuilder: (context, int index) {
+                                var song = songs[index];
+                                return AnimatedContainer(
+                                  duration: const Duration(milliseconds: 500),
+                                  curve: Curves.easeInOut,
+                                  height: height * 0.125,
+                                  padding: EdgeInsets.only(right: width * 0.01),
+                                  child: MouseRegion(
+                                    cursor: SystemMouseCursors.click,
+                                    child: GestureDetector(
+                                      behavior: HitTestBehavior.translucent,
+                                      onTap: (){
+                                        print("Tapped on $index");
+                                        setState(() {
+                                          selected.contains(song) ? selected.remove(song) : selected.add(song);
+                                        });
+                                      },
+                                      child: HoverWidget(
+                                        hoverChild: Container(
+                                          padding: EdgeInsets.all(width * 0.005),
+                                          decoration: BoxDecoration(
+                                            borderRadius: BorderRadius.circular(width * 0.01),
+                                            color: const Color(0xFF2E2E2E),
+                                          ),
+                                          child: Row(
+                                            children: [
+                                              ClipRRect(
+                                                  borderRadius: BorderRadius.circular(width * 0.01),
+                                                  child: FutureBuilder(
+                                                    future: widget.controller.imageRetrieve(song.path, false),
+                                                    builder: (context, snapshot) {
+                                                      return AspectRatio(
+                                                        aspectRatio: 1.0,
+                                                        child: snapshot.hasData?
+                                                        Stack(
+                                                          alignment: Alignment.center,
+                                                          children: [
+                                                            Container(
+                                                              decoration: BoxDecoration(
+                                                                  color: Colors.black,
+                                                                  image: DecorationImage(
+                                                                    fit: BoxFit.cover,
+                                                                    image: Image.memory(snapshot.data!).image,
+                                                                  )
+                                                              ),
+                                                            ),
+                                                            ClipRRect(
+                                                              child: BackdropFilter(
+                                                                filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                                                                child: Container(
+                                                                  color: Colors.black.withOpacity(0.3),
+                                                                  alignment: Alignment.center,
+                                                                  child: IconButton(
+                                                                    icon: Icon(selected.contains(song) ? FluentIcons.subtract_16_filled : FluentIcons.add_16_filled, color: Colors.white, size: height * 0.03,),
+                                                                    onPressed: () {
+                                                                      print("Add");
+                                                                      setState(() {
+                                                                        selected.contains(song) ? selected.remove(song) : selected.add(song);
+                                                                      });
+                                                                    },
+                                                                  ),
+                                                                ),
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        ) :
+                                                        snapshot.hasError?
+                                                        Center(
+                                                          child: Text(
+                                                            '${snapshot.error} occurred',
+                                                            style: const TextStyle(fontSize: 18),
+                                                          ),
+                                                        ) :
                                                         Container(
                                                           decoration: BoxDecoration(
                                                               color: Colors.black,
                                                               image: DecorationImage(
                                                                 fit: BoxFit.cover,
-                                                                image: Image.memory(snapshot.data!).image,
+                                                                image: Image.asset("assets/bg.png").image,
                                                               )
                                                           ),
-                                                        ),
-                                                        ClipRRect(
-                                                          child: BackdropFilter(
-                                                            filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                                                            child: Container(
-                                                              color: Colors.black.withOpacity(0.3),
-                                                              alignment: Alignment.center,
-                                                              child: IconButton(
-                                                                icon: Icon(selected.contains(widget.controller.found2.value[index]) ? FluentIcons.subtract_16_filled : FluentIcons.add_16_filled, color: Colors.white, size: height * 0.03,),
-                                                                onPressed: () {
-                                                                  print("Add");
-                                                                  setState(() {
-                                                                    selected.contains(widget.controller.found2.value[index]) ? selected.remove(widget.controller.found2.value[index]) : selected.add(widget.controller.found2.value[index]);
-                                                                  });
-                                                                },
-                                                              ),
+                                                          child: const Center(
+                                                            child: CircularProgressIndicator(
+                                                              color: Colors.white,
                                                             ),
                                                           ),
                                                         ),
-                                                      ],
-                                                    ) :
-                                                    snapshot.hasError?
-                                                    Center(
-                                                      child: Text(
-                                                        '${snapshot.error} occurred',
-                                                        style: const TextStyle(fontSize: 18),
-                                                      ),
-                                                    ) :
-                                                    Container(
-                                                      decoration: BoxDecoration(
-                                                          color: Colors.black,
-                                                          image: DecorationImage(
-                                                            fit: BoxFit.cover,
-                                                            image: Image.asset("assets/bg.png").image,
-                                                          )
-                                                      ),
-                                                      child: const Center(
-                                                        child: CircularProgressIndicator(
+                                                      );
+                                                    },
+                                                  )
+                                              ),
+                                              SizedBox(
+                                                width: width * 0.005,
+                                              ),
+                                              Column(
+                                                  mainAxisAlignment: MainAxisAlignment.center,
+                                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                                  children: [
+                                                    Text(
+                                                        song.title.toString().length > 30 ? "${song.title.toString().substring(0, 30)}..." : song.title.toString(),
+                                                        style: TextStyle(
                                                           color: Colors.white,
-                                                        ),
-                                                      ),
+                                                          fontSize: normalSize,
+                                                        )
                                                     ),
-                                                  );
-                                                },
-                                              )
+                                                    SizedBox(
+                                                      height: height * 0.001,
+                                                    ),
+                                                    Text(song.artists.toString().length > 30 ? "${song.artists.toString().substring(0, 30)}..." : song.artists.toString(),
+                                                        style: TextStyle(
+                                                          color: Colors.white,
+                                                          fontSize: smallSize,
+                                                        )
+                                                    ),
+                                                  ]
+                                              ),
+                                              const Spacer(),
+                                              Text(
+                                                  "${song.duration ~/ 60}:${(song.duration % 60).toString().padLeft(2, '0')}",
+                                                  style: TextStyle(
+                                                    color: Colors.white,
+                                                    fontSize: normalSize,
+                                                  )
+                                              ),
+                                            ],
                                           ),
-                                          SizedBox(
-                                            width: width * 0.005,
+                                        ),
+                                        child: Container(
+                                          padding: EdgeInsets.all(width * 0.005),
+                                          decoration: BoxDecoration(
+                                            borderRadius: BorderRadius.circular(width * 0.01),
+                                            color: const Color(0xFF0E0E0E),
                                           ),
-                                          Column(
-                                              mainAxisAlignment: MainAxisAlignment.center,
-                                              crossAxisAlignment: CrossAxisAlignment.start,
-                                              children: [
-                                                Text(
-                                                    widget.controller.found2.value[index].title.toString().length > 30 ? "${widget.controller.found2.value[index].title.toString().substring(0, 30)}..." : widget.controller.found2.value[index].title.toString(),
-                                                    style: TextStyle(
-                                                      color: Colors.white,
-                                                      fontSize: normalSize,
-                                                    )
-                                                ),
-                                                SizedBox(
-                                                  height: height * 0.001,
-                                                ),
-                                                Text(widget.controller.found2.value[index].artists.toString().length > 30 ? "${widget.controller.found2.value[index].artists.toString().substring(0, 30)}..." : widget.controller.found2.value[index].artists.toString(),
-                                                    style: TextStyle(
-                                                      color: Colors.white,
-                                                      fontSize: smallSize,
-                                                    )
-                                                ),
-                                              ]
-                                          ),
-                                          const Spacer(),
-                                          Text(
-                                              "${widget.controller.found2.value[index].duration ~/ 60}:${(widget.controller.found2.value[index].duration % 60).toString().padLeft(2, '0')}",
-                                              style: TextStyle(
-                                                color: Colors.white,
-                                                fontSize: normalSize,
-                                              )
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    child: Container(
-                                      padding: EdgeInsets.all(width * 0.005),
-                                      decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(width * 0.01),
-                                        color: const Color(0xFF0E0E0E),
-                                      ),
-                                      child: Row(
-                                        children: [
-                                          ClipRRect(
-                                              borderRadius: BorderRadius.circular(width * 0.01),
-                                              child: FutureBuilder(
-                                                future: widget.controller.imageRetrieve(widget.controller.found2.value[index].path, false),
-                                                builder: (context, snapshot) {
-                                                  return AspectRatio(
-                                                    aspectRatio: 1.0,
-                                                    child: snapshot.hasData?
-                                                    Stack(
-                                                      alignment: Alignment.center,
-                                                      children: [
+                                          child: Row(
+                                            children: [
+                                              ClipRRect(
+                                                  borderRadius: BorderRadius.circular(width * 0.01),
+                                                  child: FutureBuilder(
+                                                    future: widget.controller.imageRetrieve(song.path, false),
+                                                    builder: (context, snapshot) {
+                                                      return AspectRatio(
+                                                        aspectRatio: 1.0,
+                                                        child: snapshot.hasData?
+                                                        Stack(
+                                                          alignment: Alignment.center,
+                                                          children: [
+                                                            Container(
+                                                              decoration: BoxDecoration(
+                                                                  color: Colors.black,
+                                                                  image: DecorationImage(
+                                                                    fit: BoxFit.cover,
+                                                                    image: Image.memory(snapshot.data!).image,
+                                                                  )
+                                                              ),
+                                                            ),
+                                                            if(selected.contains(song))
+                                                              BackdropFilter(
+                                                                filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                                                                child: Container(
+                                                                  alignment: Alignment.center,
+                                                                  child: Icon(
+                                                                    FluentIcons.checkmark_16_filled,
+                                                                    size: height * 0.03,
+                                                                    color: Colors.white,
+                                                                  ),
+                                                                ),
+                                                              ),
+                                                          ],
+                                                        ) :
+                                                        snapshot.hasError?
+                                                        Center(
+                                                          child: Text(
+                                                            '${snapshot.error} occurred',
+                                                            style: const TextStyle(fontSize: 18),
+                                                          ),
+                                                        ) :
                                                         Container(
                                                           decoration: BoxDecoration(
                                                               color: Colors.black,
                                                               image: DecorationImage(
                                                                 fit: BoxFit.cover,
-                                                                image: Image.memory(snapshot.data!).image,
+                                                                image: Image.memory(File("assets/bg.png").readAsBytesSync()).image,
                                                               )
                                                           ),
-                                                        ),
-                                                        if(selected.contains(widget.controller.found2.value[index]))
-                                                          BackdropFilter(
-                                                            filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                                                            child: Container(
-                                                              alignment: Alignment.center,
-                                                              child: Icon(
-                                                                FluentIcons.checkmark_16_filled,
-                                                                size: height * 0.03,
-                                                                color: Colors.white,
-                                                              ),
+                                                          child: const Center(
+                                                            child: CircularProgressIndicator(
+                                                              color: Colors.white,
                                                             ),
                                                           ),
-                                                      ],
-                                                    ) :
-                                                    snapshot.hasError?
-                                                    Center(
-                                                      child: Text(
-                                                        '${snapshot.error} occurred',
-                                                        style: const TextStyle(fontSize: 18),
-                                                      ),
-                                                    ) :
-                                                    Container(
-                                                      decoration: BoxDecoration(
-                                                          color: Colors.black,
-                                                          image: DecorationImage(
-                                                            fit: BoxFit.cover,
-                                                            image: Image.memory(File("assets/bg.png").readAsBytesSync()).image,
-                                                          )
-                                                      ),
-                                                      child: const Center(
-                                                        child: CircularProgressIndicator(
-                                                          color: Colors.white,
                                                         ),
-                                                      ),
+                                                      );
+                                                    },
+                                                  )
+                                              ),
+                                              SizedBox(
+                                                width: width * 0.005,
+                                              ),
+                                              Column(
+                                                  mainAxisAlignment: MainAxisAlignment.center,
+                                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                                  children: [
+                                                    Text(
+                                                        song.title.toString().length > 30 ? "${song.title.toString().substring(0, 30)}..." : song.title.toString(),
+                                                        style: TextStyle(
+                                                          color: Colors.white,
+                                                          fontSize: normalSize,
+                                                        )
                                                     ),
-                                                  );
-                                                },
-                                              )
+                                                    SizedBox(
+                                                      height: height * 0.001,
+                                                    ),
+                                                    Text(song.artists.toString().length > 30 ? "${song.artists.toString().substring(0, 30)}..." : song.artists.toString(),
+                                                        style: TextStyle(
+                                                          color: Colors.white,
+                                                          fontSize: smallSize,
+                                                        )
+                                                    ),
+                                                  ]
+                                              ),
+                                              const Spacer(),
+                                              Text(
+                                                  "${song.duration ~/ 60}:${(song.duration % 60).toString().padLeft(2, '0')}",
+                                                  style: TextStyle(
+                                                    color: Colors.white,
+                                                    fontSize: normalSize,
+                                                  )
+                                              ),
+                                            ],
                                           ),
-                                          SizedBox(
-                                            width: width * 0.005,
-                                          ),
-                                          Column(
-                                              mainAxisAlignment: MainAxisAlignment.center,
-                                              crossAxisAlignment: CrossAxisAlignment.start,
-                                              children: [
-                                                Text(
-                                                    widget.controller.found2.value[index].title.toString().length > 30 ? "${widget.controller.found2.value[index].title.toString().substring(0, 30)}..." : widget.controller.found2.value[index].title.toString(),
-                                                    style: TextStyle(
-                                                      color: Colors.white,
-                                                      fontSize: normalSize,
-                                                    )
-                                                ),
-                                                SizedBox(
-                                                  height: height * 0.001,
-                                                ),
-                                                Text(widget.controller.found2.value[index].artists.toString().length > 30 ? "${widget.controller.found2.value[index].artists.toString().substring(0, 30)}..." : widget.controller.found2.value[index].artists.toString(),
-                                                    style: TextStyle(
-                                                      color: Colors.white,
-                                                      fontSize: smallSize,
-                                                    )
-                                                ),
-                                              ]
-                                          ),
-                                          const Spacer(),
-                                          Text(
-                                              "${widget.controller.found2.value[index].duration ~/ 60}:${(widget.controller.found2.value[index].duration % 60).toString().padLeft(2, '0')}",
-                                              style: TextStyle(
-                                                color: Colors.white,
-                                                fontSize: normalSize,
-                                              )
-                                          ),
-                                        ],
+                                        ),
                                       ),
                                     ),
                                   ),
-                                ),
+                                );
+                              },
+                            ) :
+                            Text(
+                              'No results found',
+                              style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: normalSize
                               ),
                             );
-                          },
-                        ) :
-                        Text(
-                          'No results found',
-                          style: TextStyle(
+                        }
+                        else if(snapshot.hasError){
+                          return Center(
+                            child: Text(
+                              "Error occured. Try again later.",
+                              style: TextStyle(
+                                fontWeight: FontWeight.normal,
+                                fontSize: normalSize,
+                              ),
+                            ),
+                          );
+                        }
+                        else{
+                          return const Center(
+                            child: CircularProgressIndicator(
                               color: Colors.white,
-                              fontSize: normalSize
-                          ),
-                        );
-                      },
+                            ),
+                          );
+                        }
+                      }
                     ),
                   ),
                 ],

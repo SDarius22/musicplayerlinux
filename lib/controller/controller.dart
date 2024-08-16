@@ -60,8 +60,6 @@ class Controller{
   ValueNotifier<bool> finishedRetrievingNotifier = ValueNotifier<bool>(false);
   ValueNotifier<LyricsReaderModel> lyricModelNotifier = ValueNotifier<LyricsReaderModel>(LyricsReaderModel());
   ValueNotifier<String> plainLyricNotifier = ValueNotifier<String>('');
-  ValueNotifier<List<MetadataType>> found = ValueNotifier<List<MetadataType>>([]);
-  ValueNotifier<List<MetadataType>> found2 = ValueNotifier<List<MetadataType>>([]);
   ValueNotifier<Color> colorNotifier = ValueNotifier<Color>(Colors.deepPurpleAccent.shade400); // Light color, for lyrics and sliders
   ValueNotifier<Color> colorNotifier2 = ValueNotifier<Color>(Colors.blueAccent.shade400); // Dark color, for background of player and window bar
   ValueNotifier<Uint8List> imageNotifier = ValueNotifier<Uint8List>(File("./assets/bg.png").readAsBytesSync());
@@ -377,7 +375,7 @@ class Controller{
             paths.add(allEntities[i].path);
             var song = await retrieveSong(allEntities[i].path, allEntities);
             songBox.put(song);
-            if (i % 25 == 0){
+            if (i % 50 == 0){
               retrievingChangedNotifier.value = !retrievingChangedNotifier.value;
             }
           }
@@ -840,17 +838,9 @@ class Controller{
     playSong();
   }
 
-  Future<void> filter(String enteredKeyword, bool search) async {
-    List<MetadataType> results = [];
+  Future<List<MetadataType>> filter(String enteredKeyword) async {
     var query = songBox.query(MetadataType_.title.contains(enteredKeyword, caseSensitive: false) | MetadataType_.artists.contains(enteredKeyword, caseSensitive: false) | MetadataType_.album.contains(enteredKeyword, caseSensitive: false)).build();
-    results = query.find();
-    if(search) {
-      found.value = List.from(results);
-    }
-    else{
-      //print("found2");
-      found2.value = List.from(results);
-    }
+    return query.find();
   }
 
   void setRepeat() {
