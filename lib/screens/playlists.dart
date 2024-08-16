@@ -47,7 +47,7 @@ class _PlaylistsState extends State<Playlists>{
               childAspectRatio: 0.825,
               maxCrossAxisExtent: width * 0.125,
               crossAxisSpacing: width * 0.0125,
-              mainAxisSpacing: width * 0.0125,
+              //mainAxisSpacing: width * 0.0125,
             ),
             itemBuilder: (BuildContext context, int index) {
               PlaylistType playlist = PlaylistType();
@@ -98,9 +98,10 @@ class _PlaylistsState extends State<Playlists>{
                         overflow: TextOverflow.ellipsis,
                         textAlign: TextAlign.center,
                         style: TextStyle(
-                            color: Colors.white,
-                            fontSize: smallSize,
-                            fontWeight: FontWeight.normal
+                          height: 1,
+                          color: Colors.white,
+                          fontSize: smallSize,
+                          fontWeight: FontWeight.normal
                         ),
                       )
                     ],
@@ -174,7 +175,7 @@ class _PlaylistsState extends State<Playlists>{
                         ),
                       ),
                       SizedBox(
-                        height: height * 0.004,
+                        height: height * 0.005,
                       ),
                       Text(
                         playlist.name,
@@ -182,6 +183,7 @@ class _PlaylistsState extends State<Playlists>{
                         overflow: TextOverflow.ellipsis,
                         textAlign: TextAlign.center,
                         style: TextStyle(
+                          height: 1,
                           color: Colors.white,
                           fontSize: smallSize,
                           fontWeight: FontWeight.normal,

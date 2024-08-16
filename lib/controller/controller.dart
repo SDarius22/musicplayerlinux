@@ -9,6 +9,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:audiotags/audiotags.dart';
 import 'package:system_tray/system_tray.dart';
+import 'package:deezer/deezer.dart';
 import '../domain/album_type.dart';
 import '../domain/artist_type.dart';
 import '../domain/metadata_type.dart';
@@ -29,6 +30,7 @@ class Controller{
   late Box<PlaylistType> playlistBox;
   late Box<AlbumType> albumBox;
   late Box<ArtistType> artistBox;
+  late Deezer instance;
   Settings settings = Settings();
   AudioPlayer audioPlayer = AudioPlayer();
   final SystemTray _systemTray = SystemTray();
@@ -44,6 +46,7 @@ class Controller{
   ValueNotifier<double> balanceNotifier = ValueNotifier<double>(0);
   ValueNotifier<int> indexNotifier = ValueNotifier<int>(0);
   ValueNotifier<int> sliderNotifier = ValueNotifier<int>(0);
+  ValueNotifier<bool> downloadNotifier = ValueNotifier<bool>(false);
   ValueNotifier<bool> loadingNotifier = ValueNotifier<bool>(false);
   ValueNotifier<bool> minimizedNotifier = ValueNotifier<bool>(true);
   ValueNotifier<bool> hiddenNotifier = ValueNotifier<bool>(false);
@@ -78,6 +81,9 @@ class Controller{
     if(settings.showSystemTray){
       initSystemTray();
     }
+    if(settings.deezerToken.isNotEmpty){
+      initDeezer();
+    }
 
     songBox = objectBox.store.box<MetadataType>();
     albumBox = objectBox.store.box<AlbumType>();
@@ -101,6 +107,48 @@ class Controller{
         }
       }
     });
+  }
+
+  Future<dynamic> initDeezer() async {
+    instance = await Deezer.create(arl: settings.deezerToken);
+  }
+
+  Future<dynamic> searchDeezer(String searchValue) async {
+    if(searchValue.isEmpty){
+      return [];
+    }
+    final Map<String, String> cookies = {'arl': settings.deezerToken};
+    final Map<String, String> params = {'jo': 'p', 'rto': 'c', 'i': 'c'};
+    const String loginUrl = 'https://auth.deezer.com/login/arl';
+    String searchUrl = 'https://api.deezer.com/search?q=$searchValue&limit=25&index=0&output=json';
+    print(searchUrl);
+
+    final Uri uri = Uri.parse(loginUrl).replace(queryParameters: params);
+    final http.Request postRequest = http.Request('POST', uri);
+    postRequest.headers.addAll({
+      'Content-Type': 'application/json',
+      'Cookie': 'arl=${cookies['arl']}'
+    });
+
+    final http.Response getResponse = await http.get(Uri.parse(searchUrl), headers: {
+      'Cookie': 'arl=${cookies['arl']}',
+    });
+
+    final Map<String, dynamic> getResponseJson = jsonDecode(getResponse.body);
+    //print(getResponseJson['data'][0]);
+    return(getResponseJson['data']);
+    //final String trackId = getResponseJson['data'][0]['id'].toString();
+  }
+
+  Future<void> downloadSong(dynamic song) async {
+    final stream = instance.streamSong(song['id'].toString());
+    File streamFile = File("${settings.directory}/${song['title']}.mp3");
+    IOSink sink = streamFile.openWrite();
+    await for (List<int> chunk in stream) {
+      sink.add(chunk);
+    }
+    await sink.flush();
+    await sink.close();
   }
 
   Future<void> createPlaylist(PlaylistType playlist) async {
@@ -236,7 +284,6 @@ class Controller{
     );
   }
 
-
   Future<void> addToQueue(List<String> songs) async {
     loadingNotifier.value = true;
     if (settings.queueAdd == 'last') {
@@ -289,7 +336,6 @@ class Controller{
     settingsBox.put(settings);
     listChangeNotifier.value = !listChangeNotifier.value;
   }
-
 
   Future<void> updatePlaying(List<String> songs, int index) async {
     loadingNotifier.value = true;
@@ -408,7 +454,7 @@ class Controller{
         metadataVariable.album = tags.album ?? 'Unknown Album';
         metadataVariable.discNumber = int.parse(tags.trackNumber ?? "0");
         metadataVariable.trackNumber = int.parse(tags.track ?? "0");
-        metadataVariable.duration = tags.duration?.inMilliseconds ?? 0;
+        metadataVariable.duration = tags.duration?.inSeconds ?? 0;
       }
     }
     else {

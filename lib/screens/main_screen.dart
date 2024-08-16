@@ -145,28 +145,42 @@ class _MyAppState extends State<MyApp>{
                                           }
                                       ),
                                     ),
-                                    IconButton(onPressed: (){
-                                      print("Search");
-                                      widget.controller.searchNotifier.value = !widget.controller.searchNotifier.value;
-                                    }, icon: Icon(
-                                      FluentIcons.search_16_filled,
-                                      size: height * 0.02,
-                                      color: Colors.white,
-                                    )
+                                    IconButton(
+                                      onPressed: (){
+                                        print("Search");
+                                        widget.controller.searchNotifier.value = !widget.controller.searchNotifier.value;
+                                        widget.controller.downloadNotifier.value = false;
+                                      },
+                                      icon: Icon(
+                                        FluentIcons.search_16_filled,
+                                        size: height * 0.02,
+                                        color: Colors.white,
+                                      )
                                     ),
-                                    IconButton(onPressed: (){
-                                      print("Tapped settings");
-                                      widget.controller.navigatorKey.currentState!.push(MaterialPageRoute(builder: (BuildContext context){
-                                        return SettingsScreen(controller: widget.controller,);
-                                      }));
-                                      // Navigator.push(context, MaterialPageRoute(builder: (BuildContext context){
-                                      //   return Settings(controller: widget.controller,);
-                                      // }));
-                                    }, icon: Icon(
-                                      FluentIcons.settings_16_filled,
-                                      size: height * 0.02,
-                                      color: Colors.white,
-                                    )
+                                    IconButton(
+                                      onPressed: () async {
+                                        print("Download");
+                                        widget.controller.downloadNotifier.value = !widget.controller.downloadNotifier.value;
+                                        widget.controller.searchNotifier.value = false;
+                                      },
+                                      icon: Icon(
+                                        FluentIcons.arrow_download_16_filled,
+                                        size: height * 0.02,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                    IconButton(
+                                      onPressed: (){
+                                        print("Tapped settings");
+                                        widget.controller.navigatorKey.currentState!.push(MaterialPageRoute(builder: (BuildContext context){
+                                          return SettingsScreen(controller: widget.controller,);
+                                        }));
+                                      },
+                                      icon: Icon(
+                                        FluentIcons.settings_16_filled,
+                                        size: height * 0.02,
+                                        color: Colors.white,
+                                      )
                                     )//Icon(Icons.more_vert)),
                                   ],
                                 ),
@@ -294,7 +308,29 @@ class _MyAppState extends State<MyApp>{
                                 width: width,
                                 height: height,
                                 color: Colors.black.withOpacity(0.3),
-                                child: SearchWidget(controller: widget.controller),
+                                child: SearchWidget(controller: widget.controller, download: false,),
+                              ),
+                            ) : Container(
+                              key: const Key("Search Off"),
+                            ),
+                          );
+                        }
+                    ),
+                    ValueListenableBuilder(
+                        valueListenable: widget.controller.downloadNotifier,
+                        builder: (context, value, child){
+                          return AnimatedSwitcher(
+                            duration: const Duration(milliseconds: 500),
+                            child: value ? GestureDetector(
+                              key: const Key("Search Widget"),
+                              onTap: (){
+                                widget.controller.downloadNotifier.value = false;
+                              },
+                              child: Container(
+                                width: width,
+                                height: height,
+                                color: Colors.black.withOpacity(0.3),
+                                child: SearchWidget(controller: widget.controller, download: true),
                               ),
                             ) : Container(
                               key: const Key("Search Off"),

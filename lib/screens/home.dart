@@ -1,7 +1,6 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
-import 'package:musicplayer/utils/objectbox.g.dart';
 
 import '../controller/controller.dart';
 import 'albums.dart';
@@ -29,8 +28,7 @@ class _HomePageState extends State<HomePage>{
   @override
   void initState(){
     widget.controller.retrieveSongs();
-    widget.controller.found.value = widget.controller.songBox.query().order(MetadataType_.title).build().find();
-    widget.controller.found2.value = widget.controller.songBox.query().order(MetadataType_.title).build().find();
+    widget.controller.initDeezer();
     super.initState();
   }
 

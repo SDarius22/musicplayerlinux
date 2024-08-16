@@ -45,7 +45,7 @@ class _TracksState extends State<Tracks>{
               childAspectRatio: 0.825,
               maxCrossAxisExtent: width * 0.125,
               crossAxisSpacing: width * 0.0125,
-              mainAxisSpacing: width * 0.0125,
+              //mainAxisSpacing: width * 0.0125,
             ),
             itemBuilder: (BuildContext context, int index) {
               MetadataType song = query.find()[index];
@@ -126,7 +126,7 @@ class _TracksState extends State<Tracks>{
                         ),
                       ),
                       SizedBox(
-                        height: height * 0.004,
+                        height: height * 0.005,
                       ),
                       ValueListenableBuilder(
                           valueListenable: widget.controller.indexNotifier,
@@ -137,6 +137,7 @@ class _TracksState extends State<Tracks>{
                               overflow: TextOverflow.ellipsis,
                               textAlign: TextAlign.center,
                               style: TextStyle(
+                                height: 1,
                                 color: widget.controller.settings.playingSongs.isNotEmpty && widget.controller.settings.playingSongs[widget.controller.indexNotifier.value] == song.path ? Colors.blue : Colors.white,
                                 fontSize: smallSize,
                                 fontWeight: FontWeight.normal,
@@ -144,7 +145,6 @@ class _TracksState extends State<Tracks>{
                             );
                           }
                       ),
-
                     ],
                   ),
                 ),
