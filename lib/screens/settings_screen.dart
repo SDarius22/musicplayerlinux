@@ -5,7 +5,6 @@ import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:musicplayer/screens/create_screen.dart';
 import 'package:musicplayer/screens/export_screen.dart';
 import 'package:musicplayer/screens/main_screen.dart';
-import 'package:musicplayer/screens/notification_widget.dart';
 import '../controller/controller.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -135,9 +134,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             setState(() {
                               widget.controller.settings.directory = directory;
                             });
-                            widget.controller.settings.playingSongsUnShuffled.clear();
-                            widget.controller.settings.playingSongs.clear();
-                            widget.controller.settings.lastPlayingIndex = 0;
+                            widget.controller.settings.queue.clear();
+                            widget.controller.controllerQueue.clear();
+                            widget.controller.settings.index = 0;
                             widget.controller.settingsBox.put(widget.controller.settings);
                             widget.controller.songBox.removeAll();
                             widget.controller.albumBox.removeAll();
@@ -628,17 +627,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       ),
                       const Spacer(),
                       Switch(
-                        value: widget.controller.settings.showSystemTray,
+                        value: widget.controller.settings.systemTray,
                         onChanged: (value){
                           setState(() {
-                            widget.controller.settings.showSystemTray = value;
+                            widget.controller.settings.systemTray = value;
                           });
                           widget.controller.settingsBox.put(widget.controller.settings);
                           widget.controller.initSystemTray();
                         },
                         trackColor: WidgetStateProperty.all(widget.controller.colorNotifier2.value),
                         thumbColor: WidgetStateProperty.all(Colors.white),
-                        thumbIcon: WidgetStateProperty.all(widget.controller.settings.showSystemTray ? const Icon(Icons.check, color: Colors.black,) : const Icon(Icons.close, color: Colors.black,)),
+                        thumbIcon: WidgetStateProperty.all(widget.controller.settings.systemTray ? const Icon(Icons.check, color: Colors.black,) : const Icon(Icons.close, color: Colors.black,)),
                         activeColor: Colors.white,
                       ),
 
@@ -676,16 +675,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       ),
                       const Spacer(),
                       Switch(
-                        value: widget.controller.settings.showAppNotifications,
+                        value: widget.controller.settings.appNotifications,
                         onChanged: (value){
                           setState(() {
-                            widget.controller.settings.showAppNotifications = value;
+                            widget.controller.settings.appNotifications = value;
                           });
                           widget.controller.settingsBox.put(widget.controller.settings);
                         },
                         trackColor: WidgetStateProperty.all(widget.controller.colorNotifier2.value),
                         thumbColor: WidgetStateProperty.all(Colors.white),
-                        thumbIcon: WidgetStateProperty.all(widget.controller.settings.showSystemTray ? const Icon(Icons.check, color: Colors.black,) : const Icon(Icons.close, color: Colors.black,)),
+                        thumbIcon: WidgetStateProperty.all(widget.controller.settings.appNotifications ? const Icon(Icons.check, color: Colors.black,) : const Icon(Icons.close, color: Colors.black,)),
                         activeColor: Colors.white,
                       ),
 
@@ -725,9 +724,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       SizedBox(
                         width: width * 0.3,
                         child: TextField(
-                          controller: TextEditingController(text: widget.controller.settings.deezerToken),
+                          controller: TextEditingController(text: widget.controller.settings.deezerARL),
                           onChanged: (value){
-                            widget.controller.settings.deezerToken = value;
+                            widget.controller.settings.deezerARL = value;
                             widget.controller.settingsBox.put(widget.controller.settings);
                           },
                           style: TextStyle(

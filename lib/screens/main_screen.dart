@@ -1,6 +1,8 @@
 import 'package:bitsdojo_window/bitsdojo_window.dart';
+import 'package:desktop_drop/desktop_drop.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
+import 'package:musicplayer/domain/metadata_type.dart';
 import 'package:musicplayer/screens/search_widget.dart';
 import 'package:musicplayer/screens/song_player_widget.dart';
 import 'package:musicplayer/screens/notification_widget.dart';
@@ -8,7 +10,6 @@ import '../controller/controller.dart';
 import 'settings_screen.dart';
 import 'home.dart';
 import 'welcome_screen.dart';
-
 
 class MyApp extends StatefulWidget {
   final Controller controller;
@@ -19,6 +20,7 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp>{
   bool volume = true;
+  final ValueNotifier<bool> _dragging = ValueNotifier(false);
   final ValueNotifier<bool> _visible = ValueNotifier(false);
 
   @override
@@ -355,6 +357,66 @@ class _MyAppState extends State<MyApp>{
                           );
                         }
                     ),
+                    ValueListenableBuilder(
+                      valueListenable: _dragging,
+                      builder: (context, value, child){
+                        return DropTarget(
+                          onDragDone: (detail) async {
+                            List<String> songs = [];
+                            for (final file in detail.files) {
+                             if (file.path.endsWith(".mp3") || file.path.endsWith(".wav") || file.path.endsWith(".flac") || file.path.endsWith(".m4a")) {
+                               songs.add(file.path);
+                             }
+                            }
+                            if(songs.isNotEmpty) {
+                              for(var song in songs){
+                                MetadataType metadata = await widget.controller.retrieveSong(song);
+                                widget.controller.songBox.put(metadata);
+                              }
+                              widget.controller.updatePlaying(songs, 0);
+                              widget.controller.indexChange(songs[0]);
+                              await widget.controller.playSong();
+                              widget.controller.showNotification("Playing ${songs.length} new song${songs.length == 1 ? '' : 's'}. Do you want to add ${songs.length == 1 ? 'it' : 'them'} to your library?", 7500);
+                            }
+                          },
+                          onDragEntered: (detail) {
+                            _dragging.value = true;
+                          },
+                          onDragExited: (detail) {
+                            _dragging.value = false;
+                          },
+                          child: IgnorePointer(
+                            child: Container(
+                              width: width,
+                              height: height,
+                              color: _dragging.value ? Colors.black.withOpacity(0.3) : Colors.transparent,
+                              child: _dragging.value ?
+                                Center(
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      FluentIcons.cloud_arrow_up_24_filled,
+                                      size: height * 0.1,
+                                      color: Colors.white,
+                                    ),
+                                    Text(
+                                      "Drop files here",
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: normalSize,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ) :
+                              Container(),
+                            ),
+                          )
+                        );
+                      },
+                    ),
+
                   ],
                 ),
               ),

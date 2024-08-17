@@ -90,7 +90,7 @@ class _AlbumsState extends State<Albums>{
                         IconButton(
                           onPressed: () async {
                             var songPaths = album.songs.map((e) => e.path).toList();
-                            if(widget.controller.settings.playingSongsUnShuffled.equals(songPaths) == false){
+                            if(widget.controller.settings.queue.equals(songPaths) == false){
                               widget.controller.updatePlaying(songPaths, 0);
                             }
                             widget.controller.indexChange(songPaths.first);

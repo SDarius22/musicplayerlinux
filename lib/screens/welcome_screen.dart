@@ -144,7 +144,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                   ),
                 ),
                 onChanged: (value){
-                  widget.controller.settings.deezerToken = value;
+                  widget.controller.settings.deezerARL = value;
                 },
               ),
             ),
@@ -170,8 +170,8 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                   if (widget.controller.settings.directory == ""){
                     return;
                   }
-                  if (widget.controller.settings.deezerToken.isEmpty){
-                    widget.controller.settings.deezerToken = "8436641c809f643da885ce7eb45e39e6a9514f882b1541a05282a33485f6f96fc56ddb724424ec3518e25bbaa08de4e7521e5f289a14c512dd65dc2ec0ad10b83138e5d02c1531a5bf5766ecfd492d0157815bafa5f08b90dcfe51a1eba1bbbf";
+                  if (widget.controller.settings.deezerARL.isEmpty){
+                    widget.controller.settings.deezerARL = "8436641c809f643da885ce7eb45e39e6a9514f882b1541a05282a33485f6f96fc56ddb724424ec3518e25bbaa08de4e7521e5f289a14c512dd65dc2ec0ad10b83138e5d02c1531a5bf5766ecfd492d0157815bafa5f08b90dcfe51a1eba1bbbf";
                   }
                   widget.controller.settings.firstTime = false;
                   widget.controller.settingsBox.put(widget.controller.settings);

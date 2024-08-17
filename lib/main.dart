@@ -1,17 +1,27 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:bitsdojo_window/bitsdojo_window.dart';
+import 'package:path_provider/path_provider.dart';
 
 import 'controller/controller.dart';
 import 'controller/objectBox.dart';
 import 'screens/main_screen.dart';
 
-late ObjectBox objectBox;
-Future<void> main() async {
+Future<void> main(List<String> args) async {
+  print(args);
+  await ObjectBox.initialize();
   WidgetsFlutterBinding.ensureInitialized();
-  objectBox = await ObjectBox.create();
-  Controller controller = Controller(objectBox);
+
+  Controller controller = Controller();
+  final docsDir = await getApplicationDocumentsDirectory();
+  File logFile = File('${docsDir.path}/.musicplayerdatabase/log.txt');
+
+  FlutterError.onError = (FlutterErrorDetails details) {
+    FlutterError.dumpErrorToConsole(details, forceReport: true);
+    logFile.writeAsStringSync('${DateTime.now()}: ${details.toString()}\n', mode: FileMode.append);
+  };
 
   runApp(
       MaterialApp(
@@ -22,7 +32,7 @@ Future<void> main() async {
         ),
         debugShowCheckedModeBanner: false,
         //showPerformanceOverlay: true,
-        home: MyApp(controller: controller),
+        home: MyApp(controller: controller,),
       )
   );
 

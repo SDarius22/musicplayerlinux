@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'dart:ui';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
@@ -233,7 +232,7 @@ class _CreateScreenState extends State<CreateScreen> {
                   SizedBox(
                     height: height * 0.5,
                     child: FutureBuilder(
-                      future: widget.controller.filter(search),
+                      future: widget.controller.searchLocal(search),
                       builder: (context, snapshot) {
                         if(snapshot.hasData){
                           List<MetadataType> songs = snapshot.data ?? [];
@@ -421,7 +420,7 @@ class _CreateScreenState extends State<CreateScreen> {
                                                               color: Colors.black,
                                                               image: DecorationImage(
                                                                 fit: BoxFit.cover,
-                                                                image: Image.memory(File("assets/bg.png").readAsBytesSync()).image,
+                                                                image: Image.asset("assets/bg.png").image,
                                                               )
                                                           ),
                                                           child: const Center(

@@ -12,7 +12,6 @@ import 'package:musicplayer/utils/hover_widget/hover_container.dart';
 import 'package:musicplayer/utils/hover_widget/stack_hover_widget.dart';
 import '../controller/controller.dart';
 import '../domain/metadata_type.dart';
-import '../utils/objectbox.g.dart';
 import 'add_screen.dart';
 import 'image_widget.dart';
 
@@ -137,7 +136,7 @@ class _SearchWidgetState extends State<SearchWidget> {
                                       ]
                                   ),
                                 );
-                                var songRetrieved = await widget.controller.retrieveSong(file.path, []);
+                                var songRetrieved = await widget.controller.retrieveSong(file.path);
                                 widget.controller.songBox.put(songRetrieved);
                                 widget.controller.retrievingChangedNotifier.value = !widget.controller.retrievingChangedNotifier.value;
                               },
@@ -237,7 +236,7 @@ class _SearchWidgetState extends State<SearchWidget> {
                 }
               ) :
               FutureBuilder(
-                future: widget.controller.filter(searchValue),
+                future: widget.controller.searchLocal(searchValue),
                 builder: (context, snapshot) {
                   if(snapshot.hasData){
                     List<MetadataType> songs = snapshot.data ?? [];
@@ -256,10 +255,10 @@ class _SearchWidgetState extends State<SearchWidget> {
                             child: GestureDetector(
                               onTap: () async {
                                 var songPaths = songs.map((e) => e.path).toList();
-                                if(widget.controller.settings.playingSongs.equals(songPaths) == false){
+                                if(widget.controller.settings.queue.equals(songPaths) == false){
                                   widget.controller.updatePlaying(songPaths, index);
                                 }
-                                widget.controller.indexChange(widget.controller.settings.playingSongsUnShuffled[index]);
+                                widget.controller.indexChange(widget.controller.settings.queue[index]);
                                 await widget.controller.playSong();
                               },
                               child: ClipRRect(

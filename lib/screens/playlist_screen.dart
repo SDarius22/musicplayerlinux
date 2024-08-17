@@ -216,7 +216,7 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
                         children: [
                           IconButton(
                             onPressed: () async {
-                              if(widget.controller.settings.playingSongsUnShuffled.equals(widget.playlist.paths) == false){
+                              if(widget.controller.settings.queue.equals(widget.playlist.paths) == false){
                                 widget.controller.updatePlaying(widget.playlist.paths, 0);
                               }
                               widget.controller.indexChange(widget.playlist.paths.first);
@@ -298,10 +298,10 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
                             child: GestureDetector(
                               behavior: HitTestBehavior.translucent,
                               onTap: () async {
-                                if(widget.controller.settings.playingSongs.equals(widget.playlist.paths) == false){
+                                if(widget.controller.settings.queue.equals(widget.playlist.paths) == false){
                                   widget.controller.updatePlaying(widget.playlist.paths, index);
                                 }
-                                widget.controller.indexChange(widget.controller.settings.playingSongsUnShuffled[index]);
+                                widget.controller.indexChange(widget.controller.settings.queue[index]);
                                 await widget.controller.playSong();
                               },
                               child: ClipRRect(

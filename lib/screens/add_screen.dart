@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'dart:ui';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
@@ -137,7 +136,7 @@ class _AddScreenState extends State<AddScreen> {
                                             color: Colors.black,
                                             image: DecorationImage(
                                               fit: BoxFit.cover,
-                                              image: Image.memory(File("assets/current_queue.png").readAsBytesSync()).image,
+                                              image: Image.asset("assets/current_queue.png").image,
                                             )
                                         ),
                                       ),

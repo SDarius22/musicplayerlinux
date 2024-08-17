@@ -130,7 +130,7 @@ class _ArtistScreenState extends State<ArtistScreen> {
                             onPressed: () async {
                               //print("Playing ${widget.controller.indexNotifier.value}");
                               var songPaths = widget.artist.songs.map((e) => e.path).toList();
-                              if(widget.controller.settings.playingSongsUnShuffled.equals(songPaths) == false){
+                              if(widget.controller.settings.queue.equals(songPaths) == false){
                                 widget.controller.updatePlaying(songPaths, 0);
                               }
                               widget.controller.indexChange(songPaths.first);
@@ -187,10 +187,10 @@ class _ArtistScreenState extends State<ArtistScreen> {
                         onTap: () async {
                           //print(widget.controller.playingSongsUnShuffled[index].title);
                           var songPaths = widget.artist.songs.map((e) => e.path).toList();
-                          if(widget.controller.settings.playingSongsUnShuffled.equals(songPaths) == false){
+                          if(widget.controller.settings.queue.equals(songPaths) == false){
                             widget.controller.updatePlaying(songPaths, index);
                           }
-                          widget.controller.indexChange(widget.controller.settings.playingSongsUnShuffled[index]);
+                          widget.controller.indexChange(widget.controller.settings.queue[index]);
                           await widget.controller.playSong();
                         },
                         child: ClipRRect(

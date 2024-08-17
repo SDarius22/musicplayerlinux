@@ -149,7 +149,7 @@ class _AlbumScreenState extends State<AlbumScreen> {
                               //print("Playing ${widget.controller.indexNotifier.value}");
                               //widget.controller.audioPlayer.stop();
                               var songPaths = widget.album.songs.map((e) => e.path).toList();
-                              if(widget.controller.settings.playingSongsUnShuffled.equals(songPaths) == false){
+                              if(widget.controller.settings.queue.equals(songPaths) == false){
                                 widget.controller.updatePlaying(songPaths, 0);
                               }
                               widget.controller.indexChange(songPaths.first);
@@ -206,10 +206,10 @@ class _AlbumScreenState extends State<AlbumScreen> {
                         behavior: HitTestBehavior.translucent,
                         onTap: () async {
                           var songPaths = widget.album.songs.map((e) => e.path).toList();
-                          if(widget.controller.settings.playingSongs.equals(songPaths) == false){
+                          if(widget.controller.settings.queue.equals(songPaths) == false){
                             widget.controller.updatePlaying(songPaths, index);
                           }
-                          widget.controller.indexChange(widget.controller.settings.playingSongsUnShuffled[index]);
+                          widget.controller.indexChange(widget.controller.settings.queue[index]);
                           await widget.controller.playSong();
                           // widget.album.name.substring(0, widget.album.name.length > 60 ? 60 : widget.album.name.length);
                         },

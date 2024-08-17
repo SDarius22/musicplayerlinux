@@ -1,6 +1,4 @@
-import 'dart:io';
 import 'dart:ui';
-
 import 'package:collection/collection.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
@@ -73,7 +71,7 @@ class _PlaylistsState extends State<Playlists>{
                                   color: Colors.black,
                                   image: DecorationImage(
                                     fit: BoxFit.cover,
-                                    image: Image.memory(File("assets/create_playlist.png").readAsBytesSync()).image,
+                                    image: Image.asset("assets/create_playlist.png").image,
                                   )
                               ),
                             ),
@@ -157,7 +155,7 @@ class _PlaylistsState extends State<Playlists>{
                               ),
                               IconButton(
                                 onPressed: () async {
-                                  if(widget.controller.settings.playingSongsUnShuffled.equals(playlist.paths) == false){
+                                  if(widget.controller.settings.queue.equals(playlist.paths) == false){
                                     widget.controller.updatePlaying(playlist.paths, 0);
                                   }
                                   widget.controller.indexChange(playlist.paths.first);

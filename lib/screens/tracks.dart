@@ -20,8 +20,6 @@ class Tracks extends StatefulWidget{
 
 
 class _TracksState extends State<Tracks>{
-  int previousLength = 0;
-
   @override
   Widget build(BuildContext context) {
     var width = MediaQuery.of(context).size.width;
@@ -55,10 +53,10 @@ class _TracksState extends State<Tracks>{
                   onTap: () async {
                     widget.controller.loadingNotifier.value = true;
                     //print("Playing ${widget.controller.indexNotifier.value}");
-                    if (widget.controller.settings.playingSongs[widget.controller.indexNotifier.value] != song.path) {
+                    if (widget.controller.controllerQueue[widget.controller.indexNotifier.value] != song.path) {
                       //print("path match");
                       var songPaths = query.find().map((e) => e.path).toList();
-                      if(widget.controller.settings.playingSongsUnShuffled.equals(songPaths) == false){
+                      if(widget.controller.settings.queue.equals(songPaths) == false){
                         print("Updating playing songs");
                         widget.controller.updatePlaying(songPaths, index);
                       }
@@ -100,7 +98,7 @@ class _TracksState extends State<Tracks>{
                                 valueListenable: widget.controller.playingNotifier,
                                 builder: (context, value, child){
                                   return Icon(
-                                    widget.controller.settings.playingSongs.isNotEmpty && widget.controller.settings.playingSongs[widget.controller.indexNotifier.value] == song.path && widget.controller.playingNotifier.value == true ?
+                                    widget.controller.controllerQueue.isNotEmpty && widget.controller.controllerQueue[widget.controller.indexNotifier.value] == song.path && widget.controller.playingNotifier.value == true ?
                                     FluentIcons.pause_32_filled : FluentIcons.play_32_filled,
                                     size: height * 0.1,
                                     color: Colors.white,
@@ -138,7 +136,7 @@ class _TracksState extends State<Tracks>{
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                 height: 1,
-                                color: widget.controller.settings.playingSongs.isNotEmpty && widget.controller.settings.playingSongs[widget.controller.indexNotifier.value] == song.path ? Colors.blue : Colors.white,
+                                color: widget.controller.controllerQueue.isNotEmpty && widget.controller.controllerQueue[widget.controller.indexNotifier.value] == song.path ? Colors.blue : Colors.white,
                                 fontSize: smallSize,
                                 fontWeight: FontWeight.normal,
                               ),

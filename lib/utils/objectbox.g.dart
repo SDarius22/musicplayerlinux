@@ -162,7 +162,7 @@ final _entities = <obx_int.ModelEntity>[
   obx_int.ModelEntity(
       id: const obx_int.IdUid(5, 3381058623511901147),
       name: 'Settings',
-      lastPropertyId: const obx_int.IdUid(14, 7815761421680905295),
+      lastPropertyId: const obx_int.IdUid(19, 620611829453863297),
       flags: 0,
       properties: <obx_int.ModelProperty>[
         obx_int.ModelProperty(
@@ -176,29 +176,9 @@ final _entities = <obx_int.ModelEntity>[
             type: 9,
             flags: 0),
         obx_int.ModelProperty(
-            id: const obx_int.IdUid(3, 138594802415748946),
-            name: 'lastPlayingIndex',
-            type: 6,
-            flags: 0),
-        obx_int.ModelProperty(
             id: const obx_int.IdUid(4, 5535319301404051510),
             name: 'firstTime',
             type: 1,
-            flags: 0),
-        obx_int.ModelProperty(
-            id: const obx_int.IdUid(5, 7014699377802618335),
-            name: 'showSystemTray',
-            type: 1,
-            flags: 0),
-        obx_int.ModelProperty(
-            id: const obx_int.IdUid(6, 857768460363430868),
-            name: 'showAppNotifications',
-            type: 1,
-            flags: 0),
-        obx_int.ModelProperty(
-            id: const obx_int.IdUid(7, 290660128909025614),
-            name: 'deezerToken',
-            type: 9,
             flags: 0),
         obx_int.ModelProperty(
             id: const obx_int.IdUid(8, 4016030276980065277),
@@ -211,13 +191,28 @@ final _entities = <obx_int.ModelEntity>[
             type: 9,
             flags: 0),
         obx_int.ModelProperty(
-            id: const obx_int.IdUid(13, 5665036108343147030),
-            name: 'playingSongs',
-            type: 30,
+            id: const obx_int.IdUid(15, 1168167399696309358),
+            name: 'index',
+            type: 6,
             flags: 0),
         obx_int.ModelProperty(
-            id: const obx_int.IdUid(14, 7815761421680905295),
-            name: 'playingSongsUnShuffled',
+            id: const obx_int.IdUid(16, 3789846220655805235),
+            name: 'systemTray',
+            type: 1,
+            flags: 0),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(17, 6387497259357109571),
+            name: 'appNotifications',
+            type: 1,
+            flags: 0),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(18, 4287408973283043856),
+            name: 'deezerARL',
+            type: 9,
+            flags: 0),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(19, 620611829453863297),
+            name: 'queue',
             type: 30,
             flags: 0)
       ],
@@ -276,7 +271,13 @@ obx_int.ModelDefinition getObjectBoxModel() {
         3968858547005123316,
         5343331495830042851,
         6932769021052368476,
-        8264555633810179909
+        8264555633810179909,
+        138594802415748946,
+        7014699377802618335,
+        857768460363430868,
+        290660128909025614,
+        5665036108343147030,
+        7815761421680905295
       ],
       retiredRelationUids: const [
         4871067807185301201,
@@ -452,27 +453,22 @@ obx_int.ModelDefinition getObjectBoxModel() {
         },
         objectToFB: (Settings object, fb.Builder fbb) {
           final directoryOffset = fbb.writeString(object.directory);
-          final deezerTokenOffset = fbb.writeString(object.deezerToken);
           final queueAddOffset = fbb.writeString(object.queueAdd);
           final queuePlayOffset = fbb.writeString(object.queuePlay);
-          final playingSongsOffset = fbb.writeList(
-              object.playingSongs.map(fbb.writeString).toList(growable: false));
-          final playingSongsUnShuffledOffset = fbb.writeList(object
-              .playingSongsUnShuffled
-              .map(fbb.writeString)
-              .toList(growable: false));
-          fbb.startTable(15);
+          final deezerARLOffset = fbb.writeString(object.deezerARL);
+          final queueOffset = fbb.writeList(
+              object.queue.map(fbb.writeString).toList(growable: false));
+          fbb.startTable(20);
           fbb.addInt64(0, object.id);
           fbb.addOffset(1, directoryOffset);
-          fbb.addInt64(2, object.lastPlayingIndex);
           fbb.addBool(3, object.firstTime);
-          fbb.addBool(4, object.showSystemTray);
-          fbb.addBool(5, object.showAppNotifications);
-          fbb.addOffset(6, deezerTokenOffset);
           fbb.addOffset(7, queueAddOffset);
           fbb.addOffset(9, queuePlayOffset);
-          fbb.addOffset(12, playingSongsOffset);
-          fbb.addOffset(13, playingSongsUnShuffledOffset);
+          fbb.addInt64(14, object.index);
+          fbb.addBool(15, object.systemTray);
+          fbb.addBool(16, object.appNotifications);
+          fbb.addOffset(17, deezerARLOffset);
+          fbb.addOffset(18, queueOffset);
           fbb.finish(fbb.endTable());
           return object.id;
         },
@@ -484,28 +480,24 @@ obx_int.ModelDefinition getObjectBoxModel() {
             ..id = const fb.Int64Reader().vTableGet(buffer, rootOffset, 4, 0)
             ..directory = const fb.StringReader(asciiOptimization: true)
                 .vTableGet(buffer, rootOffset, 6, '')
-            ..lastPlayingIndex =
-                const fb.Int64Reader().vTableGet(buffer, rootOffset, 8, 0)
             ..firstTime =
                 const fb.BoolReader().vTableGet(buffer, rootOffset, 10, false)
-            ..showSystemTray =
-                const fb.BoolReader().vTableGet(buffer, rootOffset, 12, false)
-            ..showAppNotifications =
-                const fb.BoolReader().vTableGet(buffer, rootOffset, 14, false)
-            ..deezerToken = const fb.StringReader(asciiOptimization: true)
-                .vTableGet(buffer, rootOffset, 16, '')
             ..queueAdd = const fb.StringReader(asciiOptimization: true)
                 .vTableGet(buffer, rootOffset, 18, '')
             ..queuePlay = const fb.StringReader(asciiOptimization: true)
                 .vTableGet(buffer, rootOffset, 22, '')
-            ..playingSongs = const fb.ListReader<String>(
+            ..index =
+                const fb.Int64Reader().vTableGet(buffer, rootOffset, 32, 0)
+            ..systemTray =
+                const fb.BoolReader().vTableGet(buffer, rootOffset, 34, false)
+            ..appNotifications =
+                const fb.BoolReader().vTableGet(buffer, rootOffset, 36, false)
+            ..deezerARL = const fb.StringReader(asciiOptimization: true)
+                .vTableGet(buffer, rootOffset, 38, '')
+            ..queue = const fb.ListReader<String>(
                     fb.StringReader(asciiOptimization: true),
                     lazy: false)
-                .vTableGet(buffer, rootOffset, 28, [])
-            ..playingSongsUnShuffled = const fb.ListReader<String>(
-                    fb.StringReader(asciiOptimization: true),
-                    lazy: false)
-                .vTableGet(buffer, rootOffset, 30, []);
+                .vTableGet(buffer, rootOffset, 40, []);
 
           return object;
         })
@@ -616,39 +608,35 @@ class Settings_ {
   static final directory =
       obx.QueryStringProperty<Settings>(_entities[4].properties[1]);
 
-  /// See [Settings.lastPlayingIndex].
-  static final lastPlayingIndex =
-      obx.QueryIntegerProperty<Settings>(_entities[4].properties[2]);
-
   /// See [Settings.firstTime].
   static final firstTime =
-      obx.QueryBooleanProperty<Settings>(_entities[4].properties[3]);
-
-  /// See [Settings.showSystemTray].
-  static final showSystemTray =
-      obx.QueryBooleanProperty<Settings>(_entities[4].properties[4]);
-
-  /// See [Settings.showAppNotifications].
-  static final showAppNotifications =
-      obx.QueryBooleanProperty<Settings>(_entities[4].properties[5]);
-
-  /// See [Settings.deezerToken].
-  static final deezerToken =
-      obx.QueryStringProperty<Settings>(_entities[4].properties[6]);
+      obx.QueryBooleanProperty<Settings>(_entities[4].properties[2]);
 
   /// See [Settings.queueAdd].
   static final queueAdd =
-      obx.QueryStringProperty<Settings>(_entities[4].properties[7]);
+      obx.QueryStringProperty<Settings>(_entities[4].properties[3]);
 
   /// See [Settings.queuePlay].
   static final queuePlay =
+      obx.QueryStringProperty<Settings>(_entities[4].properties[4]);
+
+  /// See [Settings.index].
+  static final index =
+      obx.QueryIntegerProperty<Settings>(_entities[4].properties[5]);
+
+  /// See [Settings.systemTray].
+  static final systemTray =
+      obx.QueryBooleanProperty<Settings>(_entities[4].properties[6]);
+
+  /// See [Settings.appNotifications].
+  static final appNotifications =
+      obx.QueryBooleanProperty<Settings>(_entities[4].properties[7]);
+
+  /// See [Settings.deezerARL].
+  static final deezerARL =
       obx.QueryStringProperty<Settings>(_entities[4].properties[8]);
 
-  /// See [Settings.playingSongs].
-  static final playingSongs =
+  /// See [Settings.queue].
+  static final queue =
       obx.QueryStringVectorProperty<Settings>(_entities[4].properties[9]);
-
-  /// See [Settings.playingSongsUnShuffled].
-  static final playingSongsUnShuffled =
-      obx.QueryStringVectorProperty<Settings>(_entities[4].properties[10]);
 }

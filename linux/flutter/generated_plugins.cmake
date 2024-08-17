@@ -6,6 +6,7 @@ list(APPEND FLUTTER_PLUGIN_LIST
   audioplayers_linux
   audiotags
   bitsdojo_window_linux
+  desktop_drop
   file_saver
   objectbox_flutter_libs
   system_tray

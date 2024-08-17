@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'dart:ui';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
@@ -71,7 +70,7 @@ class _ExportScreenState extends State<ExportScreen> {
                         if(i == 0){
                           PlaylistType queuePlaylist = PlaylistType();
                           queuePlaylist.name = "Current Queue";
-                          queuePlaylist.paths = widget.controller.settings.playingSongsUnShuffled;
+                          queuePlaylist.paths = widget.controller.settings.queue;
                           widget.controller.exportPlaylist(queuePlaylist);
                         }
                         else{
@@ -133,7 +132,7 @@ class _ExportScreenState extends State<ExportScreen> {
                                             color: Colors.black,
                                             image: DecorationImage(
                                               fit: BoxFit.cover,
-                                              image: Image.memory(File("assets/current_queue.png").readAsBytesSync()).image,
+                                              image: Image.asset("assets/current_queue.png").image,
                                             )
                                         ),
                                       ),
