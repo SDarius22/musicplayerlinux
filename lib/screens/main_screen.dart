@@ -24,6 +24,16 @@ class _MyAppState extends State<MyApp>{
   final ValueNotifier<bool> _visible = ValueNotifier(false);
 
   @override
+  void initState(){
+    super.initState();
+    widget.controller.finishedRetrievingNotifier.addListener(() {
+      setState(() {
+
+      });
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     //print(widget.controller.settings.firstTime);
     double width = MediaQuery.of(context).size.width;
@@ -255,47 +265,12 @@ class _MyAppState extends State<MyApp>{
                         },
                       ),
                     ),
-                    ValueListenableBuilder(
-                        valueListenable: widget.controller.finishedRetrievingNotifier,
-                        builder: (context, value, child) {
-                          return AnimatedContainer(
-                            duration: const Duration(milliseconds: 500),
-                            alignment: Alignment.bottomCenter,
-                            child: !widget.controller.settings.firstTime ? value?
-                            SongPlayerWidget(controller: widget.controller) :
-                            AnimatedContainer(
-                              duration: const Duration(milliseconds: 500),
-                              padding: EdgeInsets.only(
-                                left: width * 0.01,
-                                right: width * 0.01,
-                                bottom: height * 0.01,
-                              ),
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(height * 0.1),
-                              ),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.start,
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  const CircularProgressIndicator(
-                                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                                  ),
-                                  SizedBox(
-                                    width: width * 0.01,
-                                  ),
-                                  Text(
-                                    "Loading...",
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: normalSize,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ) : Container(),
-                          );
-                        }
-                    ),
+                    if(!widget.controller.settings.firstTime)
+                      AnimatedContainer(
+                        duration: const Duration(milliseconds: 500),
+                        alignment: Alignment.bottomCenter,
+                        child: SongPlayerWidget(controller: widget.controller),
+                      ),
                     ValueListenableBuilder(
                         valueListenable: widget.controller.searchNotifier,
                         builder: (context, value, child){
@@ -369,14 +344,17 @@ class _MyAppState extends State<MyApp>{
                              }
                             }
                             if(songs.isNotEmpty) {
+                              widget.controller.finishedRetrievingNotifier.value = false;
                               for(var song in songs){
-                                MetadataType metadata = await widget.controller.retrieveSong(song);
-                                widget.controller.songBox.put(metadata);
+                                await widget.controller.retrieveSong(song);
                               }
                               widget.controller.updatePlaying(songs, 0);
                               widget.controller.indexChange(songs[0]);
                               await widget.controller.playSong();
-                              widget.controller.showNotification("Playing ${songs.length} new song${songs.length == 1 ? '' : 's'}. Do you want to add ${songs.length == 1 ? 'it' : 'them'} to your library?", 7500);
+                              //widget.controller.showNotification("Playing ${songs.length} new song${songs.length == 1 ? '' : 's'}. Do you want to add ${songs.length == 1 ? 'it' : 'them'} to your library?", 7500);
+                              widget.controller.showNotification("Playing ${songs.length} new song${songs.length == 1 ? '' : 's'} and adding them to your library", 7500);
+                              widget.controller.finishedRetrievingNotifier.value = true;
+
                             }
                           },
                           onDragEntered: (detail) {
@@ -396,7 +374,7 @@ class _MyAppState extends State<MyApp>{
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
                                     Icon(
-                                      FluentIcons.cloud_arrow_up_24_filled,
+                                      FluentIcons.drag_20_regular,
                                       size: height * 0.1,
                                       color: Colors.white,
                                     ),

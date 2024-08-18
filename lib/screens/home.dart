@@ -1,7 +1,5 @@
 import 'dart:ui';
-
 import 'package:flutter/material.dart';
-
 import '../controller/controller.dart';
 import 'albums.dart';
 import 'artists.dart';
@@ -27,9 +25,9 @@ class _HomePageState extends State<HomePage>{
 
   @override
   void initState(){
-    widget.controller.retrieveSongs();
-    widget.controller.initDeezer();
     super.initState();
+    widget.controller.initDeezer();
+    widget.controller.retrieveSongs();
   }
 
   @override

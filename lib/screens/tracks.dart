@@ -28,9 +28,43 @@ class _TracksState extends State<Tracks>{
     // var boldSize = height * 0.025;
     // var normalSize = height * 0.02;
     var smallSize = height * 0.015;
-    return ValueListenableBuilder(
-        valueListenable: widget.controller.retrievingChangedNotifier,
-        builder: (context, value, child){
+    return FutureBuilder(
+      future: widget.controller.getSongs(),
+      builder: (context, snapshot){
+        if(snapshot.hasError){
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  FluentIcons.error_circle_24_regular,
+                  size: height * 0.1,
+                  color: Colors.red,
+                ),
+                Text(
+                  "Error loading songs",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: smallSize,
+                  ),
+                ),
+                ElevatedButton(
+                  onPressed: (){
+                    setState(() {});
+                  },
+                  child: Text(
+                    "Retry",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: smallSize,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          );
+        }
+        else if(snapshot.hasData && snapshot.data!.isNotEmpty){
           return GridView.builder(
             padding: EdgeInsets.only(
               left: width * 0.01,
@@ -152,6 +186,17 @@ class _TracksState extends State<Tracks>{
             },
           );
         }
+        else{
+          if(widget.controller.finishedRetrievingNotifier.value == true){
+            return Center(
+              child: Text("You have no songs", style: TextStyle(color: Colors.white, fontSize: smallSize),),
+            );
+          }
+          return const Center(
+            child: CircularProgressIndicator(),
+          );
+        }
+      }
     );
   }
 

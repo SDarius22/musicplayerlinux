@@ -136,9 +136,9 @@ class _SearchWidgetState extends State<SearchWidget> {
                                       ]
                                   ),
                                 );
-                                var songRetrieved = await widget.controller.retrieveSong(file.path);
-                                widget.controller.songBox.put(songRetrieved);
-                                widget.controller.retrievingChangedNotifier.value = !widget.controller.retrievingChangedNotifier.value;
+                                await widget.controller.retrieveSong(file.path);
+                                widget.controller.finishedRetrievingNotifier.value = false;
+                                widget.controller.finishedRetrievingNotifier.value = true;
                               },
                               child: ClipRRect(
                                 borderRadius: BorderRadius.circular(width * 0.01),

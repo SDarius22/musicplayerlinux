@@ -21,6 +21,7 @@ class _AddScreenState extends State<AddScreen> {
   List<int> selected = [];
   @override
   Widget build(BuildContext context) {
+    //print(widget.songs.length);
     var width = MediaQuery.of(context).size.width;
     var height = MediaQuery.of(context).size.height;
     //var boldSize = height * 0.025;
@@ -67,10 +68,12 @@ class _AddScreenState extends State<AddScreen> {
                 const Spacer(),
                 ElevatedButton(
                     onPressed: (){
-                      print("Add to new playlist");
-                      for(int i in selected){
+                      //print("Add to new playlist");
+                      for(int i = 0; i < selected.length; i++){
                         if(i == 0){
-                          widget.controller.addToQueue(widget.songs.map((e) => e.path).toList());
+                          List<String> paths = widget.songs.map((e) => e.path).toList();
+                          //print(paths);
+                          widget.controller.addToQueue(paths);
                         }
                         else{
                           var playlist = query.find()[i-1];

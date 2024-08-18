@@ -10,13 +10,18 @@ import 'controller/objectBox.dart';
 import 'screens/main_screen.dart';
 
 Future<void> main(List<String> args) async {
-  print(args);
+  //print(args);
   await ObjectBox.initialize();
   WidgetsFlutterBinding.ensureInitialized();
 
-  Controller controller = Controller();
+
   final docsDir = await getApplicationDocumentsDirectory();
-  File logFile = File('${docsDir.path}/.musicplayerdatabase/log.txt');
+  File logFile = File('${docsDir.path}/.musicplayer database/log.txt');
+  // File argsFile = File('${docsDir.path}/.musicplayerdatabase/args.txt');
+  // if (args.isNotEmpty) {
+  //   argsFile.writeAsStringSync(args.join(' '));
+  // }
+  Controller controller = Controller(args);
 
   FlutterError.onError = (FlutterErrorDetails details) {
     FlutterError.dumpErrorToConsole(details, forceReport: true);

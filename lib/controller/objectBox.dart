@@ -8,12 +8,12 @@ class ObjectBox {
   /// Create an instance of ObjectBox to use throughout the app.
   static Future initialize() async {
     final docsDir = await getApplicationDocumentsDirectory();
-    final dbPath = '${docsDir.path}/.musicplayerdatabase';
+    final dbPath = '${docsDir.path}/.musicplayer database';
     if (Store.isOpen(dbPath)) {
       store = Store.attach(getObjectBoxModel(),dbPath);
     }
     else{
-      store = await openStore(directory: '${docsDir.path}/.musicplayerdatabase');
+      store = await openStore(directory: '${docsDir.path}/.musicplayer database');
     }
   }
 }

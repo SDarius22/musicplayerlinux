@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:collection';
 import 'dart:convert';
 import 'dart:io';
 
@@ -83,8 +84,7 @@ class Controller{
 
 
   /// Constructor for the Controller class
-  Controller() {
-
+  Controller(List<String> args) {
     settingsBox = ObjectBox.store.box<Settings>();
     if (settingsBox.isEmpty()) {
       print("Initialising settings");
@@ -102,6 +102,8 @@ class Controller{
     if(settings.deezerARL.isNotEmpty){
       initDeezer();
     }
+
+
 
     songBox = ObjectBox.store.box<MetadataType>();
     albumBox = ObjectBox.store.box<AlbumType>();
@@ -125,6 +127,17 @@ class Controller{
         }
       }
     });
+
+    controllerQueue.addAll(settings.queue);
+
+    if (args.isNotEmpty) {
+      print(args);
+      List<String> songs = args.where((element) => element.endsWith(".mp3") || element.endsWith(".flac") || element.endsWith(".wav") || element.endsWith(".m4a")).toList();
+      updatePlaying(songs, 0);
+      indexChange(controllerQueue[0]);
+      playSong();
+    }
+
   }
 
   Future<void> addToPlaylist(PlaylistType playlist, List<MetadataType> songs) async {
@@ -151,18 +164,23 @@ class Controller{
   }
 
   Future<void> addToQueue(List<String> songs) async {
+    print("Adding to queue ${songs.length} songs.");
     loadingNotifier.value = true;
     if (settings.queueAdd == 'last') {
+      //print("last");
       controllerQueue.addAll(songs);
       settings.queue.addAll(songs);
+      //print(settings.queue);
       settingsBox.put(settings);
     }
     else if (settings.queueAdd == 'next') {
+      //print("next");
       controllerQueue.insertAll(indexNotifier.value + 1, songs);
       settings.queue.insertAll(indexNotifier.value + 1, songs);
       settingsBox.put(settings);
     }
     else if (settings.queueAdd == 'first') {
+      //print("first");
       controllerQueue.insertAll(0, songs);
       settings.queue.insertAll(0, songs);
       settingsBox.put(settings);
@@ -204,6 +222,18 @@ class Controller{
     for (var song in playlist.paths){
       file.writeAsStringSync('$song\n', mode: FileMode.append);
     }
+  }
+
+  Future<List<AlbumType>> getAlbums() async {
+    return albumBox.query().order(AlbumType_.name).build().find();
+  }
+
+  Future<List<ArtistType>> getArtists() async {
+    return artistBox.query().order(ArtistType_.name).build().find();
+  }
+
+  Future<List<MetadataType>> getSongs() async {
+    return songBox.query().order(MetadataType_.title).order(MetadataType_.title).build().find();
   }
 
   Future<Uint8List> imageRetrieve(String path, bool update) async{
@@ -370,49 +400,56 @@ class Controller{
 
   void lyricModelReset() {
     //print(queue[indexNotifier.value].lyricsPath);
-    var song = songBox.query(MetadataType_.path.equals(controllerQueue[indexNotifier.value])).build().find().first;
-    if (song.lyricsPath.contains(".lrc")) {
-      File lyrFile = File(song.lyricsPath);
-      lyricModelNotifier.value = LyricsModelBuilder.create().bindLyricToMain(lyrFile.readAsStringSync()).getModel();
-      if (lyricModelNotifier.value.lyrics.isEmpty) {
+    try {
+      var song = songBox.query(MetadataType_.path.equals(controllerQueue[indexNotifier.value])).build().find().first;
+      if (song.lyricsPath.contains(".lrc")) {
+        File lyrFile = File(song.lyricsPath);
+        lyricModelNotifier.value = LyricsModelBuilder.create().bindLyricToMain(lyrFile.readAsStringSync()).getModel();
+        if (lyricModelNotifier.value.lyrics.isEmpty) {
+          lyricModelNotifier.value = LyricsModelBuilder.create().bindLyricToMain("No lyrics").getModel();
+          plainLyricNotifier.value = lyrFile.readAsStringSync();
+        }
+      }
+      else {
         lyricModelNotifier.value = LyricsModelBuilder.create().bindLyricToMain("No lyrics").getModel();
-        plainLyricNotifier.value = lyrFile.readAsStringSync();
+        plainLyricNotifier.value = "No lyrics";
       }
     }
-    else {
+    catch(e){
+      print(e);
+      //rethrow;
       lyricModelNotifier.value = LyricsModelBuilder.create().bindLyricToMain("No lyrics").getModel();
       plainLyricNotifier.value = "No lyrics";
     }
   }
 
-  Future<void> makeAlbumsArtists() async {
-    List<MetadataType> songs = songBox.getAll();
+  Future<void> makeAlbumsArtists(List<MetadataType> songs) async {
     for(MetadataType song in songs) {
       Query<AlbumType> albumQuery = albumBox.query(AlbumType_.name.equals(song.album)).build();
-      List<AlbumType> albums = albumQuery.find();
-      if (albums.isEmpty){
-        AlbumType album = AlbumType();
+      AlbumType? album = albumQuery.findUnique();
+      if (album == null){
+        album = AlbumType();
         album.name = song.album;
         album.songs.add(song);
         albumBox.put(album);
       }
       else{
-        albums.first.songs.add(song);
-        albumBox.put(albums.first);
+        album.songs.add(song);
+        albumBox.put(album);
       }
       List<String> songArtists = song.artists.split("; ");
       for (String artist in songArtists){
         Query<ArtistType> artistQuery = artistBox.query(ArtistType_.name.equals(artist)).build();
-        List<ArtistType> artists = artistQuery.find();
-        if (artists.isEmpty){
-          ArtistType artistType = ArtistType();
+        ArtistType? artistType = artistQuery.findUnique();
+        if (artistType == null){
+          artistType = ArtistType();
           artistType.name = artist;
           artistType.songs.add(song);
           artistBox.put(artistType);
         }
         else{
-          artists.first.songs.add(song);
-          artistBox.put(artists.first);
+          artistType.songs.add(song);
+          artistBox.put(artistType);
         }
       }
     }
@@ -486,6 +523,10 @@ class Controller{
   }
 
   Future<MetadataType> retrieveSong(String path) async {
+    var song = songBox.query(MetadataType_.path.equals(path)).build().findUnique();
+    if(song != null){
+      return song;
+    }
     MetadataType metadataVariable = MetadataType();
     metadataVariable.path = path;
     var metadataVar = await AudioTags.read(path);
@@ -525,7 +566,7 @@ class Controller{
           }
         }
       }
-      else if(path.endsWith(".mp3")){
+      else {
         //print(path);
         var parser = ID3TagReader.path(path);
         var tags = parser.readTagSync();
@@ -551,107 +592,80 @@ class Controller{
     bool exists = File(lyrPath).existsSync();
     //print(exists);
     if (!exists) {
-      bool lyricsFound = false;
-      if(path.endsWith(".flac")) {
-        var flac = FlacInfo(File(path));
-        var metadatas = await flac.readMetadatas();
-        String metadata = metadatas[2].toString();
-        metadata = metadata.substring(1, metadata.length - 1);
-        List<String> metadata2 = metadata.split(', *1234a678::876a4321*,');
-        for (var metadate2 in metadata2) {
-          if (metadate2.contains("LYRICS=")) {
-            File lyrFile = File(path.replaceAll(".flac", ".lrc"));
-            lyrFile.writeAsStringSync(metadate2.substring(7));
-            metadataVariable.lyricsPath = lyrFile.path;
-            lyricsFound = true;
-          }
-        }
-      }
-      else if(path.endsWith(".mp3")){
-        //print(path);
-        var parser = ID3TagReader.path(path);
-        var tags = parser.readTagSync();
-        if (tags.lyrics.isEmpty == false) {
-          File lyrFile = File(path.replaceAll(".mp3", ".lrc"));
-          lyrFile.writeAsStringSync(tags.lyrics.first.toString());
-          metadataVariable.lyricsPath = lyrFile.path;
-          lyricsFound = true;
-        }
-      }
-      if(!lyricsFound){
-        metadataVariable.lyricsPath = "No Lyrics";
-      }
+      metadataVariable.lyricsPath = "";
     }
-    else{
+    else {
       metadataVariable.lyricsPath = lyrPath;
     }
 
-    // if(metadataVariable.duration == 0){
-    //   print("duration is 0 for $path");
-    //   var metadataVar2 = await AudioTags.read(path);
-    //   if (metadataVar2?.duration != null) {
-    //     metadataVariable.duration = metadataVar2!.duration!;
-    //   }
-    //
-    //
-    // }
-
+    if(metadataVariable.duration == 0){
+      print("duration is 0 for $path");
+      var parser = ID3TagReader.path(path);
+      var tags = parser.readTagSync();
+      metadataVariable.duration = tags.duration?.inSeconds ?? 0;
+    }
+    songBox.put(metadataVariable);
     return metadataVariable;
   }
 
   Future<void> retrieveSongs() async {
-    List<MetadataType> songs = songBox.getAll();
-    List<String> paths = [];
-    for (int i = 0; i < songs.length; i++){
-      if(File(songs[i].path).existsSync()){
-        paths.add(songs[i].path);
+    // Use a Set for faster lookup operations
+    Set<String> paths = songBox.getAll().map((e) => e.path).toSet();
+
+    // Remove paths that no longer exist asynchronously
+    List<String> toRemove = [];
+    for (String path in paths) {
+      if (!await File(path).exists()) {
+        toRemove.add(path);
       }
-      else{
-        songBox.remove(songs[i].id);
+    }
+    for (String path in toRemove) {
+      var query = songBox.query(MetadataType_.path.equals(path)).build();
+      var result = query.findFirst();  // Use findFirst() for safety
+      if (result != null) {
+        songBox.remove(result.id);
       }
     }
 
-    List<FileSystemEntity> allEntities = [];
-    final dir = Directory(settings.directory);
-    allEntities = await dir.list().toList();
+    // Use a Queue for efficient directory traversal
+    Queue<Directory> dirs = Queue<Directory>();
+    dirs.add(Directory(settings.directory));
 
-    for(int i = 0; i < allEntities.length; i++){
-      if(allEntities[i] is File){
-        String path = allEntities[i].path.replaceAll("\\", "/");
-        if (path.endsWith(".flac") || path.endsWith(".mp3") || path.endsWith(".wav") || path.endsWith(".m4a")) {
-          if(!paths.contains(path)){
-            paths.add(allEntities[i].path);
-            var song = await retrieveSong(allEntities[i].path);
-            songBox.put(song);
-            if (i % 50 == 0){
-              retrievingChangedNotifier.value = !retrievingChangedNotifier.value;
+    List<MetadataType> newSongs = [];
+
+    while (dirs.isNotEmpty) {
+      final dir = dirs.removeFirst();
+      await for (FileSystemEntity entity in dir.list(followLinks: false)) {
+        if (entity is File) {
+          String path = entity.path.replaceAll("\\", "/");
+          if (path.endsWith(".flac") || path.endsWith(".mp3") || path.endsWith(".wav") || path.endsWith(".m4a")) {
+            if (!paths.contains(path)) {
+              paths.add(path);
+              newSongs.add(await retrieveSong(path));  // Async operation to retrieve song metadata
             }
           }
+        } else if (entity is Directory) {
+          dirs.add(Directory(entity.path));
         }
       }
-      else if(allEntities[i] is Directory){
-        allEntities.addAll(await Directory(allEntities[i].path).list().toList());
-      }
     }
-    await makeAlbumsArtists();
+    await makeAlbumsArtists(newSongs);
 
     if (settings.queue.isEmpty){
       print("empty");
-      updatePlaying(songBox.query().order(MetadataType_.title).build().find().map((e) => e.path).toList(), 0);
+      List<String> initialQueue = songBox.query().order(MetadataType_.title).build().find().map((e) => e.path).toList();
+      updatePlaying(initialQueue, 0);
     }
-    controllerQueue = settings.queue;
-    retrievingChangedNotifier.value = !retrievingChangedNotifier.value;
+    if(!playingNotifier.value){
+      try{
+        indexChange(controllerQueue[settings.index]);
+      }
+      catch(e){
+        print(e);
+        indexChange(controllerQueue[0]);
+      }
+    }
 
-    // print(songBox.getAll().length);
-    // print(settings.queue.length);
-    // print(controllerQueue.length);
-    try{
-      indexChange(controllerQueue[settings.index]);
-    }
-    catch(e){
-      print(e);
-      indexChange(controllerQueue[0]);
-    }
     finishedRetrievingNotifier.value = true;
   }
 
@@ -684,6 +698,7 @@ class Controller{
 
   Future<List<MetadataType>> searchLocal(String enteredKeyword) async {
     var query = songBox.query(MetadataType_.title.contains(enteredKeyword, caseSensitive: false) | MetadataType_.artists.contains(enteredKeyword, caseSensitive: false) | MetadataType_.album.contains(enteredKeyword, caseSensitive: false)).order(MetadataType_.title).build();
+    query.limit = 25;
     return query.find();
   }
 
