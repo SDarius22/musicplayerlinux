@@ -423,34 +423,32 @@ class Controller{
     }
   }
 
-  Future<void> makeAlbumsArtists(List<MetadataType> songs) async {
-    for(MetadataType song in songs) {
-      Query<AlbumType> albumQuery = albumBox.query(AlbumType_.name.equals(song.album)).build();
-      AlbumType? album = albumQuery.findUnique();
-      if (album == null){
-        album = AlbumType();
-        album.name = song.album;
-        album.songs.add(song);
-        albumBox.put(album);
+  Future<void> makeAlbumArtist(MetadataType metadataVariable) async {
+    Query<AlbumType> albumQuery = albumBox.query(AlbumType_.name.equals(metadataVariable.album)).build();
+    AlbumType? album = albumQuery.findUnique();
+    if (album == null){
+      album = AlbumType();
+      album.name = metadataVariable.album;
+      album.songs.add(metadataVariable);
+      albumBox.put(album);
+    }
+    else{
+      album.songs.add(metadataVariable);
+      albumBox.put(album);
+    }
+    List<String> songArtists = metadataVariable.artists.split("; ");
+    for (String artist in songArtists){
+      Query<ArtistType> artistQuery = artistBox.query(ArtistType_.name.equals(artist)).build();
+      ArtistType? artistType = artistQuery.findUnique();
+      if (artistType == null){
+        artistType = ArtistType();
+        artistType.name = artist;
+        artistType.songs.add(metadataVariable);
+        artistBox.put(artistType);
       }
       else{
-        album.songs.add(song);
-        albumBox.put(album);
-      }
-      List<String> songArtists = song.artists.split("; ");
-      for (String artist in songArtists){
-        Query<ArtistType> artistQuery = artistBox.query(ArtistType_.name.equals(artist)).build();
-        ArtistType? artistType = artistQuery.findUnique();
-        if (artistType == null){
-          artistType = ArtistType();
-          artistType.name = artist;
-          artistType.songs.add(song);
-          artistBox.put(artistType);
-        }
-        else{
-          artistType.songs.add(song);
-          artistBox.put(artistType);
-        }
+        artistType.songs.add(metadataVariable);
+        artistBox.put(artistType);
       }
     }
   }
@@ -598,6 +596,8 @@ class Controller{
       metadataVariable.lyricsPath = lyrPath;
     }
 
+    await makeAlbumArtist(metadataVariable);
+
     if(metadataVariable.duration == 0){
       print("duration is 0 for $path");
       var parser = ID3TagReader.path(path);
@@ -631,7 +631,7 @@ class Controller{
     Queue<Directory> dirs = Queue<Directory>();
     dirs.add(Directory(settings.directory));
 
-    List<MetadataType> newSongs = [];
+    //List<MetadataType> newSongs = [];
 
     while (dirs.isNotEmpty) {
       final dir = dirs.removeFirst();
@@ -641,7 +641,8 @@ class Controller{
           if (path.endsWith(".flac") || path.endsWith(".mp3") || path.endsWith(".wav") || path.endsWith(".m4a")) {
             if (!paths.contains(path)) {
               paths.add(path);
-              newSongs.add(await retrieveSong(path));  // Async operation to retrieve song metadata
+              await retrieveSong(path);
+              //newSongs.add(await retrieveSong(path));  // Async operation to retrieve song metadata
             }
           }
         } else if (entity is Directory) {
@@ -649,12 +650,17 @@ class Controller{
         }
       }
     }
-    await makeAlbumsArtists(newSongs);
+    //await makeAlbumsArtists(newSongs);
 
     if (settings.queue.isEmpty){
       print("empty");
       List<String> initialQueue = songBox.query().order(MetadataType_.title).build().find().map((e) => e.path).toList();
-      updatePlaying(initialQueue, 0);
+      print(initialQueue.length);
+      controllerQueue.addAll(initialQueue);
+      settings.queue.addAll(initialQueue);
+    }
+    if(controllerQueue.isEmpty){
+      controllerQueue.addAll(settings.queue);
     }
     if(!playingNotifier.value){
       try{
@@ -981,7 +987,6 @@ class Controller{
       settings.queue.addAll(songs);
       settings.index = index;
       settingsBox.put(settings);
-
       controllerQueue.clear();
       controllerQueue.addAll(songs);
       indexNotifier.value = index;

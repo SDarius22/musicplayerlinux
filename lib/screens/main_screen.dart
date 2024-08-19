@@ -2,7 +2,6 @@ import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:desktop_drop/desktop_drop.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
-import 'package:musicplayer/domain/metadata_type.dart';
 import 'package:musicplayer/screens/search_widget.dart';
 import 'package:musicplayer/screens/song_player_widget.dart';
 import 'package:musicplayer/screens/notification_widget.dart';
@@ -235,7 +234,14 @@ class _MyAppState extends State<MyApp>{
                           ),
                           CloseWindowButton(
                             animate: true,
-                            onPressed: () => appWindow.hide(),
+                            onPressed: (){
+                              if(widget.controller.settings.fullClose){
+                                appWindow.close();
+                              }
+                              else{
+                                appWindow.hide();
+                              }
+                            },
                             colors: WindowButtonColors(
                               normal: Colors.transparent,
                               iconNormal: Colors.white,

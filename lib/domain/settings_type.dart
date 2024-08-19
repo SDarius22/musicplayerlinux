@@ -8,6 +8,7 @@ class Settings{
   int index = 0; // this is the index of the song in the unshuffled queue
   bool firstTime = true;
   bool systemTray = true;
+  bool fullClose = false;
   bool appNotifications = true;
   String deezerARL = '';
   String queueAdd = 'last';

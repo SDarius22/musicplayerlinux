@@ -648,6 +648,53 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     height: height * 0.02,
                   ),
 
+                  ///Close to System Tray
+                  Row(
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            "Close To System Tray",
+                            style: TextStyle(
+                              fontSize: normalSize,
+                              fontWeight: FontWeight.normal,
+                              color: Colors.white,
+                            ),
+                          ),
+                          SizedBox(
+                            height: height * 0.005,
+                          ),
+                          Text("Choose whether the app should close to the system tray", style: TextStyle(
+                            fontSize: smallSize,
+                            fontWeight: FontWeight.normal,
+                            color: Colors.grey.shade50,
+                          ),),
+                        ],
+                      ),
+                      const Spacer(),
+                      Switch(
+                        value: widget.controller.settings.fullClose,
+                        onChanged: (value){
+                          setState(() {
+                            widget.controller.settings.fullClose = value;
+                          });
+                          widget.controller.settingsBox.put(widget.controller.settings);
+                        },
+                        trackColor: WidgetStateProperty.all(widget.controller.colorNotifier2.value),
+                        thumbColor: WidgetStateProperty.all(Colors.white),
+                        thumbIcon: WidgetStateProperty.all(widget.controller.settings.fullClose ? const Icon(Icons.check, color: Colors.black,) : const Icon(Icons.close, color: Colors.black,)),
+                        activeColor: Colors.white,
+                      ),
+
+
+                    ],
+                  ),
+                  SizedBox(
+                    height: height * 0.02,
+                  ),
+
                   ///In-App Notifications
                   Row(
                     children: [

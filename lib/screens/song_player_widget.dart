@@ -6,7 +6,6 @@ import '../domain/metadata_type.dart';
 import '../utils/multivaluelistenablebuilder/mvlb.dart';
 import '../controller/controller.dart';
 import '../utils/lyric_reader/lyrics_reader.dart';
-import '../utils/objectbox.g.dart';
 import '../utils/progress_bar/audio_video_progress_bar.dart';
 import 'image_widget.dart';
 import 'package:flutter/foundation.dart';
@@ -149,7 +148,8 @@ class _SongPlayerWidgetState extends State<SongPlayerWidget> {
                             bottom: values[0] ? height * 0.01 : 0,
                           ),
                           decoration: BoxDecoration(
-                            color: values[0] ? widget.controller.colorNotifier2.value.withOpacity(values[3] ? 0.0 : 1) : const Color(0xFF0E0E0E),
+                            //color: values[0] ? widget.controller.colorNotifier2.value.withOpacity(values[3] ? 0.0 : 1) : const Color(0xFF0E0E0E),
+                            color: values[0] ? widget.controller.colorNotifier2.value.withOpacity(values[3] ? 0.0 : 1) : Colors.transparent,
                             borderRadius: values[0] ? BorderRadius.circular(width * 0.1) : BorderRadius.circular(0),
                           ),
                           child: Wrap(

@@ -162,7 +162,7 @@ final _entities = <obx_int.ModelEntity>[
   obx_int.ModelEntity(
       id: const obx_int.IdUid(5, 3381058623511901147),
       name: 'Settings',
-      lastPropertyId: const obx_int.IdUid(19, 620611829453863297),
+      lastPropertyId: const obx_int.IdUid(20, 3494327177167132198),
       flags: 0,
       properties: <obx_int.ModelProperty>[
         obx_int.ModelProperty(
@@ -214,6 +214,11 @@ final _entities = <obx_int.ModelEntity>[
             id: const obx_int.IdUid(19, 620611829453863297),
             name: 'queue',
             type: 30,
+            flags: 0),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(20, 3494327177167132198),
+            name: 'fullClose',
+            type: 1,
             flags: 0)
       ],
       relations: <obx_int.ModelRelation>[],
@@ -458,7 +463,7 @@ obx_int.ModelDefinition getObjectBoxModel() {
           final deezerARLOffset = fbb.writeString(object.deezerARL);
           final queueOffset = fbb.writeList(
               object.queue.map(fbb.writeString).toList(growable: false));
-          fbb.startTable(20);
+          fbb.startTable(21);
           fbb.addInt64(0, object.id);
           fbb.addOffset(1, directoryOffset);
           fbb.addBool(3, object.firstTime);
@@ -469,6 +474,7 @@ obx_int.ModelDefinition getObjectBoxModel() {
           fbb.addBool(16, object.appNotifications);
           fbb.addOffset(17, deezerARLOffset);
           fbb.addOffset(18, queueOffset);
+          fbb.addBool(19, object.fullClose);
           fbb.finish(fbb.endTable());
           return object.id;
         },
@@ -497,7 +503,9 @@ obx_int.ModelDefinition getObjectBoxModel() {
             ..queue = const fb.ListReader<String>(
                     fb.StringReader(asciiOptimization: true),
                     lazy: false)
-                .vTableGet(buffer, rootOffset, 40, []);
+                .vTableGet(buffer, rootOffset, 40, [])
+            ..fullClose =
+                const fb.BoolReader().vTableGet(buffer, rootOffset, 42, false);
 
           return object;
         })
@@ -639,4 +647,8 @@ class Settings_ {
   /// See [Settings.queue].
   static final queue =
       obx.QueryStringVectorProperty<Settings>(_entities[4].properties[9]);
+
+  /// See [Settings.fullClose].
+  static final fullClose =
+      obx.QueryBooleanProperty<Settings>(_entities[4].properties[10]);
 }
