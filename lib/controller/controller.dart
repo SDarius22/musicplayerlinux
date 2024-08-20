@@ -232,6 +232,24 @@ class Controller{
     return artistBox.query().order(ArtistType_.name).build().find();
   }
 
+  Future<Duration> getDuration(MetadataType song) async {
+    try{
+      if(song.duration != 0){
+        return Duration(seconds: song.duration);
+      }
+      else{
+        Duration songDuration = await audioPlayer.getDuration() ?? Duration.zero;
+        song.duration = songDuration.inSeconds;
+        songBox.put(song);
+        return songDuration;
+      }
+    }
+    catch(e){
+      print(e);
+      return await audioPlayer.getDuration() ?? Duration.zero;
+    }
+  }
+
   Future<List<MetadataType>> getSongs() async {
     return songBox.query().order(MetadataType_.title).order(MetadataType_.title).build().find();
   }
@@ -465,6 +483,7 @@ class Controller{
   }
 
   Future<void> playSong() async {
+
     if (playingNotifier.value){
       print("pause");
       await audioPlayer.pause();

@@ -148,8 +148,8 @@ class _SongPlayerWidgetState extends State<SongPlayerWidget> {
                             bottom: values[0] ? height * 0.01 : 0,
                           ),
                           decoration: BoxDecoration(
-                            //color: values[0] ? widget.controller.colorNotifier2.value.withOpacity(values[3] ? 0.0 : 1) : const Color(0xFF0E0E0E),
-                            color: values[0] ? widget.controller.colorNotifier2.value.withOpacity(values[3] ? 0.0 : 1) : Colors.transparent,
+                            color: values[0] ? widget.controller.colorNotifier2.value.withOpacity(values[3] ? 0.0 : 1) : const Color(0xFF0E0E0E),
+                            //color: values[0] ? widget.controller.colorNotifier2.value.withOpacity(values[3] ? 0.0 : 1) : Colors.transparent,
                             borderRadius: values[0] ? BorderRadius.circular(width * 0.1) : BorderRadius.circular(0),
                           ),
                           child: Wrap(
@@ -549,24 +549,29 @@ class _SongPlayerWidgetState extends State<SongPlayerWidget> {
                                             horizontal: width * 0.01,
                                             vertical: widget.controller.minimizedNotifier.value ? 0 : height * 0.03,
                                           ),
-                                          child: ProgressBar(
-                                            progress: Duration(milliseconds: values[0]),
-                                            total: Duration(seconds: widget.controller.controllerQueue.isNotEmpty? currentSong.duration : 0),
-                                            progressBarColor: values[1].withOpacity(widget.controller.hiddenNotifier.value ? 0.0 : 1.0),
-                                            baseBarColor: Colors.white.withOpacity(widget.controller.hiddenNotifier.value ? 0.0 : 0.24),
-                                            bufferedBarColor: Colors.white.withOpacity(widget.controller.hiddenNotifier.value ? 0.0 : 0.24),
-                                            thumbColor: Colors.white.withOpacity(widget.controller.hiddenNotifier.value ? 0.0 : 1.0),
-                                            barHeight: 4.0,
-                                            thumbRadius: 7.0,
-                                            timeLabelLocation: widget.controller.minimizedNotifier.value ? TimeLabelLocation.sides : TimeLabelLocation.below,
-                                            timeLabelTextStyle: TextStyle(
-                                              color: Colors.white.withOpacity(widget.controller.hiddenNotifier.value ? 0.0 : 1.0),
-                                              fontSize: height * 0.02,
-                                              fontFamily: 'Bahnschrift',
-                                              fontWeight: FontWeight.normal,
-                                            ),
-                                            onSeek: (duration) {
-                                              widget.controller.audioPlayer.seek(duration);
+                                          child: FutureBuilder(
+                                            future: widget.controller.getDuration(currentSong),
+                                            builder: (context, snapshot){
+                                              return ProgressBar(
+                                                progress: Duration(milliseconds: values[0]),
+                                                total: snapshot.hasData ? snapshot.data as Duration : Duration.zero,
+                                                progressBarColor: values[1].withOpacity(widget.controller.hiddenNotifier.value ? 0.0 : 1.0),
+                                                baseBarColor: Colors.white.withOpacity(widget.controller.hiddenNotifier.value ? 0.0 : 0.24),
+                                                bufferedBarColor: Colors.white.withOpacity(widget.controller.hiddenNotifier.value ? 0.0 : 0.24),
+                                                thumbColor: Colors.white.withOpacity(widget.controller.hiddenNotifier.value ? 0.0 : 1.0),
+                                                barHeight: 4.0,
+                                                thumbRadius: 7.0,
+                                                timeLabelLocation: widget.controller.minimizedNotifier.value ? TimeLabelLocation.sides : TimeLabelLocation.below,
+                                                timeLabelTextStyle: TextStyle(
+                                                  color: Colors.white.withOpacity(widget.controller.hiddenNotifier.value ? 0.0 : 1.0),
+                                                  fontSize: height * 0.02,
+                                                  fontFamily: 'Bahnschrift',
+                                                  fontWeight: FontWeight.normal,
+                                                ),
+                                                onSeek: (duration) {
+                                                  widget.controller.audioPlayer.seek(duration);
+                                                },
+                                              );
                                             },
                                           ),
                                         );

@@ -357,7 +357,7 @@ class _CreateScreenState extends State<CreateScreen> {
                                               ),
                                               const Spacer(),
                                               Text(
-                                                  "${song.duration ~/ 60}:${(song.duration % 60).toString().padLeft(2, '0')}",
+                                                  song.duration == 0 ? "??:??" : "${song.duration ~/ 60}:${(song.duration % 60).toString().padLeft(2, '0')}",
                                                   style: TextStyle(
                                                     color: Colors.white,
                                                     fontSize: normalSize,
@@ -460,7 +460,7 @@ class _CreateScreenState extends State<CreateScreen> {
                                               ),
                                               const Spacer(),
                                               Text(
-                                                  "${song.duration ~/ 60}:${(song.duration % 60).toString().padLeft(2, '0')}",
+                                                  song.duration == 0 ? "??:??" : "${song.duration ~/ 60}:${(song.duration % 60).toString().padLeft(2, '0')}",
                                                   style: TextStyle(
                                                     color: Colors.white,
                                                     fontSize: normalSize,

@@ -242,7 +242,7 @@ class _ArtistScreenState extends State<ArtistScreen> {
                                 ),
                                 const Spacer(),
                                 Text(
-                                    "${widget.artist.songs[index].duration ~/ 60}:${(widget.artist.songs[index].duration % 60).toString().padLeft(2, '0')}",
+                                    widget.artist.songs[index].duration == 0 ? "??:??" : "${widget.artist.songs[index].duration ~/ 60}:${(widget.artist.songs[index].duration % 60).toString().padLeft(2, '0')}",
                                     style: TextStyle(
                                       color: Colors.white,
                                       fontSize: normalSize,

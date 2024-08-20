@@ -675,16 +675,36 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       ),
                       const Spacer(),
                       Switch(
-                        value: widget.controller.settings.fullClose,
+                        value: !widget.controller.settings.fullClose,
                         onChanged: (value){
                           setState(() {
-                            widget.controller.settings.fullClose = value;
+                            widget.controller.settings.fullClose = !value;
                           });
                           widget.controller.settingsBox.put(widget.controller.settings);
+                          //
+                          // final snackBar = SnackBar(
+                          //   behavior: SnackBarBehavior.floating,
+                          //   margin: EdgeInsets.only(
+                          //     bottom: height * 0.9,
+                          //     left: width * 0.05,
+                          //     right: width * 0.05,
+                          //   ),
+                          //   content: const Text('Yay! A SnackBar!'),
+                          //   action: SnackBarAction(
+                          //     label: 'Undo',
+                          //     onPressed: () {
+                          //       // Some code to undo the change.
+                          //     },
+                          //   ),
+                          // );
+                          //
+                          // // Find the ScaffoldMessenger in the widget tree
+                          // // and use it to show a SnackBar.
+                          // ScaffoldMessenger.of(context).showSnackBar(snackBar);
                         },
                         trackColor: WidgetStateProperty.all(widget.controller.colorNotifier2.value),
                         thumbColor: WidgetStateProperty.all(Colors.white),
-                        thumbIcon: WidgetStateProperty.all(widget.controller.settings.fullClose ? const Icon(Icons.check, color: Colors.black,) : const Icon(Icons.close, color: Colors.black,)),
+                        thumbIcon: WidgetStateProperty.all(!widget.controller.settings.fullClose ? const Icon(Icons.check, color: Colors.black,) : const Icon(Icons.close, color: Colors.black,)),
                         activeColor: Colors.white,
                       ),
 

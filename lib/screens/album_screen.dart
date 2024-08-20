@@ -277,7 +277,7 @@ class _AlbumScreenState extends State<AlbumScreen> {
                                 ),
                                 const Spacer(),
                                 Text(
-                                    "${widget.album.songs[index].duration ~/ 60}:${(widget.album.songs[index].duration % 60).toString().padLeft(2, '0')}",
+                                    widget.album.songs[index].duration == 0 ? "??:??" : "${widget.album.songs[index].duration ~/ 60}:${(widget.album.songs[index].duration % 60).toString().padLeft(2, '0')}",
                                     style: TextStyle(
                                       color: Colors.white,
                                       fontSize: normalSize,
