@@ -1,7 +1,7 @@
 import 'dart:ui';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
-import 'package:musicplayer/domain/metadata_type.dart';
+import 'package:musicplayer/domain/song_type.dart';
 import 'package:musicplayer/domain/playlist_type.dart';
 import '../controller/controller.dart';
 import '../utils/hover_widget/hover_widget.dart';
@@ -18,7 +18,7 @@ class CreateScreen extends StatefulWidget {
 }
 
 class _CreateScreenState extends State<CreateScreen> {
-  List<MetadataType> selected = [];
+  List<SongType> selected = [];
   String playlistName = "";
   String playlistAdd = "last";
   String search = "";
@@ -31,7 +31,7 @@ class _CreateScreenState extends State<CreateScreen> {
     if (widget.paths != null && widget.paths!.isNotEmpty) {
       for (var path in widget.paths!) {
         print(path);
-        selected.add(widget.controller.songBox.query(MetadataType_.path.equals(path)).build().find().first);
+        selected.add(widget.controller.songBox.query(SongType_.path.equals(path)).build().find().first);
       }
     }
     super.initState();
@@ -235,7 +235,7 @@ class _CreateScreenState extends State<CreateScreen> {
                       future: widget.controller.searchLocal(search),
                       builder: (context, snapshot) {
                         if(snapshot.hasData){
-                          List<MetadataType> songs = snapshot.data ?? [];
+                          List<SongType> songs = snapshot.data ?? [];
                           return songs.isNotEmpty ?
                             ListView.builder(
                               itemCount: songs.length,
@@ -268,7 +268,7 @@ class _CreateScreenState extends State<CreateScreen> {
                                               ClipRRect(
                                                   borderRadius: BorderRadius.circular(width * 0.01),
                                                   child: FutureBuilder(
-                                                    future: widget.controller.imageRetrieve(song.path, false),
+                                                    future: widget.controller.getImage(song.path),
                                                     builder: (context, snapshot) {
                                                       return AspectRatio(
                                                         aspectRatio: 1.0,
@@ -377,7 +377,7 @@ class _CreateScreenState extends State<CreateScreen> {
                                               ClipRRect(
                                                   borderRadius: BorderRadius.circular(width * 0.01),
                                                   child: FutureBuilder(
-                                                    future: widget.controller.imageRetrieve(song.path, false),
+                                                    future: widget.controller.getImage(song.path),
                                                     builder: (context, snapshot) {
                                                       return AspectRatio(
                                                         aspectRatio: 1.0,

@@ -11,7 +11,7 @@ import 'package:http/http.dart' as http;
 import 'package:musicplayer/utils/hover_widget/hover_container.dart';
 import 'package:musicplayer/utils/hover_widget/stack_hover_widget.dart';
 import '../controller/controller.dart';
-import '../domain/metadata_type.dart';
+import '../domain/song_type.dart';
 import 'add_screen.dart';
 import 'image_widget.dart';
 
@@ -136,7 +136,7 @@ class _SearchWidgetState extends State<SearchWidget> {
                                       ]
                                   ),
                                 );
-                                await widget.controller.retrieveSong(file.path);
+                                await widget.controller.getSong(file.path);
                                 widget.controller.finishedRetrievingNotifier.value = false;
                                 widget.controller.finishedRetrievingNotifier.value = true;
                               },
@@ -239,7 +239,7 @@ class _SearchWidgetState extends State<SearchWidget> {
                 future: widget.controller.searchLocal(searchValue),
                 builder: (context, snapshot) {
                   if(snapshot.hasData){
-                    List<MetadataType> songs = snapshot.data ?? [];
+                    List<SongType> songs = snapshot.data ?? [];
                     return songs.isNotEmpty ?
                     ListView.builder(
                       padding: EdgeInsets.only(
@@ -272,7 +272,7 @@ class _SearchWidgetState extends State<SearchWidget> {
                                       ClipRRect(
                                           borderRadius: BorderRadius.circular(width * 0.01),
                                           child: FutureBuilder(
-                                              future: widget.controller.imageRetrieve(song.path, false),
+                                              future: widget.controller.getImage(song.path),
                                               builder: (context, snapshot) {
                                                 return AspectRatio(
                                                   aspectRatio: 1.0,

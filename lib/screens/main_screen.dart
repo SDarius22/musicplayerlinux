@@ -4,7 +4,6 @@ import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:musicplayer/screens/search_widget.dart';
 import 'package:musicplayer/screens/song_player_widget.dart';
-import 'package:musicplayer/screens/notification_widget.dart';
 import '../controller/controller.dart';
 import 'settings_screen.dart';
 import 'home.dart';
@@ -321,23 +320,23 @@ class _MyAppState extends State<MyApp>{
                           );
                         }
                     ),
-                    ValueListenableBuilder(
-                        valueListenable: widget.controller.userMessageNotifier,
-                        builder: (context, value, child){
-                          return AnimatedSwitcher(
-                            duration: const Duration(milliseconds: 500),
-                            child: value.isNotEmpty ?
-                            AnimatedContainer(
-                              duration: const Duration(milliseconds: 500),
-                              key: const Key("User Message Widget"),
-                              alignment: Alignment.topCenter,
-                              child: NotificationWidget(controller: widget.controller),
-                            ) : Container(
-                              key: const Key("User Message Off"),
-                            ),
-                          );
-                        }
-                    ),
+                    // ValueListenableBuilder(
+                    //     valueListenable: widget.controller.userMessageNotifier,
+                    //     builder: (context, value, child){
+                    //       return AnimatedSwitcher(
+                    //         duration: const Duration(milliseconds: 500),
+                    //         child: value.isNotEmpty ?
+                    //         AnimatedContainer(
+                    //           duration: const Duration(milliseconds: 500),
+                    //           key: const Key("User Message Widget"),
+                    //           alignment: Alignment.topCenter,
+                    //           child: NotificationWidget(controller: widget.controller),
+                    //         ) : Container(
+                    //           key: const Key("User Message Off"),
+                    //         ),
+                    //       );
+                    //     }
+                    // ),
                     ValueListenableBuilder(
                       valueListenable: _dragging,
                       builder: (context, value, child){
@@ -352,7 +351,7 @@ class _MyAppState extends State<MyApp>{
                             if(songs.isNotEmpty) {
                               widget.controller.finishedRetrievingNotifier.value = false;
                               for(var song in songs){
-                                await widget.controller.retrieveSong(song);
+                                await widget.controller.getSong(song);
                               }
                               widget.controller.updatePlaying(songs, 0);
                               widget.controller.indexChange(songs[0]);

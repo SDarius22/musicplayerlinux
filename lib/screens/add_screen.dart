@@ -5,12 +5,12 @@ import 'package:musicplayer/screens/image_widget.dart';
 import 'package:musicplayer/utils/hover_widget/stack_hover_widget.dart';
 import 'package:musicplayer/utils/objectbox.g.dart';
 import '../domain/playlist_type.dart';
-import 'package:musicplayer/domain/metadata_type.dart';
+import 'package:musicplayer/domain/song_type.dart';
 import '../controller/controller.dart';
 
 class AddScreen extends StatefulWidget {
   final Controller controller;
-  final List<MetadataType> songs;
+  final List<SongType> songs;
   const AddScreen({super.key, required this.controller, required this.songs});
 
   @override

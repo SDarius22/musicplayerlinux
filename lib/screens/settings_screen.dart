@@ -4,6 +4,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:musicplayer/screens/create_screen.dart';
 import 'package:musicplayer/screens/export_screen.dart';
+import 'package:musicplayer/screens/home.dart';
 import 'package:musicplayer/screens/main_screen.dart';
 import '../controller/controller.dart';
 
@@ -134,16 +135,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             setState(() {
                               widget.controller.settings.directory = directory;
                             });
+                            widget.controller.settings.firstTime = true;
                             widget.controller.settings.queue.clear();
-                            widget.controller.controllerQueue.clear();
                             widget.controller.settings.index = 0;
                             widget.controller.settingsBox.put(widget.controller.settings);
-                            widget.controller.songBox.removeAll();
-                            widget.controller.albumBox.removeAll();
-                            widget.controller.artistBox.removeAll();
-                            widget.controller.finishedRetrievingNotifier.value = false;
-                            Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => MyApp(controller: widget.controller,)));
-
+                            widget.controller.reset();
                           }
                         },
                         child: Text(

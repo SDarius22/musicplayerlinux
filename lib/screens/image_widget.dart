@@ -30,7 +30,7 @@ class _ImageWidgetState extends State<ImageWidget> {
   Widget build(BuildContext context) {
     if(widget.path != null){
       return FutureBuilder(
-        future: widget.controller.imageRetrieve(widget.path ?? "" , false),
+        future: widget.controller.getImage(widget.path ?? ""),
         builder: (context, snapshot) {
           return AspectRatio(
             aspectRatio: 1.0,

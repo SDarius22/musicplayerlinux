@@ -14,21 +14,21 @@ import 'package:system_tray/system_tray.dart';
 import 'package:deezer/deezer.dart';
 import '../domain/album_type.dart';
 import '../domain/artist_type.dart';
-import '../domain/metadata_type.dart';
+import '../domain/song_type.dart';
 import '../domain/playlist_type.dart';
 import '../domain/settings_type.dart';
 import '../utils/objectbox.g.dart';
 import '../utils/dominant_color/dominant_color.dart';
 import '../utils/flac_metadata/flacstream.dart';
 import '../utils/id3tag/id3tag.dart';
-import '../utils/lyric_reader/lyrics_reader.dart';
-import '../utils/lyric_reader/lyrics_reader_model.dart';
 import 'objectBox.dart';
 
 
 
 class Controller{
   AudioPlayer audioPlayer = AudioPlayer();
+
+  bool firstTimeRetrieving = true;
 
   final navigatorKey = GlobalKey<NavigatorState>();
 
@@ -39,7 +39,7 @@ class Controller{
   late Box<ArtistType> artistBox;
   late Box<PlaylistType> playlistBox;
   late Box<Settings> settingsBox;
-  late Box<MetadataType> songBox;
+  late Box<SongType> songBox;
   late Deezer instance;
 
   List<String> controllerQueue = []; // this is the queue, this can be shuffled
@@ -48,18 +48,11 @@ class Controller{
 
   ValueNotifier<bool> downloadNotifier = ValueNotifier<bool>(false);
   ValueNotifier<bool> finishedRetrievingNotifier = ValueNotifier<bool>(false);
-  ValueNotifier<bool> hiddenNotifier = ValueNotifier<bool>(false);
-  ValueNotifier<bool> listChangeNotifier = ValueNotifier<bool>(false);
-  ValueNotifier<bool> listNotifier = ValueNotifier<bool>(false);
-  ValueNotifier<bool> loadingNotifier = ValueNotifier<bool>(false);
-  ValueNotifier<bool> minimizedNotifier = ValueNotifier<bool>(true);
+
   ValueNotifier<bool> playingNotifier = ValueNotifier<bool>(false);
   ValueNotifier<bool> repeatNotifier = ValueNotifier<bool>(false);
-  ValueNotifier<bool> retrievingChangedNotifier = ValueNotifier<bool>(false);
   ValueNotifier<bool> searchNotifier = ValueNotifier<bool>(false);
   ValueNotifier<bool> shuffleNotifier = ValueNotifier<bool>(false);
-
-
 
   ValueNotifier<Color> colorNotifier = ValueNotifier<Color>(Colors.white); // Light color, for lyrics and sliders
   ValueNotifier<Color> colorNotifier2 = ValueNotifier<Color>(Colors.black); // Dark color, for background of player and window bar
@@ -71,16 +64,7 @@ class Controller{
   ValueNotifier<int> indexNotifier = ValueNotifier<int>(0); // index of the song in the queue that can be shuffled
   ValueNotifier<int> sleepTimerNotifier = ValueNotifier<int>(0);
   ValueNotifier<int> sliderNotifier = ValueNotifier<int>(0);
-  ValueNotifier<int> userMessageProgressNotifier = ValueNotifier<int>(3500);
-
-  ValueNotifier<LyricsReaderModel> lyricModelNotifier = ValueNotifier<LyricsReaderModel>(LyricsReaderModel());
-
-  ValueNotifier<String> plainLyricNotifier = ValueNotifier<String>('');
   ValueNotifier<String> timerNotifier = ValueNotifier<String>('Off');
-  ValueNotifier<String> userMessageNotifier = ValueNotifier<String>('');
-
-  ValueNotifier<Uint8List> imageNotifier = ValueNotifier<Uint8List>(Uint8List(0));
-
 
 
   /// Constructor for the Controller class
@@ -103,9 +87,7 @@ class Controller{
       initDeezer();
     }
 
-
-
-    songBox = ObjectBox.store.box<MetadataType>();
+    songBox = ObjectBox.store.box<SongType>();
     albumBox = ObjectBox.store.box<AlbumType>();
     artistBox = ObjectBox.store.box<ArtistType>();
     playlistBox = ObjectBox.store.box<PlaylistType>();
@@ -137,10 +119,16 @@ class Controller{
       indexChange(controllerQueue[0]);
       playSong();
     }
+    else{
+      if(controllerQueue.isNotEmpty){
+        indexChange(controllerQueue[settings.index]);
+        //playSong();
+      }
+    }
 
   }
 
-  Future<void> addToPlaylist(PlaylistType playlist, List<MetadataType> songs) async {
+  Future<void> addToPlaylist(PlaylistType playlist, List<SongType> songs) async {
     if(playlist.nextAdded == 'last'){
       for(var song in songs){
         if (playlist.paths.contains(song.path)){
@@ -165,7 +153,7 @@ class Controller{
 
   Future<void> addToQueue(List<String> songs) async {
     print("Adding to queue ${songs.length} songs.");
-    loadingNotifier.value = true;
+    //loadingNotifier.value = true;
     if (settings.queueAdd == 'last') {
       //print("last");
       controllerQueue.addAll(songs);
@@ -186,7 +174,7 @@ class Controller{
       settingsBox.put(settings);
     }
     shuffleSongs();
-    loadingNotifier.value = false;
+    //loadingNotifier.value = false;
   }
 
   Future<void> createPlaylist(PlaylistType playlist) async {
@@ -232,7 +220,7 @@ class Controller{
     return artistBox.query().order(ArtistType_.name).build().find();
   }
 
-  Future<Duration> getDuration(MetadataType song) async {
+  Future<Duration> getDuration(SongType song) async {
     try{
       if(song.duration != 0){
         return Duration(seconds: song.duration);
@@ -249,12 +237,8 @@ class Controller{
       return await audioPlayer.getDuration() ?? Duration.zero;
     }
   }
-
-  Future<List<MetadataType>> getSongs() async {
-    return songBox.query().order(MetadataType_.title).order(MetadataType_.title).build().find();
-  }
-
-  Future<Uint8List> imageRetrieve(String path, bool update) async{
+  
+  Future<Uint8List> getImage(String path) async{
     ByteData data = await rootBundle.load('assets/bg.png');
     Uint8List image =  data.buffer.asUint8List();
     var metadataVar = await AudioTags.read(path);
@@ -280,11 +264,215 @@ class Controller{
     else{
       image = metadataVar?.pictures[0].bytes ?? image;
     }
-    if (update){
-      print("image changed");
-      imageNotifier.value = image;
-    }
     return image;
+  }
+
+  Future<String> getLyrics(String path) async{
+    var song = songBox.query(SongType_.path.equals(path)).build().findUnique();
+    if (song == null){
+      return "No lyrics found";
+    }
+    else{
+      if(song.lyricsPath.isEmpty){
+        return "No lyrics found";
+      }
+      else{
+        return File(song.lyricsPath).readAsStringSync();
+      }
+    }
+  }
+
+  Future<List<PlaylistType>> getPlaylists() async {
+    return playlistBox.query().order(PlaylistType_.name).build().find();
+  }
+
+  Future<List<SongType>> getQueue() async {
+    List<SongType> queue = [];
+    for (String path in controllerQueue){
+      var song = songBox.query(SongType_.path.equals(path)).build().findUnique();
+      if(song != null){
+        queue.add(song);
+      }
+      else{
+        queue.add(await getSong(path));
+      }
+    }
+    return queue;
+  }
+
+  Future<SongType> getSong(String path) async {
+    var song = songBox.query(SongType_.path.equals(path)).build().findFirst();
+    if(song != null){
+      return song;
+    }
+    SongType metadataVariable = SongType();
+    metadataVariable.path = path;
+    var metadataVar = await AudioTags.read(path);
+    if(metadataVar == null){
+      print("metadata is null for $path");
+      if(path.endsWith(".flac")) {
+        var flac = FlacInfo(File(path));
+        var metadatas = await flac.readMetadatas();
+        String metadata = metadatas[2].toString();
+        //print(metadata);
+        metadata = metadata.substring(1, metadata.length - 1);
+        List<String> metadata2 = metadata.split(', *1234a678::876a4321*,');
+
+        //print(metadata2);
+        for (var metadate2 in metadata2) {
+          if (metadate2.contains("TITLE=")) {
+            metadataVariable.title = metadate2.substring(6);
+          }
+          if (metadate2.contains("ARTIST=") &&
+              !metadate2.contains("ALBUMARTIST=")) {
+            metadataVariable.artists = metadate2.substring(8);
+          }
+          if(metadate2.contains("ALBUMARTIST=")){
+            metadataVariable.albumArtist = metadate2.substring(12);
+          }
+          if (metadate2.contains("trackNumber=")) {
+            metadataVariable.trackNumber = int.parse(metadate2.substring(13));
+          }
+          if(metadate2.contains("discNumber=")){
+            metadataVariable.discNumber = int.parse(metadate2.substring(12));
+          }
+          if (metadate2.contains("ALBUM=")) {
+            metadataVariable.album = metadate2.substring(7);
+          }
+          if (metadate2.contains("LENGTH=")) {
+            metadataVariable.duration = int.parse(metadate2.substring(8));
+          }
+        }
+      }
+      else {
+        //print(path);
+        var parser = ID3TagReader.path(path);
+        var tags = parser.readTagSync();
+        metadataVariable.title = tags.title ?? path.replaceAll("\\", "/").split("/").last;
+        metadataVariable.artists = tags.artist ?? "Unknown Artist";
+        metadataVariable.album = tags.album ?? 'Unknown Album';
+        metadataVariable.discNumber = int.parse(tags.trackNumber ?? "0");
+        metadataVariable.trackNumber = int.parse(tags.track ?? "0");
+        metadataVariable.duration = tags.duration?.inSeconds ?? 0;
+      }
+    }
+    else {
+      metadataVariable.title = metadataVar.title ?? path.replaceAll("\\", "/").split("/").last;
+      metadataVariable.album = metadataVar.album ?? "Unknown Album";
+      metadataVariable.duration = metadataVar.duration ?? 0;
+      metadataVariable.trackNumber = metadataVar.trackNumber ?? 0;
+      metadataVariable.artists = metadataVar.trackArtist ?? "Unknown Artist";
+      metadataVariable.albumArtist = metadataVar.albumArtist ?? "Unknown Album Artist";
+      metadataVariable.discNumber = metadataVar.discNumber ?? 0;
+    }
+    var lyrPath = path.replaceRange(path.lastIndexOf("."), path.length, ".lrc");
+    //print(lyrPath);
+    bool exists = File(lyrPath).existsSync();
+    //print(exists);
+    if (!exists) {
+      metadataVariable.lyricsPath = "";
+    }
+    else {
+      metadataVariable.lyricsPath = lyrPath;
+    }
+
+    await makeAlbumArtist(metadataVariable);
+
+    if(metadataVariable.duration == 0){
+      print("duration is 0 for $path");
+      var parser = ID3TagReader.path(path);
+      var tags = parser.readTagSync();
+      metadataVariable.duration = tags.duration?.inSeconds ?? 0;
+    }
+    songBox.put(metadataVariable);
+    return metadataVariable;
+  }
+
+  Future<List<SongType>> getSongs() async {
+    // Use a Set for faster lookup operations
+    Set<String> paths = songBox.getAll().map((e) => e.path).toSet();
+
+    // Remove paths that no longer exist asynchronously
+    List<String> toRemove = [];
+    for (String path in paths) {
+      if (!await File(path).exists()) {
+        toRemove.add(path);
+      }
+    }
+    for (String path in toRemove) {
+      var query = songBox.query(SongType_.path.equals(path)).build();
+      var result = query.findFirst();  // Use findFirst() for safety
+      if (result != null) {
+        songBox.remove(result.id);
+        if(controllerQueue.contains(path)){
+          if(controllerQueue[indexNotifier.value] == path){
+            indexChange(controllerQueue[0]);
+          }
+          controllerQueue.remove(path);
+          settings.queue.remove(path);
+        }
+      }
+    }
+
+    // Use a Queue for efficient directory traversal
+    Queue<Directory> dirs = Queue<Directory>();
+    dirs.add(Directory(settings.directory));
+
+    //List<MetadataType> newSongs = [];
+
+    while (dirs.isNotEmpty) {
+      final dir = dirs.removeFirst();
+      await for (FileSystemEntity entity in dir.list(followLinks: false)) {
+        if (entity is File) {
+          String path = entity.path.replaceAll("\\", "/");
+          if (path.endsWith(".flac") || path.endsWith(".mp3") || path.endsWith(".wav") || path.endsWith(".m4a")) {
+            if (!paths.contains(path)) {
+              paths.add(path);
+              await getSong(path);
+              //newSongs.add(await retrieveSong(path));  // Async operation to retrieve song metadata
+            }
+          }
+        } else if (entity is Directory) {
+          dirs.add(Directory(entity.path));
+        }
+      }
+    }
+    //await makeAlbumsArtists(newSongs);
+
+    if (settings.queue.isEmpty){
+      print("empty");
+      List<String> initialQueue = songBox.query().order(SongType_.title).build().find().map((e) => e.path).toList();
+      print(initialQueue.length);
+      controllerQueue.addAll(initialQueue);
+      settings.queue.addAll(initialQueue);
+    }
+    if(controllerQueue.isEmpty){
+      controllerQueue.addAll(settings.queue);
+      settings.index = 0;
+      indexNotifier.value = 0;
+      indexChange(controllerQueue[0]);
+    }
+
+    // if(!playingNotifier.value){
+    //   try{
+    //     indexChange(controllerQueue[settings.index]);
+    //   }
+    //   catch(e){
+    //     print(e);
+    //     indexChange(controllerQueue[0]);
+    //   }
+    // }
+    if(settings.firstTime){
+      settings.firstTime = false;
+    }
+    settingsBox.put(settings);
+    if(firstTimeRetrieving){
+      firstTimeRetrieving = false;
+      finishedRetrievingNotifier.value = true;
+    }
+
+    //finishedRetrievingNotifier.value = true;
+    return songBox.query().order(SongType_.title).build().find();
   }
 
   Future<void> indexChange(String song) async{
@@ -293,29 +481,6 @@ class Controller{
     indexNotifier.value = controllerQueue.indexOf(song);
     settings.index = settings.queue.indexOf(song);
     settingsBox.put(settings);
-
-    await imageRetrieve(song, true);
-    DominantColors extractor = DominantColors(bytes: imageNotifier.value, dominantColorsCount: 2);
-    var colors = extractor.extractDominantColors();
-    if(colors.first.computeLuminance() > 0.179 && colors.last.computeLuminance() > 0.179){
-      colorNotifier.value = colors.first;
-      colorNotifier2.value = Colors.black;
-    }
-    else if (colors.first.computeLuminance() < 0.179 && colors.last.computeLuminance() < 0.179){
-      colorNotifier.value = Colors.blue;
-      colorNotifier2.value = colors.first;
-    }
-    else{
-      if(colors.first.computeLuminance() > 0.179){
-        colorNotifier.value = colors.first;
-        colorNotifier2.value = colors.last;
-      }
-      else{
-        colorNotifier.value = colors.last;
-        colorNotifier2.value = colors.first;
-      }
-    }
-    lyricModelReset();
   }
 
   Future<dynamic> initDeezer() async {
@@ -325,11 +490,6 @@ class Controller{
     catch(e){
       print(e);
     }
-  }
-
-  Future<void> initImage() async {
-    ByteData data = await rootBundle.load('assets/bg.png');
-    imageNotifier = ValueNotifier<Uint8List>(data.buffer.asUint8List());
   }
 
   Future<void> initSystemTray() async {
@@ -416,32 +576,7 @@ class Controller{
 
   }
 
-  void lyricModelReset() {
-    //print(queue[indexNotifier.value].lyricsPath);
-    try {
-      var song = songBox.query(MetadataType_.path.equals(controllerQueue[indexNotifier.value])).build().find().first;
-      if (song.lyricsPath.contains(".lrc")) {
-        File lyrFile = File(song.lyricsPath);
-        lyricModelNotifier.value = LyricsModelBuilder.create().bindLyricToMain(lyrFile.readAsStringSync()).getModel();
-        if (lyricModelNotifier.value.lyrics.isEmpty) {
-          lyricModelNotifier.value = LyricsModelBuilder.create().bindLyricToMain("No lyrics").getModel();
-          plainLyricNotifier.value = lyrFile.readAsStringSync();
-        }
-      }
-      else {
-        lyricModelNotifier.value = LyricsModelBuilder.create().bindLyricToMain("No lyrics").getModel();
-        plainLyricNotifier.value = "No lyrics";
-      }
-    }
-    catch(e){
-      print(e);
-      //rethrow;
-      lyricModelNotifier.value = LyricsModelBuilder.create().bindLyricToMain("No lyrics").getModel();
-      plainLyricNotifier.value = "No lyrics";
-    }
-  }
-
-  Future<void> makeAlbumArtist(MetadataType metadataVariable) async {
+  Future<void> makeAlbumArtist(SongType metadataVariable) async {
     Query<AlbumType> albumQuery = albumBox.query(AlbumType_.name.equals(metadataVariable.album)).build();
     AlbumType? album = albumQuery.findUnique();
     if (album == null){
@@ -534,164 +669,16 @@ class Controller{
       settings.index = settings.queue.indexOf(current);
     }
     settingsBox.put(settings);
-
-
-    listChangeNotifier.value = !listChangeNotifier.value;
   }
 
-  Future<MetadataType> retrieveSong(String path) async {
-    var song = songBox.query(MetadataType_.path.equals(path)).build().findUnique();
-    if(song != null){
-      return song;
-    }
-    MetadataType metadataVariable = MetadataType();
-    metadataVariable.path = path;
-    var metadataVar = await AudioTags.read(path);
-    if(metadataVar == null){
-      print("metadata is null for $path");
-      if(path.endsWith(".flac")) {
-        var flac = FlacInfo(File(path));
-        var metadatas = await flac.readMetadatas();
-        String metadata = metadatas[2].toString();
-        //print(metadata);
-        metadata = metadata.substring(1, metadata.length - 1);
-        List<String> metadata2 = metadata.split(', *1234a678::876a4321*,');
-
-        //print(metadata2);
-        for (var metadate2 in metadata2) {
-          if (metadate2.contains("TITLE=")) {
-            metadataVariable.title = metadate2.substring(6);
-          }
-          if (metadate2.contains("ARTIST=") &&
-              !metadate2.contains("ALBUMARTIST=")) {
-            metadataVariable.artists = metadate2.substring(8);
-          }
-          if(metadate2.contains("ALBUMARTIST=")){
-            metadataVariable.albumArtist = metadate2.substring(12);
-          }
-          if (metadate2.contains("trackNumber=")) {
-            metadataVariable.trackNumber = int.parse(metadate2.substring(13));
-          }
-          if(metadate2.contains("discNumber=")){
-            metadataVariable.discNumber = int.parse(metadate2.substring(12));
-          }
-          if (metadate2.contains("ALBUM=")) {
-            metadataVariable.album = metadate2.substring(7);
-          }
-          if (metadate2.contains("LENGTH=")) {
-            metadataVariable.duration = int.parse(metadate2.substring(8));
-          }
-        }
-      }
-      else {
-        //print(path);
-        var parser = ID3TagReader.path(path);
-        var tags = parser.readTagSync();
-        metadataVariable.title = tags.title ?? path.replaceAll("\\", "/").split("/").last;
-        metadataVariable.artists = tags.artist ?? "Unknown Artist";
-        metadataVariable.album = tags.album ?? 'Unknown Album';
-        metadataVariable.discNumber = int.parse(tags.trackNumber ?? "0");
-        metadataVariable.trackNumber = int.parse(tags.track ?? "0");
-        metadataVariable.duration = tags.duration?.inSeconds ?? 0;
-      }
-    }
-    else {
-      metadataVariable.title = metadataVar.title ?? path.replaceAll("\\", "/").split("/").last;
-      metadataVariable.album = metadataVar.album ?? "Unknown Album";
-      metadataVariable.duration = metadataVar.duration ?? 0;
-      metadataVariable.trackNumber = metadataVar.trackNumber ?? 0;
-      metadataVariable.artists = metadataVar.trackArtist ?? "Unknown Artist";
-      metadataVariable.albumArtist = metadataVar.albumArtist ?? "Unknown Album Artist";
-      metadataVariable.discNumber = metadataVar.discNumber ?? 0;
-    }
-    var lyrPath = path.replaceRange(path.lastIndexOf("."), path.length, ".lrc");
-    //print(lyrPath);
-    bool exists = File(lyrPath).existsSync();
-    //print(exists);
-    if (!exists) {
-      metadataVariable.lyricsPath = "";
-    }
-    else {
-      metadataVariable.lyricsPath = lyrPath;
-    }
-
-    await makeAlbumArtist(metadataVariable);
-
-    if(metadataVariable.duration == 0){
-      print("duration is 0 for $path");
-      var parser = ID3TagReader.path(path);
-      var tags = parser.readTagSync();
-      metadataVariable.duration = tags.duration?.inSeconds ?? 0;
-    }
-    songBox.put(metadataVariable);
-    return metadataVariable;
-  }
-
-  Future<void> retrieveSongs() async {
-    // Use a Set for faster lookup operations
-    Set<String> paths = songBox.getAll().map((e) => e.path).toSet();
-
-    // Remove paths that no longer exist asynchronously
-    List<String> toRemove = [];
-    for (String path in paths) {
-      if (!await File(path).exists()) {
-        toRemove.add(path);
-      }
-    }
-    for (String path in toRemove) {
-      var query = songBox.query(MetadataType_.path.equals(path)).build();
-      var result = query.findFirst();  // Use findFirst() for safety
-      if (result != null) {
-        songBox.remove(result.id);
-      }
-    }
-
-    // Use a Queue for efficient directory traversal
-    Queue<Directory> dirs = Queue<Directory>();
-    dirs.add(Directory(settings.directory));
-
-    //List<MetadataType> newSongs = [];
-
-    while (dirs.isNotEmpty) {
-      final dir = dirs.removeFirst();
-      await for (FileSystemEntity entity in dir.list(followLinks: false)) {
-        if (entity is File) {
-          String path = entity.path.replaceAll("\\", "/");
-          if (path.endsWith(".flac") || path.endsWith(".mp3") || path.endsWith(".wav") || path.endsWith(".m4a")) {
-            if (!paths.contains(path)) {
-              paths.add(path);
-              await retrieveSong(path);
-              //newSongs.add(await retrieveSong(path));  // Async operation to retrieve song metadata
-            }
-          }
-        } else if (entity is Directory) {
-          dirs.add(Directory(entity.path));
-        }
-      }
-    }
-    //await makeAlbumsArtists(newSongs);
-
-    if (settings.queue.isEmpty){
-      print("empty");
-      List<String> initialQueue = songBox.query().order(MetadataType_.title).build().find().map((e) => e.path).toList();
-      print(initialQueue.length);
-      controllerQueue.addAll(initialQueue);
-      settings.queue.addAll(initialQueue);
-    }
-    if(controllerQueue.isEmpty){
-      controllerQueue.addAll(settings.queue);
-    }
-    if(!playingNotifier.value){
-      try{
-        indexChange(controllerQueue[settings.index]);
-      }
-      catch(e){
-        print(e);
-        indexChange(controllerQueue[0]);
-      }
-    }
-
-    finishedRetrievingNotifier.value = true;
+  void reset(){
+    finishedRetrievingNotifier.value = false;
+    songBox.removeAll();
+    albumBox.removeAll();
+    artistBox.removeAll();
+    playlistBox.removeAll();
+    controllerQueue.clear();
+    firstTimeRetrieving = true;
   }
 
   Future<dynamic> searchDeezer(String searchValue) async {
@@ -721,19 +708,19 @@ class Controller{
     //final String trackId = getResponseJson['data'][0]['id'].toString();
   }
 
-  Future<List<MetadataType>> searchLocal(String enteredKeyword) async {
-    var query = songBox.query(MetadataType_.title.contains(enteredKeyword, caseSensitive: false) | MetadataType_.artists.contains(enteredKeyword, caseSensitive: false) | MetadataType_.album.contains(enteredKeyword, caseSensitive: false)).order(MetadataType_.title).build();
+  Future<List<SongType>> searchLocal(String enteredKeyword) async {
+    var query = songBox.query(SongType_.title.contains(enteredKeyword, caseSensitive: false) | SongType_.artists.contains(enteredKeyword, caseSensitive: false) | SongType_.album.contains(enteredKeyword, caseSensitive: false)).order(SongType_.title).build();
     query.limit = 25;
     return query.find();
   }
 
-  Future<void> searchLyrics() async {
-    plainLyricNotifier.value = 'Searching for lyrics...';
+  Future<List<String>> searchLyrics() async {
+    //plainLyricNotifier.value = 'Searching for lyrics...';
     final Map<String, String> cookies = {'arl': settings.deezerARL};
     final Map<String, String> params = {'jo': 'p', 'rto': 'c', 'i': 'c'};
     const String loginUrl = 'https://auth.deezer.com/login/arl';
     const String deezerApiUrl = 'https://pipe.deezer.com/api';
-    MetadataType song = songBox.query(MetadataType_.path.equals(controllerQueue[indexNotifier.value])).build().find().first;
+    SongType song = songBox.query(SongType_.path.equals(controllerQueue[indexNotifier.value])).build().find().first;
     String title = song.title;
     String artist = song.artists;
     String path = song.path;
@@ -852,8 +839,8 @@ class Controller{
     }
     //print(plainLyric);
 
-    lyricModelNotifier.value = LyricsModelBuilder.create().bindLyricToMain(syncedLyric).getModel();
-    plainLyricNotifier.value = plainLyric;
+    // lyricModelNotifier.value = LyricsModelBuilder.create().bindLyricToMain(syncedLyric).getModel();
+    // plainLyricNotifier.value = plainLyric;
 
     if(syncedLyric != 'No lyrics found'){
       var lyrPath = path.replaceAll(".mp3", ".lrc")
@@ -876,6 +863,7 @@ class Controller{
       song.lyricsPath = lyrFile.path;
     }
     songBox.put(song);
+    return [plainLyric, syncedLyric];
   }
 
   void setRepeat() {
@@ -959,20 +947,20 @@ class Controller{
     if(settings.appNotifications == false){
       return;
     }
-    userMessageNotifier.value = message;
-    Timer.periodic(
-      const Duration(milliseconds: 10),
-          (timer) {
-        if(userMessageProgressNotifier.value > 0){
-          userMessageProgressNotifier.value -= 10;
-        }
-        else{
-          timer.cancel();
-          userMessageNotifier.value = "";
-          userMessageProgressNotifier.value = duration;
-        }
-      },
-    );
+    // userMessageNotifier.value = message;
+    // Timer.periodic(
+    //   const Duration(milliseconds: 10),
+    //       (timer) {
+    //     if(userMessageProgressNotifier.value > 0){
+    //       userMessageProgressNotifier.value -= 10;
+    //     }
+    //     else{
+    //       timer.cancel();
+    //       userMessageNotifier.value = "";
+    //       userMessageProgressNotifier.value = duration;
+    //     }
+    //   },
+    // );
   }
 
   void shuffleSongs(){
@@ -998,8 +986,31 @@ class Controller{
     });
   }
 
+  Future<void> updateColors(Uint8List image) async {
+    DominantColors extractor = DominantColors(bytes: image, dominantColorsCount: 2);
+    var colors = extractor.extractDominantColors();
+    if(colors.first.computeLuminance() > 0.15 && colors.last.computeLuminance() > 0.15){
+      colorNotifier.value = colors.first;
+      colorNotifier2.value = Colors.black;
+    }
+    else if (colors.first.computeLuminance() < 0.15 && colors.last.computeLuminance() < 0.15){
+      colorNotifier.value = Colors.blue;
+      colorNotifier2.value = colors.first;
+    }
+    else{
+      if(colors.first.computeLuminance() > 0.15){
+        colorNotifier.value = colors.first;
+        colorNotifier2.value = colors.last;
+      }
+      else{
+        colorNotifier.value = colors.last;
+        colorNotifier2.value = colors.first;
+      }
+    }
+  }
+
   Future<void> updatePlaying(List<String> songs, int index) async {
-    loadingNotifier.value = true;
+    //loadingNotifier.value = true;
     //print(settings.queuePlay);
     if(settings.queuePlay == 'all'){
       settings.queue.clear();
@@ -1015,6 +1026,6 @@ class Controller{
     else{
       addToQueue([songs[index]]);
     }
-    loadingNotifier.value = false;
+    //loadingNotifier.value = false;
   }
 }

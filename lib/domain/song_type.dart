@@ -1,7 +1,7 @@
 import 'package:objectbox/objectbox.dart';
 
 @Entity()
-class MetadataType{
+class SongType{
   @Id()
   int id = 0;
   String title = "Unknown Song";
@@ -16,7 +16,7 @@ class MetadataType{
 
   @override
   bool operator ==(Object other) =>
-    other is MetadataType && other.runtimeType == runtimeType && other.path == path;
+    other is SongType && other.runtimeType == runtimeType && other.path == path;
 
   @override
   int get hashCode => path.hashCode;

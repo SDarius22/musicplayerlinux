@@ -2,7 +2,7 @@ import 'package:collection/collection.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:musicplayer/utils/hover_widget/hover_container.dart';
-import '../domain/metadata_type.dart';
+import '../domain/song_type.dart';
 import 'package:musicplayer/domain/playlist_type.dart';
 import '../controller/controller.dart';
 import '../utils/objectbox.g.dart';
@@ -22,13 +22,13 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
   ValueNotifier<bool> editMode = ValueNotifier<bool>(false);
   String featuredArtists = "";
   String duration = "0 seconds";
-  ValueNotifier<List<MetadataType>> songs = ValueNotifier<List<MetadataType>>([]);
+  ValueNotifier<List<SongType>> songs = ValueNotifier<List<SongType>>([]);
 
 
   @override
   void initState() {
     for (int i = 0; i < widget.playlist.paths.length; i++){
-      MetadataType song = widget.controller.songBox.query(MetadataType_.path.equals(widget.playlist.paths[i])).build().find().first;
+      SongType song = widget.controller.songBox.query(SongType_.path.equals(widget.playlist.paths[i])).build().find().first;
        songs.value.add(song);
     }
     int totalDuration = 0;
@@ -285,7 +285,7 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
                       itemCount:  songs.value.length,
                       itemBuilder: (context, int index) {
                         //print("Building ${widget.playlist. songs.value[widget.playlist.order[index]].title}");
-                        MetadataType song =  songs.value[index];
+                        SongType song =  songs.value[index];
                         return AnimatedContainer(
                           duration: const Duration(milliseconds: 500),
                           curve: Curves.easeInOut,
@@ -378,7 +378,7 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
                             ),
                             itemBuilder: (context, int index) {
                               //print("Building ${widget.playlist. songs.value[widget.playlist.order[index]].title}");
-                              MetadataType song =  songs.value[index];
+                              SongType song =  songs.value[index];
                               return AnimatedContainer(
                                 key: Key('$index'),
                                 duration: const Duration(milliseconds: 500),

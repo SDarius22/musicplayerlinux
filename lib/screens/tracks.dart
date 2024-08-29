@@ -5,7 +5,7 @@ import 'package:musicplayer/screens/add_screen.dart';
 import 'package:musicplayer/screens/image_widget.dart';
 
 
-import '../domain/metadata_type.dart';
+import '../domain/song_type.dart';
 import '../utils/objectbox.g.dart';
 import '../controller/controller.dart';
 import 'album_screen.dart';
@@ -24,7 +24,6 @@ class _TracksState extends State<Tracks>{
   Widget build(BuildContext context) {
     var width = MediaQuery.of(context).size.width;
     var height = MediaQuery.of(context).size.height;
-    var query = widget.controller.songBox.query().order(MetadataType_.title).build();
     // var boldSize = height * 0.025;
     // var normalSize = height * 0.02;
     var smallSize = height * 0.015;
@@ -64,7 +63,12 @@ class _TracksState extends State<Tracks>{
             ),
           );
         }
-        else if(snapshot.hasData && snapshot.data!.isNotEmpty){
+        else if(snapshot.hasData){
+          if (snapshot.data!.isEmpty){
+            return Center(
+              child: Text("No songs found", style: TextStyle(color: Colors.white, fontSize: smallSize),),
+            );
+          }
           return GridView.builder(
             padding: EdgeInsets.only(
               left: width * 0.01,
@@ -72,7 +76,7 @@ class _TracksState extends State<Tracks>{
               top: height * 0.01,
               bottom: width * 0.125,
             ),
-            itemCount: query.find().length,
+            itemCount: snapshot.data!.length,
             gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
               childAspectRatio: 0.825,
               maxCrossAxisExtent: width * 0.125,
@@ -80,16 +84,15 @@ class _TracksState extends State<Tracks>{
               //mainAxisSpacing: width * 0.0125,
             ),
             itemBuilder: (BuildContext context, int index) {
-              MetadataType song = query.find()[index];
+              SongType song = snapshot.data![index];
               return MouseRegion(
                 cursor: SystemMouseCursors.click,
                 child: GestureDetector(
                   onTap: () async {
-                    widget.controller.loadingNotifier.value = true;
                     //print("Playing ${widget.controller.indexNotifier.value}");
                     if (widget.controller.controllerQueue[widget.controller.indexNotifier.value] != song.path) {
                       //print("path match");
-                      var songPaths = query.find().map((e) => e.path).toList();
+                      var songPaths = snapshot.data!.map((e) => e.path).toList();
                       if(widget.controller.settings.queue.equals(songPaths) == false){
                         print("Updating playing songs");
                         widget.controller.updatePlaying(songPaths, index);
@@ -97,7 +100,6 @@ class _TracksState extends State<Tracks>{
                       widget.controller.indexChange(song.path);
                     }
                     await widget.controller.playSong();
-                    widget.controller.loadingNotifier.value = false;
                   },
                   child: Column(
                     children: [
@@ -187,13 +189,10 @@ class _TracksState extends State<Tracks>{
           );
         }
         else{
-          if(widget.controller.finishedRetrievingNotifier.value == true){
-            return Center(
-              child: Text("You have no songs", style: TextStyle(color: Colors.white, fontSize: smallSize),),
-            );
-          }
           return const Center(
-            child: CircularProgressIndicator(),
+            child: CircularProgressIndicator(
+              color: Colors.white,
+            ),
           );
         }
       }

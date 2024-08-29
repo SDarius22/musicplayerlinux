@@ -27,7 +27,7 @@ class _HomePageState extends State<HomePage>{
   void initState(){
     super.initState();
     widget.controller.initDeezer();
-    widget.controller.retrieveSongs();
+    //widget.controller.retrieveSongs();
   }
 
   @override
@@ -191,7 +191,6 @@ class _HomePageState extends State<HomePage>{
                 ),
               ),
             ),
-
           ],
         ),
       ),
