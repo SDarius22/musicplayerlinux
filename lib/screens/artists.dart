@@ -1,7 +1,6 @@
 import 'package:collection/collection.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
-import 'package:musicplayer/utils/objectbox.g.dart';
 import '../controller/controller.dart';
 import '../domain/artist_type.dart';
 import 'add_screen.dart';

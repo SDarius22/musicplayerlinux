@@ -349,16 +349,16 @@ class _MyAppState extends State<MyApp>{
                              }
                             }
                             if(songs.isNotEmpty) {
-                              widget.controller.finishedRetrievingNotifier.value = false;
-                              for(var song in songs){
-                                await widget.controller.getSong(song);
-                              }
+                              // widget.controller.finishedRetrievingNotifier.value = false;
+                              // for(var song in songs){
+                              //   await widget.controller.getSong(song);
+                              // }
                               widget.controller.updatePlaying(songs, 0);
                               widget.controller.indexChange(songs[0]);
                               await widget.controller.playSong();
                               //widget.controller.showNotification("Playing ${songs.length} new song${songs.length == 1 ? '' : 's'}. Do you want to add ${songs.length == 1 ? 'it' : 'them'} to your library?", 7500);
                               widget.controller.showNotification("Playing ${songs.length} new song${songs.length == 1 ? '' : 's'} and adding them to your library", 7500);
-                              widget.controller.finishedRetrievingNotifier.value = true;
+                              //widget.controller.finishedRetrievingNotifier.value = true;
 
                             }
                           },

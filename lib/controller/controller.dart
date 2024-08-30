@@ -48,7 +48,7 @@ class Controller{
 
   ValueNotifier<bool> downloadNotifier = ValueNotifier<bool>(false);
   ValueNotifier<bool> finishedRetrievingNotifier = ValueNotifier<bool>(false);
-
+  ValueNotifier<bool> hasBeenChanged = ValueNotifier<bool>(false);
   ValueNotifier<bool> playingNotifier = ValueNotifier<bool>(false);
   ValueNotifier<bool> repeatNotifier = ValueNotifier<bool>(false);
   ValueNotifier<bool> searchNotifier = ValueNotifier<bool>(false);
@@ -481,6 +481,7 @@ class Controller{
     indexNotifier.value = controllerQueue.indexOf(song);
     settings.index = settings.queue.indexOf(song);
     settingsBox.put(settings);
+    hasBeenChanged.value = !hasBeenChanged.value;
   }
 
   Future<dynamic> initDeezer() async {

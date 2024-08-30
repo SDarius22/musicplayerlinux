@@ -5,7 +5,6 @@ import 'package:musicplayer/domain/album_type.dart';
 import 'package:musicplayer/screens/add_screen.dart';
 import 'package:musicplayer/screens/album_screen.dart';
 import '../controller/controller.dart';
-import '../utils/objectbox.g.dart';
 import 'image_widget.dart';
 
 

@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'dart:ui';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
@@ -8,7 +7,6 @@ import '../utils/lyric_reader/lyrics_reader_model.dart';
 import '../utils/multivaluelistenablebuilder/mvlb.dart';
 import '../controller/controller.dart';
 import '../utils/lyric_reader/lyrics_reader.dart';
-import '../utils/objectbox.g.dart';
 import '../utils/progress_bar/audio_video_progress_bar.dart';
 import 'image_widget.dart';
 import 'package:flutter/foundation.dart';
@@ -77,7 +75,7 @@ class _SongPlayerWidgetState extends State<SongPlayerWidget> {
         );
       });
     });
-    widget.controller.indexNotifier.addListener(() {
+    widget.controller.hasBeenChanged.addListener(() {
       setState(() {
         imageFuture = Future(() async {
           Uint8List image = await widget.controller.getImage(widget.controller.controllerQueue[widget.controller.indexNotifier.value]);

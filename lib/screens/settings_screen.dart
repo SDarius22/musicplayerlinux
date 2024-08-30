@@ -4,8 +4,6 @@ import 'package:file_picker/file_picker.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:musicplayer/screens/create_screen.dart';
 import 'package:musicplayer/screens/export_screen.dart';
-import 'package:musicplayer/screens/home.dart';
-import 'package:musicplayer/screens/main_screen.dart';
 import '../controller/controller.dart';
 
 class SettingsScreen extends StatefulWidget {
