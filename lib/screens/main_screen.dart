@@ -2,7 +2,6 @@ import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:desktop_drop/desktop_drop.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
-import 'package:musicplayer/screens/search_widget.dart';
 import 'package:musicplayer/screens/song_player_widget.dart';
 import '../controller/controller.dart';
 import 'settings_screen.dart';
@@ -157,30 +156,6 @@ class _MyAppState extends State<MyApp>{
                                     ),
                                     IconButton(
                                       onPressed: (){
-                                        print("Search");
-                                        widget.controller.searchNotifier.value = !widget.controller.searchNotifier.value;
-                                        widget.controller.downloadNotifier.value = false;
-                                      },
-                                      icon: Icon(
-                                        FluentIcons.search_16_filled,
-                                        size: height * 0.02,
-                                        color: Colors.white,
-                                      )
-                                    ),
-                                    IconButton(
-                                      onPressed: () async {
-                                        print("Download");
-                                        widget.controller.downloadNotifier.value = !widget.controller.downloadNotifier.value;
-                                        widget.controller.searchNotifier.value = false;
-                                      },
-                                      icon: Icon(
-                                        FluentIcons.arrow_download_16_filled,
-                                        size: height * 0.02,
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                    IconButton(
-                                      onPressed: (){
                                         print("Tapped settings");
                                         widget.controller.navigatorKey.currentState!.push(MaterialPageRoute(builder: (BuildContext context){
                                           return SettingsScreen(controller: widget.controller,);
@@ -276,50 +251,6 @@ class _MyAppState extends State<MyApp>{
                         alignment: Alignment.bottomCenter,
                         child: SongPlayerWidget(controller: widget.controller),
                       ),
-                    ValueListenableBuilder(
-                        valueListenable: widget.controller.searchNotifier,
-                        builder: (context, value, child){
-                          return AnimatedSwitcher(
-                            duration: const Duration(milliseconds: 500),
-                            child: value ? GestureDetector(
-                              key: const Key("Search Widget"),
-                              onTap: (){
-                                widget.controller.searchNotifier.value = false;
-                              },
-                              child: Container(
-                                width: width,
-                                height: height,
-                                color: Colors.black.withOpacity(0.3),
-                                child: SearchWidget(controller: widget.controller, download: false,),
-                              ),
-                            ) : Container(
-                              key: const Key("Search Off"),
-                            ),
-                          );
-                        }
-                    ),
-                    ValueListenableBuilder(
-                        valueListenable: widget.controller.downloadNotifier,
-                        builder: (context, value, child){
-                          return AnimatedSwitcher(
-                            duration: const Duration(milliseconds: 500),
-                            child: value ? GestureDetector(
-                              key: const Key("Search Widget"),
-                              onTap: (){
-                                widget.controller.downloadNotifier.value = false;
-                              },
-                              child: Container(
-                                width: width,
-                                height: height,
-                                color: Colors.black.withOpacity(0.3),
-                                child: SearchWidget(controller: widget.controller, download: true),
-                              ),
-                            ) : Container(
-                              key: const Key("Search Off"),
-                            ),
-                          );
-                        }
-                    ),
                     // ValueListenableBuilder(
                     //     valueListenable: widget.controller.userMessageNotifier,
                     //     builder: (context, value, child){

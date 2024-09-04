@@ -193,17 +193,6 @@ class Controller{
     }
   }
 
-  Future<void> downloadSong(dynamic song) async {
-    final stream = instance.streamSong(song['id'].toString());
-    File streamFile = File("${settings.directory}/${song['title']}.mp3");
-    IOSink sink = streamFile.openWrite();
-    await for (List<int> chunk in stream) {
-      sink.add(chunk);
-    }
-    await sink.flush();
-    await sink.close();
-  }
-
   Future<void> exportPlaylist(PlaylistType playlist) async {
     var file = File("${settings.directory}/${playlist.name}.m3u");
     file.writeAsStringSync("#EXTM3U\n");
@@ -212,12 +201,12 @@ class Controller{
     }
   }
 
-  Future<List<AlbumType>> getAlbums() async {
-    return albumBox.query().order(AlbumType_.name).build().find();
+  Future<List<AlbumType>> getAlbums(String searchValue) async {
+    return albumBox.query(AlbumType_.name.contains(searchValue, caseSensitive: false)).order(AlbumType_.name).build().find();
   }
 
-  Future<List<ArtistType>> getArtists() async {
-    return artistBox.query().order(ArtistType_.name).build().find();
+  Future<List<ArtistType>> getArtists(String searchValue) async {
+    return artistBox.query(ArtistType_.name.contains(searchValue, caseSensitive: false)).order(ArtistType_.name).build().find();
   }
 
   Future<Duration> getDuration(SongType song) async {
@@ -267,29 +256,35 @@ class Controller{
     return image;
   }
 
-  Future<String> getLyrics(String path) async{
-    var song = songBox.query(SongType_.path.equals(path)).build().findUnique();
+  Future<List<String>> getLyrics(String path) async{
+    var song = songBox.query(SongType_.path.equals(path)).build().findFirst();
     if (song == null){
-      return "No lyrics found";
+      return ["No lyrics found", "No lyrics found"];
     }
     else{
       if(song.lyricsPath.isEmpty){
-        return "No lyrics found";
+        try {
+          return await searchLyrics(path);
+        }
+        catch(e){
+          print(e);
+          return ["No lyrics found", "No lyrics found"];
+        }
       }
       else{
-        return File(song.lyricsPath).readAsStringSync();
+        return [File(song.lyricsPath).readAsStringSync(), File(song.lyricsPath).readAsStringSync()];
       }
     }
   }
 
-  Future<List<PlaylistType>> getPlaylists() async {
-    return playlistBox.query().order(PlaylistType_.name).build().find();
+  Future<List<PlaylistType>> getPlaylists(String searchValue) async {
+    return playlistBox.query(PlaylistType_.name.contains(searchValue, caseSensitive: false)).order(PlaylistType_.name).build().find();
   }
 
   Future<List<SongType>> getQueue() async {
     List<SongType> queue = [];
     for (String path in controllerQueue){
-      var song = songBox.query(SongType_.path.equals(path)).build().findUnique();
+      var song = songBox.query(SongType_.path.equals(path)).build().findFirst();
       if(song != null){
         queue.add(song);
       }
@@ -388,7 +383,7 @@ class Controller{
     return metadataVariable;
   }
 
-  Future<List<SongType>> getSongs() async {
+  Future<List<SongType>> getSongs(String searchValue) async {
     // Use a Set for faster lookup operations
     Set<String> paths = songBox.getAll().map((e) => e.path).toSet();
 
@@ -472,7 +467,7 @@ class Controller{
     }
 
     //finishedRetrievingNotifier.value = true;
-    return songBox.query().order(SongType_.title).build().find();
+    return songBox.query(SongType_.title.contains(searchValue, caseSensitive: false)).order(SongType_.title).build().find();
   }
 
   Future<void> indexChange(String song) async{
@@ -579,7 +574,7 @@ class Controller{
 
   Future<void> makeAlbumArtist(SongType metadataVariable) async {
     Query<AlbumType> albumQuery = albumBox.query(AlbumType_.name.equals(metadataVariable.album)).build();
-    AlbumType? album = albumQuery.findUnique();
+    AlbumType? album = albumQuery.findFirst();
     if (album == null){
       album = AlbumType();
       album.name = metadataVariable.album;
@@ -593,7 +588,7 @@ class Controller{
     List<String> songArtists = metadataVariable.artists.split("; ");
     for (String artist in songArtists){
       Query<ArtistType> artistQuery = artistBox.query(ArtistType_.name.equals(artist)).build();
-      ArtistType? artistType = artistQuery.findUnique();
+      ArtistType? artistType = artistQuery.findFirst();
       if (artistType == null){
         artistType = ArtistType();
         artistType.name = artist;
@@ -687,26 +682,15 @@ class Controller{
       return [];
     }
     final Map<String, String> cookies = {'arl': settings.deezerARL};
-    final Map<String, String> params = {'jo': 'p', 'rto': 'c', 'i': 'c'};
-    const String loginUrl = 'https://auth.deezer.com/login/arl';
-    String searchUrl = 'https://api.deezer.com/search?q=$searchValue&limit=25&index=0&output=json';
+    String searchUrl = 'https://api.deezer.com/search?q=$searchValue&limit=56&index=0&output=json';
     print(searchUrl);
-
-    final Uri uri = Uri.parse(loginUrl).replace(queryParameters: params);
-    final http.Request postRequest = http.Request('POST', uri);
-    postRequest.headers.addAll({
-      'Content-Type': 'application/json',
-      'Cookie': 'arl=${cookies['arl']}'
-    });
 
     final http.Response getResponse = await http.get(Uri.parse(searchUrl), headers: {
       'Cookie': 'arl=${cookies['arl']}',
     });
 
     final Map<String, dynamic> getResponseJson = jsonDecode(getResponse.body);
-    //print(getResponseJson['data'][0]);
     return(getResponseJson['data']);
-    //final String trackId = getResponseJson['data'][0]['id'].toString();
   }
 
   Future<List<SongType>> searchLocal(String enteredKeyword) async {
@@ -715,16 +699,15 @@ class Controller{
     return query.find();
   }
 
-  Future<List<String>> searchLyrics() async {
+  Future<List<String>> searchLyrics(String path) async {
     //plainLyricNotifier.value = 'Searching for lyrics...';
     final Map<String, String> cookies = {'arl': settings.deezerARL};
     final Map<String, String> params = {'jo': 'p', 'rto': 'c', 'i': 'c'};
     const String loginUrl = 'https://auth.deezer.com/login/arl';
     const String deezerApiUrl = 'https://pipe.deezer.com/api';
-    SongType song = songBox.query(SongType_.path.equals(controllerQueue[indexNotifier.value])).build().find().first;
+    SongType song = songBox.query(SongType_.path.equals(path)).build().find().first;
     String title = song.title;
     String artist = song.artists;
-    String path = song.path;
     String searchUrl = 'https://api.deezer.com/search?q=$title-$artist&limit=1&index=0&output=json';
     print(searchUrl);
 

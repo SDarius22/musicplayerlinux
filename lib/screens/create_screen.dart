@@ -76,7 +76,7 @@ class _CreateScreenState extends State<CreateScreen> {
                   ),
                 ),
                 Text(
-                  widget.name == null ? "New playlist" : "Import playlist",
+                  "New Playlist",
                   style: TextStyle(
                       color: Colors.white,
                       fontSize: normalSize,

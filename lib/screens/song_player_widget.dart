@@ -3,7 +3,6 @@ import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:musicplayer/utils/hover_widget/hover_container.dart';
 import '../domain/song_type.dart';
-import '../utils/lyric_reader/lyrics_reader_model.dart';
 import '../utils/multivaluelistenablebuilder/mvlb.dart';
 import '../controller/controller.dart';
 import '../utils/lyric_reader/lyrics_reader.dart';
@@ -13,10 +12,7 @@ import 'package:flutter/foundation.dart';
 
 class SongPlayerWidget extends StatefulWidget {
   final Controller controller;
-  const SongPlayerWidget(
-      {super.key,
-        required this.controller,
-      });
+  const SongPlayerWidget({super.key, required this.controller});
 
   @override
   _SongPlayerWidgetState createState() => _SongPlayerWidgetState();
@@ -39,8 +35,8 @@ class _SongPlayerWidgetState extends State<SongPlayerWidget> {
       lyricBaseLine : LyricBaseLine.CENTER,
       highlight : false
   );
-  var lyricModel = LyricsReaderModel();
-  String plainLyric = "No lyrics";
+  // var lyricModel = LyricsReaderModel();
+  // String plainLyric = "No lyrics";
   ValueNotifier<bool> hiddenNotifier = ValueNotifier<bool>(false);
   ValueNotifier<bool> minimizedNotifier = ValueNotifier<bool>(true);
   ValueNotifier<bool> listNotifier = ValueNotifier<bool>(false);
@@ -116,6 +112,18 @@ class _SongPlayerWidgetState extends State<SongPlayerWidget> {
     var boldSize = height * 0.025;
     var normalSize = height * 0.02;
     var smallSize = height * 0.015;
+    lyricUI = UINetease(
+        defaultSize : MediaQuery.of(context).size.height * 0.023,
+        defaultExtSize : MediaQuery.of(context).size.height * 0.02,
+        otherMainSize : MediaQuery.of(context).size.height * 0.02,
+        bias : 0.5,
+        lineGap : 5,
+        inlineGap : 5,
+        highlightColor: widget.controller.colorNotifier.value,
+        lyricAlign : LyricAlign.CENTER,
+        lyricBaseLine : LyricBaseLine.CENTER,
+        highlight : false
+    );
     return MultiValueListenableBuilder(
         valueListenables: [minimizedNotifier, hiddenNotifier],
         builder: (context, values, child){
@@ -367,7 +375,6 @@ class _SongPlayerWidgetState extends State<SongPlayerWidget> {
                             ),
 
                             if (!values[0] && !listNotifier.value)
-                            // Song Details
                               AnimatedContainer(
                                 duration: const Duration(milliseconds: 500),
                                 curve: Curves.easeInOut,
@@ -458,8 +465,8 @@ class _SongPlayerWidgetState extends State<SongPlayerWidget> {
                                 future: lyricFuture,
                                 builder: (context, snapshot){
                                   if(snapshot.hasData){
-                                    plainLyric = snapshot.data as String;
-                                    lyricModel = LyricsModelBuilder.create().bindLyricToMain(snapshot.data as String).getModel();
+                                    String plainLyric = snapshot.data![0];
+                                    var lyricModel = LyricsModelBuilder.create().bindLyricToMain(snapshot.data![1]).getModel();
                                     return MultiValueListenableBuilder(
                                         valueListenables: [widget.controller.sliderNotifier, widget.controller.playingNotifier],
                                         builder: (context, value, child){
@@ -566,7 +573,9 @@ class _SongPlayerWidgetState extends State<SongPlayerWidget> {
                                           ),
                                           ElevatedButton(
                                             onPressed: (){
-                                              setState(() {});
+                                              setState(() {
+                                                lyricFuture = widget.controller.getLyrics(widget.controller.controllerQueue[widget.controller.indexNotifier.value]);
+                                              });
                                             },
                                             child: Text(
                                               "Retry",
@@ -581,8 +590,16 @@ class _SongPlayerWidgetState extends State<SongPlayerWidget> {
                                     );
                                   }
                                   else {
-                                    return const CircularProgressIndicator(
-                                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                    return Center(
+                                        child: Text(
+                                          "Searching for lyrics...",
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: normalSize,
+                                            fontFamily: 'Bahnschrift',
+                                            fontWeight: FontWeight.normal,
+                                          ),
+                                        )
                                     );
                                   }
                                 }
@@ -624,20 +641,23 @@ class _SongPlayerWidgetState extends State<SongPlayerWidget> {
                                         padding: const EdgeInsets.all(0),
                                         icon: Icon(FluentIcons.list_20_filled, size: width * 0.01)
                                     ),
-                                  IconButton(
-                                      onPressed: () async {
-                                        setState(() {
-                                          plainLyric = "Searching for lyrics...";
-                                        });
-                                        List<String> foundLyrics = await widget.controller.searchLyrics();
-                                        setState(() {
-                                          plainLyric = foundLyrics[0];
-                                          lyricModel = LyricsModelBuilder.create().bindLyricToMain(foundLyrics[1]).getModel();
-                                        });
-
-                                      },
-                                      icon: Icon(FluentIcons.search_sparkle_24_filled, size: width * 0.01)
-                                  ),
+                                  // IconButton(
+                                  //     onPressed: () async {
+                                  //       setState(() {
+                                  //         plainLyric = "Searching for lyrics...";
+                                  //         lyricFuture = widget.controller.getLyrics(widget.controller.controllerQueue[widget.controller.indexNotifier.value]);
+                                  //       });
+                                  //       List<String> foundLyrics = await widget.controller.searchLyrics();
+                                  //       //print(foundLyrics);
+                                  //       setState(() {
+                                  //         plainLyric = foundLyrics[0];
+                                  //         lyricModel = LyricsModelBuilder.create().bindLyricToMain(foundLyrics[1]).getModel();
+                                  //         lyricFuture = widget.controller.getLyrics(widget.controller.controllerQueue[widget.controller.indexNotifier.value]);
+                                  //       });
+                                  //
+                                  //     },
+                                  //     icon: Icon(FluentIcons.search_sparkle_24_filled, size: width * 0.01)
+                                  // ),
 
 
                                 ],

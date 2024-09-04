@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../controller/controller.dart';
 import 'albums.dart';
 import 'artists.dart';
+import 'download_screen.dart';
 import 'tracks.dart';
 import 'playlists.dart';
 
@@ -19,7 +20,7 @@ class _HomePageState extends State<HomePage>{
 
   int currentPage = 3;
   String userMessage = "No message";
-  final PageController _pageController = PageController(initialPage: 4);
+  final PageController _pageController = PageController(initialPage: 5);
 
 
 
@@ -119,7 +120,7 @@ class _HomePageState extends State<HomePage>{
                               ),
                             ),
                             child: Text(
-                              "Playlists",
+                              "Download",
                               style: TextStyle(
                                 color: Colors.white,
                                 fontSize: currentPage != 2 ? normalSize : boldSize,
@@ -146,10 +147,37 @@ class _HomePageState extends State<HomePage>{
                               ),
                             ),
                             child: Text(
-                              "Tracks",
+                              "Playlists",
                               style: TextStyle(
                                 color: Colors.white,
                                 fontSize: currentPage != 3 ? normalSize : boldSize,
+                              ),
+                            )
+                        )
+                    )
+                ),
+                Expanded(
+                    child: SizedBox(
+                        height: height * 0.05,
+                        child: ElevatedButton(
+                            onPressed: (){
+                              //print("Artists");
+                              _pageController.animateToPage(4,
+                                  duration: const Duration(milliseconds: 500),
+                                  curve: Curves.easeIn
+                              );
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: currentPage != 4 ? const Color(0xFF0E0E0E) : const Color(0xFF1b1b1b),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(0),
+                              ),
+                            ),
+                            child: Text(
+                              "Tracks",
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: currentPage != 4 ? normalSize : boldSize,
                               ),
                             )
                         )
@@ -184,6 +212,7 @@ class _HomePageState extends State<HomePage>{
                   children: [
                     Artists(controller: widget.controller),
                     Albums(controller: widget.controller),
+                    Download(controller: widget.controller),
                     Playlists(controller: widget.controller),
                     Tracks(controller: widget.controller),
                   ],
