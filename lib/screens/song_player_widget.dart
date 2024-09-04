@@ -211,88 +211,92 @@ class _SongPlayerWidgetState extends State<SongPlayerWidget> {
                                               right: width * 0.01
                                           ),
                                           itemBuilder: (context, int index) {
-                                            var song = snapshot.data![index];
-                                            return AnimatedContainer(
-                                              duration: const Duration(milliseconds: 500),
-                                              curve: Curves.easeInOut,
-                                              height: height * 0.125,
-                                              child: MouseRegion(
-                                                cursor: SystemMouseCursors.click,
-                                                child: GestureDetector(
-                                                    behavior: HitTestBehavior.translucent,
-                                                    onTap: () async {
-                                                      //print(widget.controller.settings.playingSongsUnShuffled[index].title);
-                                                      //widget.controller.audioPlayer.stop();
-                                                      widget.controller.indexChange(widget.controller.settings.queue[index]);
-                                                      await widget.controller.playSong();
-                                                    },
-                                                    child: ClipRRect(
-                                                      borderRadius: BorderRadius.circular(width * 0.01),
-                                                      child: HoverContainer(
-                                                        hoverColor: const Color(0xFF242424),
-                                                        normalColor: const Color(0xFF0E0E0E),
-                                                        padding: EdgeInsets.all(width * 0.005),
-                                                        child: Row(
-                                                          children: [
-                                                            ClipRRect(
-                                                              borderRadius: BorderRadius.circular(width * 0.01),
-                                                              child: ImageWidget(
-                                                                controller: widget.controller,
-                                                                path: widget.controller.settings.queue[index],
-                                                                buttons: IconButton(
-                                                                  onPressed: () async {
-                                                                    print("Delete song from queue");
-                                                                    await widget.controller.removeFromQueue(widget.controller.settings.queue[index]);
-                                                                    setState(() {});
-                                                                  },
-                                                                  icon: Icon(
-                                                                    FluentIcons.delete_16_filled,
-                                                                    color: Colors.white,
-                                                                    size: width * 0.01,
+                                            if(index >= 0 && index < widget.controller.settings.queue.length){
+                                              var song = snapshot.data![index];
+                                              return AnimatedContainer(
+                                                duration: const Duration(milliseconds: 500),
+                                                curve: Curves.easeInOut,
+                                                height: height * 0.125,
+                                                child: MouseRegion(
+                                                  cursor: SystemMouseCursors.click,
+                                                  child: GestureDetector(
+                                                      behavior: HitTestBehavior.translucent,
+                                                      onTap: () async {
+                                                        //print(widget.controller.settings.playingSongsUnShuffled[index].title);
+                                                        //widget.controller.audioPlayer.stop();
+                                                        widget.controller.indexChange(widget.controller.settings.queue[index]);
+                                                        await widget.controller.playSong();
+                                                      },
+                                                      child: ClipRRect(
+                                                        borderRadius: BorderRadius.circular(width * 0.01),
+                                                        child: HoverContainer(
+                                                          hoverColor: const Color(0xFF242424),
+                                                          normalColor: const Color(0xFF0E0E0E),
+                                                          padding: EdgeInsets.all(width * 0.005),
+                                                          child: Row(
+                                                            children: [
+                                                              ClipRRect(
+                                                                borderRadius: BorderRadius.circular(width * 0.01),
+                                                                child: ImageWidget(
+                                                                  controller: widget.controller,
+                                                                  path: widget.controller.settings.queue[index],
+                                                                  buttons: IconButton(
+                                                                    onPressed: () async {
+                                                                      print("Delete song from queue");
+                                                                      await widget.controller.removeFromQueue(widget.controller.settings.queue[index]);
+                                                                      setState(() {});
+                                                                    },
+                                                                    icon: Icon(
+                                                                      FluentIcons.delete_16_filled,
+                                                                      color: Colors.white,
+                                                                      size: width * 0.01,
+                                                                    ),
                                                                   ),
                                                                 ),
                                                               ),
-                                                            ),
-                                                            SizedBox(
-                                                              width: width * 0.01,
-                                                            ),
-                                                            Column(
-                                                                mainAxisAlignment: MainAxisAlignment.center,
-                                                                crossAxisAlignment: CrossAxisAlignment.start,
-                                                                children: [
-                                                                  Text(
-                                                                      song.title.toString().length > 60 ? "${song.title.toString().substring(0, 60)}..." : song.title.toString(),
-                                                                      style: TextStyle(
-                                                                        color: widget.controller.settings.queue[index] != widget.controller.controllerQueue[widget.controller.indexNotifier.value] ? Colors.white : Colors.blue,
-                                                                        fontSize: normalSize,
-                                                                      )
-                                                                  ),
-                                                                  SizedBox(
-                                                                    height: height * 0.005,
-                                                                  ),
-                                                                  Text(song.artists.toString().length > 60 ? "${song.artists.toString().substring(0, 60)}..." : song.artists.toString(),
-                                                                      style: TextStyle(
-                                                                        color: widget.controller.settings.queue[index] != widget.controller.controllerQueue[widget.controller.indexNotifier.value] ? Colors.white : Colors.blue,
-                                                                        fontSize: smallSize,
-                                                                      )
-                                                                  ),
-                                                                ]
-                                                            ),
-                                                            const Spacer(),
-                                                            Text(
-                                                                "${song.duration ~/ 60}:${(song.duration % 60).toString().padLeft(2, '0')}",
-                                                                style: TextStyle(
-                                                                  color: widget.controller.settings.queue[index] != widget.controller.controllerQueue[widget.controller.indexNotifier.value] ? Colors.white : Colors.blue,
-                                                                  fontSize: normalSize,
-                                                                )
-                                                            ),
-                                                          ],
+                                                              SizedBox(
+                                                                width: width * 0.01,
+                                                              ),
+                                                              Column(
+                                                                  mainAxisAlignment: MainAxisAlignment.center,
+                                                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                                                  children: [
+                                                                    Text(
+                                                                        song.title.toString().length > 60 ? "${song.title.toString().substring(0, 60)}..." : song.title.toString(),
+                                                                        style: TextStyle(
+                                                                          color: widget.controller.settings.queue[index] != widget.controller.controllerQueue[widget.controller.indexNotifier.value] ? Colors.white : Colors.blue,
+                                                                          fontSize: normalSize,
+                                                                        )
+                                                                    ),
+                                                                    SizedBox(
+                                                                      height: height * 0.005,
+                                                                    ),
+                                                                    Text(song.artists.toString().length > 60 ? "${song.artists.toString().substring(0, 60)}..." : song.artists.toString(),
+                                                                        style: TextStyle(
+                                                                          color: widget.controller.settings.queue[index] != widget.controller.controllerQueue[widget.controller.indexNotifier.value] ? Colors.white : Colors.blue,
+                                                                          fontSize: smallSize,
+                                                                        )
+                                                                    ),
+                                                                  ]
+                                                              ),
+                                                              const Spacer(),
+                                                              Text(
+                                                                  "${song.duration ~/ 60}:${(song.duration % 60).toString().padLeft(2, '0')}",
+                                                                  style: TextStyle(
+                                                                    color: widget.controller.settings.queue[index] != widget.controller.controllerQueue[widget.controller.indexNotifier.value] ? Colors.white : Colors.blue,
+                                                                    fontSize: normalSize,
+                                                                  )
+                                                              ),
+                                                            ],
+                                                          ),
                                                         ),
-                                                      ),
-                                                    )
+                                                      )
+                                                  ),
                                                 ),
-                                              ),
-                                            );
+                                              );
+                                            }
+                                            return null;
+
 
                                           },
                                         );

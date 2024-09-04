@@ -283,7 +283,7 @@ class Controller{
 
   Future<List<SongType>> getQueue() async {
     List<SongType> queue = [];
-    for (String path in controllerQueue){
+    for (String path in settings.queue){
       var song = songBox.query(SongType_.path.equals(path)).build().findFirst();
       if(song != null){
         queue.add(song);

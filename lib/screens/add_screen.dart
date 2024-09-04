@@ -70,13 +70,13 @@ class _AddScreenState extends State<AddScreen> {
                     onPressed: (){
                       //print("Add to new playlist");
                       for(int i = 0; i < selected.length; i++){
-                        if(i == 0){
+                        if(selected[i] == 0){
                           List<String> paths = widget.songs.map((e) => e.path).toList();
                           //print(paths);
                           widget.controller.addToQueue(paths);
                         }
                         else{
-                          var playlist = query.find()[i-1];
+                          var playlist = query.find()[i];
                           widget.controller.addToPlaylist(playlist, widget.songs);
                         }
                       }
