@@ -35,10 +35,8 @@ class _SongPlayerWidgetState extends State<SongPlayerWidget> {
       lyricBaseLine : LyricBaseLine.CENTER,
       highlight : false
   );
-  // var lyricModel = LyricsReaderModel();
-  // String plainLyric = "No lyrics";
+  ValueNotifier<bool> editMode = ValueNotifier<bool>(false);
   ValueNotifier<bool> hiddenNotifier = ValueNotifier<bool>(false);
-  ValueNotifier<bool> minimizedNotifier = ValueNotifier<bool>(true);
   ValueNotifier<bool> listNotifier = ValueNotifier<bool>(false);
 
 
@@ -125,7 +123,7 @@ class _SongPlayerWidgetState extends State<SongPlayerWidget> {
         highlight : false
     );
     return MultiValueListenableBuilder(
-        valueListenables: [minimizedNotifier, hiddenNotifier],
+        valueListenables: [widget.controller.minimizedNotifier, hiddenNotifier],
         builder: (context, values, child){
           return FutureBuilder(
               future: songFuture,
@@ -198,149 +196,149 @@ class _SongPlayerWidgetState extends State<SongPlayerWidget> {
                               duration: const Duration(milliseconds: 500),
                               child: listNotifier.value == true?
                               SizedBox(
-                                  height: width * 0.275,
-                                  width: width * 0.275 * 2,
-                                  child: FutureBuilder(
-                                    future: widget.controller.getQueue(),
-                                    builder: (context, snapshot){
-                                      if(snapshot.hasData){
-                                        return ListView.builder(
-                                          controller: itemScrollController,
-                                          itemCount: snapshot.data!.length,
-                                          padding: EdgeInsets.only(
-                                              right: width * 0.01
-                                          ),
-                                          itemBuilder: (context, int index) {
-                                            if(index >= 0 && index < widget.controller.settings.queue.length){
-                                              var song = snapshot.data![index];
-                                              return AnimatedContainer(
-                                                duration: const Duration(milliseconds: 500),
-                                                curve: Curves.easeInOut,
-                                                height: height * 0.125,
-                                                child: MouseRegion(
-                                                  cursor: SystemMouseCursors.click,
-                                                  child: GestureDetector(
-                                                      behavior: HitTestBehavior.translucent,
-                                                      onTap: () async {
-                                                        //print(widget.controller.settings.playingSongsUnShuffled[index].title);
-                                                        //widget.controller.audioPlayer.stop();
-                                                        widget.controller.indexChange(widget.controller.settings.queue[index]);
-                                                        await widget.controller.playSong();
-                                                      },
-                                                      child: ClipRRect(
-                                                        borderRadius: BorderRadius.circular(width * 0.01),
-                                                        child: HoverContainer(
-                                                          hoverColor: const Color(0xFF242424),
-                                                          normalColor: const Color(0xFF0E0E0E),
-                                                          padding: EdgeInsets.all(width * 0.005),
-                                                          child: Row(
-                                                            children: [
-                                                              ClipRRect(
-                                                                borderRadius: BorderRadius.circular(width * 0.01),
-                                                                child: ImageWidget(
-                                                                  controller: widget.controller,
-                                                                  path: widget.controller.settings.queue[index],
-                                                                  buttons: IconButton(
-                                                                    onPressed: () async {
-                                                                      print("Delete song from queue");
-                                                                      await widget.controller.removeFromQueue(widget.controller.settings.queue[index]);
-                                                                      setState(() {});
-                                                                    },
-                                                                    icon: Icon(
-                                                                      FluentIcons.delete_16_filled,
-                                                                      color: Colors.white,
-                                                                      size: width * 0.01,
-                                                                    ),
+                                height: width * 0.275,
+                                width: width * 0.275 * 2,
+                                child: FutureBuilder(
+                                  future: widget.controller.getQueue(),
+                                  builder: (context, snapshot){
+                                    if(snapshot.hasData){
+                                      return ListView.builder(
+                                        controller: itemScrollController,
+                                        itemCount: snapshot.data!.length,
+                                        padding: EdgeInsets.only(
+                                            right: width * 0.01
+                                        ),
+                                        itemBuilder: (context, int index) {
+                                          if(index >= 0 && index < widget.controller.settings.queue.length){
+                                            var song = snapshot.data![index];
+                                            return AnimatedContainer(
+                                              duration: const Duration(milliseconds: 500),
+                                              curve: Curves.easeInOut,
+                                              height: height * 0.125,
+                                              child: MouseRegion(
+                                                cursor: SystemMouseCursors.click,
+                                                child: GestureDetector(
+                                                    behavior: HitTestBehavior.translucent,
+                                                    onTap: () async {
+                                                      //print(widget.controller.settings.playingSongsUnShuffled[index].title);
+                                                      //widget.controller.audioPlayer.stop();
+                                                      widget.controller.indexChange(widget.controller.settings.queue[index]);
+                                                      await widget.controller.playSong();
+                                                    },
+                                                    child: ClipRRect(
+                                                      borderRadius: BorderRadius.circular(width * 0.01),
+                                                      child: HoverContainer(
+                                                        hoverColor: const Color(0xFF242424),
+                                                        normalColor: const Color(0xFF0E0E0E),
+                                                        padding: EdgeInsets.all(width * 0.005),
+                                                        child: Row(
+                                                          children: [
+                                                            ClipRRect(
+                                                              borderRadius: BorderRadius.circular(width * 0.01),
+                                                              child: ImageWidget(
+                                                                controller: widget.controller,
+                                                                path: widget.controller.settings.queue[index],
+                                                                buttons: IconButton(
+                                                                  onPressed: () async {
+                                                                    print("Delete song from queue");
+                                                                    await widget.controller.removeFromQueue(widget.controller.settings.queue[index]);
+                                                                    setState(() {});
+                                                                  },
+                                                                  icon: Icon(
+                                                                    FluentIcons.delete_16_filled,
+                                                                    color: Colors.white,
+                                                                    size: width * 0.01,
                                                                   ),
                                                                 ),
                                                               ),
-                                                              SizedBox(
-                                                                width: width * 0.01,
-                                                              ),
-                                                              Column(
-                                                                  mainAxisAlignment: MainAxisAlignment.center,
-                                                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                                                  children: [
-                                                                    Text(
-                                                                        song.title.toString().length > 60 ? "${song.title.toString().substring(0, 60)}..." : song.title.toString(),
-                                                                        style: TextStyle(
-                                                                          color: widget.controller.settings.queue[index] != widget.controller.controllerQueue[widget.controller.indexNotifier.value] ? Colors.white : Colors.blue,
-                                                                          fontSize: normalSize,
-                                                                        )
-                                                                    ),
-                                                                    SizedBox(
-                                                                      height: height * 0.005,
-                                                                    ),
-                                                                    Text(song.artists.toString().length > 60 ? "${song.artists.toString().substring(0, 60)}..." : song.artists.toString(),
-                                                                        style: TextStyle(
-                                                                          color: widget.controller.settings.queue[index] != widget.controller.controllerQueue[widget.controller.indexNotifier.value] ? Colors.white : Colors.blue,
-                                                                          fontSize: smallSize,
-                                                                        )
-                                                                    ),
-                                                                  ]
-                                                              ),
-                                                              const Spacer(),
-                                                              Text(
-                                                                  "${song.duration ~/ 60}:${(song.duration % 60).toString().padLeft(2, '0')}",
-                                                                  style: TextStyle(
-                                                                    color: widget.controller.settings.queue[index] != widget.controller.controllerQueue[widget.controller.indexNotifier.value] ? Colors.white : Colors.blue,
-                                                                    fontSize: normalSize,
-                                                                  )
-                                                              ),
-                                                            ],
-                                                          ),
+                                                            ),
+                                                            SizedBox(
+                                                              width: width * 0.01,
+                                                            ),
+                                                            Column(
+                                                                mainAxisAlignment: MainAxisAlignment.center,
+                                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                                children: [
+                                                                  Text(
+                                                                      song.title.toString().length > 60 ? "${song.title.toString().substring(0, 60)}..." : song.title.toString(),
+                                                                      style: TextStyle(
+                                                                        color: widget.controller.settings.queue[index] != widget.controller.controllerQueue[widget.controller.indexNotifier.value] ? Colors.white : Colors.blue,
+                                                                        fontSize: normalSize,
+                                                                      )
+                                                                  ),
+                                                                  SizedBox(
+                                                                    height: height * 0.005,
+                                                                  ),
+                                                                  Text(song.artists.toString().length > 60 ? "${song.artists.toString().substring(0, 60)}..." : song.artists.toString(),
+                                                                      style: TextStyle(
+                                                                        color: widget.controller.settings.queue[index] != widget.controller.controllerQueue[widget.controller.indexNotifier.value] ? Colors.white : Colors.blue,
+                                                                        fontSize: smallSize,
+                                                                      )
+                                                                  ),
+                                                                ]
+                                                            ),
+                                                            const Spacer(),
+                                                            Text(
+                                                                "${song.duration ~/ 60}:${(song.duration % 60).toString().padLeft(2, '0')}",
+                                                                style: TextStyle(
+                                                                  color: widget.controller.settings.queue[index] != widget.controller.controllerQueue[widget.controller.indexNotifier.value] ? Colors.white : Colors.blue,
+                                                                  fontSize: normalSize,
+                                                                )
+                                                            ),
+                                                          ],
                                                         ),
-                                                      )
-                                                  ),
+                                                      ),
+                                                    )
                                                 ),
-                                              );
-                                            }
-                                            return null;
-
-
-                                          },
-                                        );
-                                      }
-                                      else if(snapshot.hasError){
-                                        return Center(
-                                          child: Column(
-                                            mainAxisAlignment: MainAxisAlignment.center,
-                                            children: [
-                                              Icon(
-                                                FluentIcons.error_circle_24_regular,
-                                                size: height * 0.1,
-                                                color: Colors.red,
                                               ),
-                                              Text(
-                                                "Error loading queue",
+                                            );
+                                          }
+                                          return null;
+
+
+                                        },
+                                      );
+                                    }
+                                    else if(snapshot.hasError){
+                                      return Center(
+                                        child: Column(
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          children: [
+                                            Icon(
+                                              FluentIcons.error_circle_24_regular,
+                                              size: height * 0.1,
+                                              color: Colors.red,
+                                            ),
+                                            Text(
+                                              "Error loading queue",
+                                              style: TextStyle(
+                                                color: Colors.white,
+                                                fontSize: smallSize,
+                                              ),
+                                            ),
+                                            ElevatedButton(
+                                              onPressed: (){
+                                                setState(() {});
+                                              },
+                                              child: Text(
+                                                "Retry",
                                                 style: TextStyle(
                                                   color: Colors.white,
                                                   fontSize: smallSize,
                                                 ),
                                               ),
-                                              ElevatedButton(
-                                                onPressed: (){
-                                                  setState(() {});
-                                                },
-                                                child: Text(
-                                                  "Retry",
-                                                  style: TextStyle(
-                                                    color: Colors.white,
-                                                    fontSize: smallSize,
-                                                  ),
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        );
-                                      }
-                                      else{
-                                        return const CircularProgressIndicator(
-                                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                                        );
-                                      }
-                                    },
-                                  ),
+                                            ),
+                                          ],
+                                        ),
+                                      );
+                                    }
+                                    else{
+                                      return const CircularProgressIndicator(
+                                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                      );
+                                    }
+                                  },
+                                ),
                               ) :
                               AnimatedContainer(
                                 duration: const Duration(milliseconds: 500),
@@ -616,15 +614,15 @@ class _SongPlayerWidgetState extends State<SongPlayerWidget> {
                                   IconButton(
                                       padding: const EdgeInsets.all(0),
                                       onPressed: (){
-                                        minimizedNotifier.value = !minimizedNotifier.value;
+                                        widget.controller.minimizedNotifier.value = !widget.controller.minimizedNotifier.value;
                                         listNotifier.value = false;
                                         hiddenNotifier.value = false;
                                       }, icon: Icon(
-                                    minimizedNotifier.value ? FluentIcons.arrow_maximize_16_filled : FluentIcons.arrow_minimize_16_filled, color: Colors.white,
+                                    widget.controller.minimizedNotifier.value ? FluentIcons.arrow_maximize_16_filled : FluentIcons.arrow_minimize_16_filled, color: Colors.white,
                                     size: width * 0.01,
                                   )
                                   ),
-                                  if (!minimizedNotifier.value)
+                                  if (!widget.controller.minimizedNotifier.value)
                                     IconButton(
                                         onPressed: () {
                                           setState(() {
@@ -694,10 +692,10 @@ class _SongPlayerWidgetState extends State<SongPlayerWidget> {
                                       return AnimatedContainer(
                                         duration: const Duration(milliseconds: 500),
                                         curve: Curves.easeInOut,
-                                        width: minimizedNotifier.value ? width * 0.775 : width * 0.9,
+                                        width: widget.controller.minimizedNotifier.value ? width * 0.775 : width * 0.9,
                                         padding: EdgeInsets.symmetric(
                                           horizontal: width * 0.01,
-                                          vertical: minimizedNotifier.value ? 0 : height * 0.03,
+                                          vertical: widget.controller.minimizedNotifier.value ? 0 : height * 0.03,
                                         ),
                                         child: FutureBuilder(
                                           future: widget.controller.getDuration(currentSong),
@@ -711,7 +709,7 @@ class _SongPlayerWidgetState extends State<SongPlayerWidget> {
                                               thumbColor: Colors.white.withOpacity(hiddenNotifier.value ? 0.0 : 1.0),
                                               barHeight: 4.0,
                                               thumbRadius: 7.0,
-                                              timeLabelLocation: minimizedNotifier.value ? TimeLabelLocation.sides : TimeLabelLocation.below,
+                                              timeLabelLocation: widget.controller.minimizedNotifier.value ? TimeLabelLocation.sides : TimeLabelLocation.below,
                                               timeLabelTextStyle: TextStyle(
                                                 color: Colors.white.withOpacity(hiddenNotifier.value ? 0.0 : 1.0),
                                                 fontSize: height * 0.02,
@@ -832,7 +830,7 @@ class _SongPlayerWidgetState extends State<SongPlayerWidget> {
                             IconButton(
                                 padding: const EdgeInsets.all(0),
                                 onPressed: (){
-                                  minimizedNotifier.value = !minimizedNotifier.value;
+                                  widget.controller.minimizedNotifier.value = !widget.controller.minimizedNotifier.value;
                                   listNotifier.value = false;
                                   hiddenNotifier.value = false;
                                 },
@@ -840,7 +838,7 @@ class _SongPlayerWidgetState extends State<SongPlayerWidget> {
                                   backgroundColor: WidgetStateProperty.all(Colors.black.withOpacity(hiddenNotifier.value ? 0.5 : 0.0)),
                                 ),
                                 icon: Icon(
-                                  minimizedNotifier.value ? FluentIcons.arrow_maximize_16_filled : FluentIcons.arrow_minimize_16_filled, color: Colors.white,
+                                  widget.controller.minimizedNotifier.value ? FluentIcons.arrow_maximize_16_filled : FluentIcons.arrow_minimize_16_filled, color: Colors.white,
                                   size: width * 0.01,
                                 )
                             ),

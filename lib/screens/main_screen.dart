@@ -4,6 +4,7 @@ import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:musicplayer/screens/song_player_widget.dart';
 import '../controller/controller.dart';
+import 'notification_widget.dart';
 import 'settings_screen.dart';
 import 'home.dart';
 import 'welcome_screen.dart';
@@ -157,6 +158,7 @@ class _MyAppState extends State<MyApp>{
                                     IconButton(
                                       onPressed: (){
                                         print("Tapped settings");
+                                        widget.controller.minimizedNotifier.value = true;
                                         widget.controller.navigatorKey.currentState!.push(MaterialPageRoute(builder: (BuildContext context){
                                           return SettingsScreen(controller: widget.controller,);
                                         }));
@@ -251,23 +253,6 @@ class _MyAppState extends State<MyApp>{
                         alignment: Alignment.bottomCenter,
                         child: SongPlayerWidget(controller: widget.controller),
                       ),
-                    // ValueListenableBuilder(
-                    //     valueListenable: widget.controller.userMessageNotifier,
-                    //     builder: (context, value, child){
-                    //       return AnimatedSwitcher(
-                    //         duration: const Duration(milliseconds: 500),
-                    //         child: value.isNotEmpty ?
-                    //         AnimatedContainer(
-                    //           duration: const Duration(milliseconds: 500),
-                    //           key: const Key("User Message Widget"),
-                    //           alignment: Alignment.topCenter,
-                    //           child: NotificationWidget(controller: widget.controller),
-                    //         ) : Container(
-                    //           key: const Key("User Message Off"),
-                    //         ),
-                    //       );
-                    //     }
-                    // ),
                     ValueListenableBuilder(
                       valueListenable: _dragging,
                       builder: (context, value, child){
@@ -330,13 +315,13 @@ class _MyAppState extends State<MyApp>{
                         );
                       },
                     ),
-
                   ],
                 ),
               ),
             ],
           )
       ),
+      bottomNavigationBar: NotificationWidget(controller: widget.controller),
     );
   }
 }

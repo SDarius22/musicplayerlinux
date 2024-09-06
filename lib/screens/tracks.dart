@@ -180,51 +180,61 @@ class _TracksState extends State<Tracks>{
                                   path: song.path,
                                   heroTag: "${song.path}+$index",
                                   buttons: Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                    mainAxisAlignment: MainAxisAlignment.center,
                                     crossAxisAlignment: CrossAxisAlignment.center,
                                     children: [
-                                      IconButton(
-                                        onPressed: (){
-                                          print("Add $index");
-                                          Navigator.push(
-                                              context,
-                                              MaterialPageRoute(
-                                                  builder: (context) => AddScreen(controller: widget.controller, songs: [song])
-                                              )
-                                          );
-                                        },
-                                        padding: const EdgeInsets.all(0),
-                                        icon: Icon(
-                                          FluentIcons.add_12_filled,
-                                          color: Colors.white,
-                                          size: height * 0.035,
-                                        ),
-                                      ),
-                                      ValueListenableBuilder(
-                                        valueListenable: widget.controller.playingNotifier,
-                                        builder: (context, value, child){
-                                          return Icon(
-                                            widget.controller.controllerQueue.isNotEmpty && widget.controller.controllerQueue[widget.controller.indexNotifier.value] == song.path && widget.controller.playingNotifier.value == true ?
-                                            FluentIcons.pause_32_filled : FluentIcons.play_32_filled,
-                                            size: height * 0.1,
+                                      SizedBox(
+                                        width: width * 0.035,
+                                        child: IconButton(
+                                          onPressed: (){
+                                            print("Add $index");
+                                            Navigator.push(
+                                                context,
+                                                MaterialPageRoute(
+                                                    builder: (context) => AddScreen(controller: widget.controller, songs: [song])
+                                                )
+                                            );
+                                          },
+                                          padding: const EdgeInsets.all(0),
+                                          icon: Icon(
+                                            FluentIcons.add_12_filled,
                                             color: Colors.white,
-                                          );
-                                        },
-                                      ),
-                                      IconButton(
-                                        onPressed: (){
-                                          Navigator.push(
-                                              context,
-                                              MaterialPageRoute(builder: (context) => AlbumScreen(controller: widget.controller, album: widget.controller.albumBox.query(AlbumType_.name.equals(song.album)).build().find().first))
-                                          );
-                                        },
-                                        padding: const EdgeInsets.all(0),
-                                        icon: Icon(
-                                          FluentIcons.album_20_filled,
-                                          color: Colors.white,
-                                          size: height * 0.035,
+                                            size: height * 0.03,
+                                          ),
                                         ),
                                       ),
+                                      Expanded(
+                                        child: ValueListenableBuilder(
+                                          valueListenable: widget.controller.playingNotifier,
+                                          builder: (context, value, child){
+                                            return FittedBox(
+                                              fit: BoxFit.fill,
+                                              child: Icon(
+                                                widget.controller.controllerQueue.isNotEmpty && widget.controller.controllerQueue[widget.controller.indexNotifier.value] == song.path && widget.controller.playingNotifier.value == true ?
+                                                FluentIcons.pause_32_filled : FluentIcons.play_32_filled,
+                                                color: Colors.white,
+                                              ),
+                                            );
+                                          },
+                                        ),
+                                      ),
+                                      SizedBox(
+                                        width: width * 0.035,
+                                        child: IconButton(
+                                          onPressed: (){
+                                            Navigator.push(
+                                                context,
+                                                MaterialPageRoute(builder: (context) => AlbumScreen(controller: widget.controller, album: widget.controller.albumBox.query(AlbumType_.name.equals(song.album)).build().find().first))
+                                            );
+                                          },
+                                          padding: const EdgeInsets.all(0),
+                                          icon: Icon(
+                                            FluentIcons.album_24_filled,
+                                            color: Colors.white,
+                                            size: height * 0.03,
+                                          ),
+                                        ),
+                                      )
                                     ],
                                   ),
                                 ),

@@ -49,7 +49,9 @@ class Controller{
   ValueNotifier<bool> downloadNotifier = ValueNotifier<bool>(false);
   ValueNotifier<bool> finishedRetrievingNotifier = ValueNotifier<bool>(false);
   ValueNotifier<bool> hasBeenChanged = ValueNotifier<bool>(false);
+  ValueNotifier<bool> minimizedNotifier = ValueNotifier<bool>(true);
   ValueNotifier<bool> playingNotifier = ValueNotifier<bool>(false);
+  ValueNotifier<bool> playlistNotifier = ValueNotifier<bool>(false);
   ValueNotifier<bool> repeatNotifier = ValueNotifier<bool>(false);
   ValueNotifier<bool> searchNotifier = ValueNotifier<bool>(false);
   ValueNotifier<bool> shuffleNotifier = ValueNotifier<bool>(false);
@@ -64,7 +66,11 @@ class Controller{
   ValueNotifier<int> indexNotifier = ValueNotifier<int>(0); // index of the song in the queue that can be shuffled
   ValueNotifier<int> sleepTimerNotifier = ValueNotifier<int>(0);
   ValueNotifier<int> sliderNotifier = ValueNotifier<int>(0);
+
+  ValueNotifier<String> notification = ValueNotifier<String>('');
   ValueNotifier<String> timerNotifier = ValueNotifier<String>('Off');
+
+  Widget actions = Container();
 
 
   /// Constructor for the Controller class
@@ -148,6 +154,7 @@ class Controller{
       playlistBox.put(playlist);
     }
     exportPlaylist(playlist);
+    showNotification("${songs.length} songs added to ${playlist.name}.", 3500);
 
   }
 
@@ -180,6 +187,7 @@ class Controller{
   Future<void> createPlaylist(PlaylistType playlist) async {
     playlistBox.put(playlist);
     exportPlaylist(playlist);
+    playingNotifier.value != playingNotifier.value;
   }
 
   Future<void> deletePlaylist(PlaylistType playlist) async {
@@ -187,10 +195,13 @@ class Controller{
     try {
       var file = File("${settings.directory}/${playlist.name}.m3u");
       file.delete();
+      showNotification("Playlist ${playlist.name} deleted.", 3500);
     }
     catch(e){
       print(e);
+      showNotification("Something went wrong when deleting playlist.", 3500);
     }
+    playingNotifier.value != playingNotifier.value;
   }
 
   Future<void> exportPlaylist(PlaylistType playlist) async {
@@ -622,7 +633,7 @@ class Controller{
     }
     else{
       print("resume");
-      await audioPlayer.play(DeviceFileSource(controllerQueue[indexNotifier.value]), position: Duration(milliseconds: sliderNotifier.value));
+      await audioPlayer.play(DeviceFileSource(controllerQueue[indexNotifier.value]), position: Duration(milliseconds: sliderNotifier.value), volume: volumeNotifier.value);
       playingNotifier.value = true;
     }
     if (settings.systemTray) {
@@ -663,6 +674,22 @@ class Controller{
     else{
       indexNotifier.value = controllerQueue.indexOf(current);
       settings.index = settings.queue.indexOf(current);
+    }
+    settingsBox.put(settings);
+  }
+
+  Future<void> reorderQueue(int oldIndex, int newIndex) async {
+    if (oldIndex < newIndex) {
+      newIndex -= 1;
+    }
+    String song = settings.queue.removeAt(oldIndex);
+    settings.queue.insert(newIndex, song);
+    if (oldIndex == indexNotifier.value) {
+      settings.index = newIndex;
+    } else if (oldIndex < indexNotifier.value && newIndex >= indexNotifier.value) {
+      settings.index -= 1;
+    } else if (oldIndex > indexNotifier.value && newIndex <= indexNotifier.value) {
+      settings.index += 1;
     }
     settingsBox.put(settings);
   }
@@ -927,24 +954,20 @@ class Controller{
     }
   }
 
-  void showNotification(String message, int duration) {
+  void showNotification(String message, int duration, {Widget actions = const SizedBox()}){
     if(settings.appNotifications == false){
       return;
     }
-    // userMessageNotifier.value = message;
-    // Timer.periodic(
-    //   const Duration(milliseconds: 10),
-    //       (timer) {
-    //     if(userMessageProgressNotifier.value > 0){
-    //       userMessageProgressNotifier.value -= 10;
-    //     }
-    //     else{
-    //       timer.cancel();
-    //       userMessageNotifier.value = "";
-    //       userMessageProgressNotifier.value = duration;
-    //     }
-    //   },
-    // );
+    notification.value = message;
+    actions = actions;
+    Timer.periodic(
+      Duration(milliseconds: duration),
+          (timer) {
+        notification.value = '';
+        actions = const SizedBox();
+        timer.cancel();
+      },
+    );
   }
 
   void shuffleSongs(){

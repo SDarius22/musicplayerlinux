@@ -174,42 +174,52 @@ class _AlbumsState extends State<Albums>{
                                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                                     crossAxisAlignment: CrossAxisAlignment.center,
                                     children: [
-                                      IconButton(
-                                        onPressed: (){
-                                          print("Add $index");
-                                          Navigator.push(
-                                              context,
-                                              MaterialPageRoute(
-                                                  builder: (context) => AddScreen(controller: widget.controller, songs: album.songs)
-                                              )
-                                          );
-                                        },
-                                        padding: const EdgeInsets.all(0),
-                                        icon: Icon(
-                                          FluentIcons.add_12_filled,
-                                          color: Colors.white,
-                                          size: height * 0.035,
+                                      SizedBox(
+                                        width: width * 0.035,
+                                        child: IconButton(
+                                          onPressed: (){
+                                            print("Add $index");
+                                            Navigator.push(
+                                                context,
+                                                MaterialPageRoute(
+                                                    builder: (context) => AddScreen(controller: widget.controller, songs: album.songs)
+                                                )
+                                            );
+                                          },
+                                          padding: const EdgeInsets.all(0),
+                                          icon: Icon(
+                                            FluentIcons.add_12_filled,
+                                            color: Colors.white,
+                                            size: height * 0.035,
+                                          ),
                                         ),
                                       ),
-                                      Icon(
-                                        FluentIcons.open_16_filled,
-                                        size: height * 0.1,
-                                        color: Colors.white,
+                                      const Expanded(
+                                        child: FittedBox(
+                                          fit: BoxFit.fill,
+                                          child: Icon(
+                                            FluentIcons.open_16_filled,
+                                            color: Colors.white,
+                                          ),
+                                        ),
                                       ),
-                                      IconButton(
-                                        onPressed: () async {
-                                          var songPaths = album.songs.map((e) => e.path).toList();
-                                          if(widget.controller.settings.queue.equals(songPaths) == false){
-                                            widget.controller.updatePlaying(songPaths, 0);
-                                          }
-                                          widget.controller.indexChange(songPaths.first);
-                                          await widget.controller.playSong();
-                                        },
-                                        padding: const EdgeInsets.all(0),
-                                        icon: Icon(
-                                          FluentIcons.play_12_filled,
-                                          color: Colors.white,
-                                          size: height * 0.035,
+                                      SizedBox(
+                                        width: width * 0.035,
+                                        child: IconButton(
+                                          onPressed: () async {
+                                            var songPaths = album.songs.map((e) => e.path).toList();
+                                            if(widget.controller.settings.queue.equals(songPaths) == false){
+                                              widget.controller.updatePlaying(songPaths, 0);
+                                            }
+                                            widget.controller.indexChange(songPaths.first);
+                                            await widget.controller.playSong();
+                                          },
+                                          padding: const EdgeInsets.all(0),
+                                          icon: Icon(
+                                            FluentIcons.play_12_filled,
+                                            color: Colors.white,
+                                            size: height * 0.035,
+                                          ),
                                         ),
                                       ),
                                     ],

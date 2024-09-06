@@ -34,6 +34,11 @@ class _PlaylistsState extends State<Playlists>{
   void initState(){
     super.initState();
     playlistsFuture = widget.controller.getPlaylists('');
+    widget.controller.playingNotifier.addListener(() {
+      setState(() {
+        playlistsFuture = widget.controller.getPlaylists('');
+      });
+    });
   }
 
   _onSearchChanged(String query) {
@@ -230,45 +235,56 @@ class _PlaylistsState extends State<Playlists>{
                                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                                     crossAxisAlignment: CrossAxisAlignment.center,
                                     children: [
-                                      IconButton(
-                                        onPressed: (){
-                                          print("Add $index");
-                                          List<SongType> songs = [];
-                                          for (var path in playlist.paths){
-                                            songs.add(widget.controller.songBox.query(SongType_.path.equals(path)).build().find().first);
-                                          }
-                                          Navigator.push(
-                                              context,
-                                              MaterialPageRoute(
-                                                  builder: (context) => AddScreen(controller: widget.controller, songs: songs)
-                                              )
-                                          );
-                                        },
-                                        padding: const EdgeInsets.all(0),
-                                        icon: Icon(
-                                          FluentIcons.add_12_filled,
-                                          color: Colors.white,
-                                          size: height * 0.035,
+                                      SizedBox(
+                                        width: width * 0.035,
+                                        child: IconButton(
+                                          onPressed: (){
+                                            print("Add $index");
+                                            List<SongType> songs = [];
+                                            for (var path in playlist.paths){
+                                              songs.add(widget.controller.songBox.query(SongType_.path.equals(path)).build().find().first);
+                                            }
+                                            Navigator.push(
+                                                context,
+                                                MaterialPageRoute(
+                                                    builder: (context) => AddScreen(controller: widget.controller, songs: songs)
+                                                )
+                                            );
+                                          },
+                                          padding: const EdgeInsets.all(0),
+                                          icon: Icon(
+                                            FluentIcons.add_12_filled,
+                                            color: Colors.white,
+                                            size: height * 0.035,
+                                          ),
                                         ),
                                       ),
-                                      Icon(
-                                        FluentIcons.open_16_filled,
-                                        size: height * 0.1,
-                                        color: Colors.white,
+                                      Expanded(
+                                        child: FittedBox(
+                                          fit: BoxFit.fill,
+                                          child: Icon(
+                                            FluentIcons.open_16_filled,
+                                            size: height * 0.1,
+                                            color: Colors.white,
+                                          ),
+                                        ),
                                       ),
-                                      IconButton(
-                                        onPressed: () async {
-                                          if(widget.controller.settings.queue.equals(playlist.paths) == false){
-                                            widget.controller.updatePlaying(playlist.paths, 0);
-                                          }
-                                          widget.controller.indexChange(playlist.paths.first);
-                                          await widget.controller.playSong();
-                                        },
-                                        padding: const EdgeInsets.all(0),
-                                        icon: Icon(
-                                          FluentIcons.play_12_filled,
-                                          color: Colors.white,
-                                          size: height * 0.035,
+                                      SizedBox(
+                                        width: width * 0.035,
+                                        child: IconButton(
+                                          onPressed: () async {
+                                            if(widget.controller.settings.queue.equals(playlist.paths) == false){
+                                              widget.controller.updatePlaying(playlist.paths, 0);
+                                            }
+                                            widget.controller.indexChange(playlist.paths.first);
+                                            await widget.controller.playSong();
+                                          },
+                                          padding: const EdgeInsets.all(0),
+                                          icon: Icon(
+                                            FluentIcons.play_12_filled,
+                                            color: Colors.white,
+                                            size: height * 0.035,
+                                          ),
                                         ),
                                       ),
                                     ],

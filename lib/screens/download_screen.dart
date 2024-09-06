@@ -174,11 +174,9 @@ class _DownloadState extends State<Download>{
                                   .toString()}.mp3");
                               if (stream != null) {
                                 await file.writeAsBytes(stream.data);
-                                widget.controller.showNotification(
-                                    "Song downloaded successfully.", 3500);
+                                widget.controller.showNotification("Song downloaded successfully.", 3500);
                               } else {
-                                widget.controller.showNotification(
-                                    "Something went wrong.", 3500);
+                                widget.controller.showNotification("Something went wrong.", 3500);
                               }
                               http.Response response = await http.get(
                                 Uri.parse(song['album']['cover_big']),

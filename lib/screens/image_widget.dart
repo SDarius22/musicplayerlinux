@@ -18,13 +18,6 @@ class ImageWidget extends StatefulWidget {
 
 class _ImageWidgetState extends State<ImageWidget> {
   ValueNotifier<bool> isHovered = ValueNotifier(false);
-  Image image = Image.asset('assets/bg.png', fit: BoxFit.cover,);
-
-  @override
-  void initState() {
-    super.initState();
-  }
-
 
   @override
   Widget build(BuildContext context) {
@@ -42,38 +35,23 @@ class _ImageWidgetState extends State<ImageWidget> {
               onExit: (event) {
                 isHovered.value = false;
               },
-              child: Stack(
-                alignment: Alignment.center,
-                children: [
-                  if(widget.heroTag != null)
-                    Hero(
-                      tag: widget.heroTag.toString(),
-                      child: Container(
-                        decoration: BoxDecoration(
-                            color: Colors.black,
-                            image: DecorationImage(
-                              fit: BoxFit.cover,
-                              image: Image.memory(snapshot.data!).image,
-                            )
-                        ),
-                      ),
-                    )
-                  else
-                    Container(
-                      decoration: BoxDecoration(
-                          color: Colors.black,
-                          image: DecorationImage(
-                            fit: BoxFit.cover,
-                            image: Image.memory(snapshot.data!).image,
-                          )
+              child: widget.heroTag != null?
+                Hero(
+                  tag: widget.heroTag.toString(),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.black,
+                      image: DecorationImage(
+                        fit: BoxFit.cover,
+                        image: Image.memory(snapshot.data!).image,
                       ),
                     ),
-                  if(widget.buttons != null)
+                    child: widget.buttons != null?
                     ValueListenableBuilder(
                       valueListenable: isHovered,
                       builder: (context, value, child) {
-                        return value?
-                        ClipRRect(
+                        return value ?
+                        ClipRect(
                           child: BackdropFilter(
                             filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
                             child: Container(
@@ -84,10 +62,37 @@ class _ImageWidgetState extends State<ImageWidget> {
                           ),
                         ) :
                         Container();
-                      },
-                    ),
-                ],
-              ),
+                      }
+                    ) :
+                    Container(),
+                  ),
+                ) :
+                Container(
+                  decoration: BoxDecoration(
+                      color: Colors.black,
+                      image: DecorationImage(
+                        fit: BoxFit.cover,
+                        image: Image.memory(snapshot.data!).image,
+                      )
+                  ),
+                  child: widget.buttons != null?
+                  ValueListenableBuilder(
+                      valueListenable: isHovered,
+                      builder: (context, value, child) {
+                        return value ?
+                        BackdropFilter(
+                          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                          child: Container(
+                            color: Colors.black.withOpacity(0.3),
+                            alignment: Alignment.center,
+                            child: widget.buttons,
+                          ),
+                        ) :
+                        Container();
+                      }
+                  ) :
+                  Container(),
+                ),
             ) :
             snapshot.hasError?
             Center(
@@ -101,7 +106,7 @@ class _ImageWidgetState extends State<ImageWidget> {
                   color: Colors.black,
                   image: DecorationImage(
                     fit: BoxFit.cover,
-                    image: image.image,
+                    image: Image.asset('assets/bg.png', fit: BoxFit.cover,).image,
                   )
               ),
             ),
