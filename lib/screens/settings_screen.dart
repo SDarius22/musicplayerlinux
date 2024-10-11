@@ -879,6 +879,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               List<String> lines = file.readAsLinesSync();
                               String playlistName = file.path.split("/").last.split(".").first;
                               lines.removeAt(0);
+                              for (int i = 0; i < lines.length; i++) {
+                                lines[i] = lines[i].split("/").last;
+                              }
                               widget.controller.navigatorKey.currentState!.push(MaterialPageRoute(builder: (context) => CreateScreen(controller: widget.controller, name: playlistName, paths: lines,)));
                             }
 

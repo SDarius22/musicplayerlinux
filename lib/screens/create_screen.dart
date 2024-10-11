@@ -31,7 +31,11 @@ class _CreateScreenState extends State<CreateScreen> {
     if (widget.paths != null && widget.paths!.isNotEmpty) {
       for (var path in widget.paths!) {
         print(path);
-        selected.add(widget.controller.songBox.query(SongType_.path.equals(path)).build().find().first);
+        try {
+          selected.add(widget.controller.songBox.query(SongType_.path.contains(path)).build().find().first);
+        } catch (e) {
+          print(e);
+        }
       }
     }
     super.initState();

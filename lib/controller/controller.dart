@@ -477,8 +477,10 @@ class Controller{
       finishedRetrievingNotifier.value = true;
     }
 
+    return songBox.query(SongType_.title.contains(searchValue, caseSensitive: false) | SongType_.artists.contains(searchValue, caseSensitive: false) | SongType_.album.contains(searchValue, caseSensitive: false)).order(SongType_.title).build().find();
+
     //finishedRetrievingNotifier.value = true;
-    return songBox.query(SongType_.title.contains(searchValue, caseSensitive: false)).order(SongType_.title).build().find();
+   // return songBox.query(SongType_.title.contains(searchValue, caseSensitive: false)).order(SongType_.title).build().find();
   }
 
   Future<void> indexChange(String song) async{

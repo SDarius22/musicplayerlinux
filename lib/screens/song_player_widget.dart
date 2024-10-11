@@ -294,8 +294,6 @@ class _SongPlayerWidgetState extends State<SongPlayerWidget> {
                                             );
                                           }
                                           return null;
-
-
                                         },
                                       );
                                     }
