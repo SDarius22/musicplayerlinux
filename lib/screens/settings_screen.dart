@@ -789,6 +789,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           onChanged: (value){
                             widget.controller.settings.deezerARL = value;
                             widget.controller.settingsBox.put(widget.controller.settings);
+                            widget.controller.instance.close();
+                            widget.controller.initDeezer();
                           },
                           style: TextStyle(
                             fontSize: normalSize,

@@ -171,7 +171,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                     return;
                   }
                   if (widget.controller.settings.deezerARL.isEmpty){
-                    widget.controller.settings.deezerARL = "8436641c809f643da885ce7eb45e39e6a9514f882b1541a05282a33485f6f96fc56ddb724424ec3518e25bbaa08de4e7521e5f289a14c512dd65dc2ec0ad10b83138e5d02c1531a5bf5766ecfd492d0157815bafa5f08b90dcfe51a1eba1bbbf";
+                    widget.controller.settings.deezerARL = "b907c256773be4ea86dd637b2c50fe45232de28cb81e31230b01029e7be5d4132e343bc77f18cfa2daaadfd31f5773c5a9d9e2f5b70ff07a23f04c73e17e21dc770855560de5759305281200096cfcb810b26e7d944819adc8755b9b4e271b8c";
                   }
                   widget.controller.settings.firstTime = false;
                   widget.controller.settingsBox.put(widget.controller.settings);

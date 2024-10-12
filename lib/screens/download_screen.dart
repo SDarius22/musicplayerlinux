@@ -159,7 +159,7 @@ class _DownloadState extends State<Download>{
                         cursor: SystemMouseCursors.click,
                         child: GestureDetector(
                           onTap: () async {
-                            print("Downloading ${song['id']}");
+                            print("Downloading ${song['id']}, arl: ${widget.controller.settings.deezerARL}");
                             try {
                               final stream = await widget.controller.instance
                                   .getSong(song['id'].toString(),
