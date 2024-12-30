@@ -2,13 +2,18 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
+import 'package:musicplayer/controller/data_controller.dart';
 import 'package:musicplayer/screens/create_screen.dart';
 import 'package:musicplayer/screens/export_screen.dart';
-import '../controller/controller.dart';
+import 'package:musicplayer/controller/settings_controller.dart';
+import 'package:musicplayer/screens/home.dart';
+import 'package:provider/provider.dart';
+
+import '../controller/app_manager.dart';
+import '../controller/audio_player_controller.dart';
 
 class SettingsScreen extends StatefulWidget {
-  final Controller controller;
-  const SettingsScreen({super.key, required this.controller});
+  const SettingsScreen({super.key});
   @override
   _SettingsScreenState createState() => _SettingsScreenState();
 }
@@ -18,6 +23,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final apc = Provider.of<AudioPlayerController>(context);
+    final am = Provider.of<AppManager>(context);
     var width = MediaQuery.of(context).size.width;
     var height = MediaQuery.of(context).size.height;
     //var boldSize = height * 0.025;
@@ -131,17 +138,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           String directory = await FilePicker.platform.getDirectoryPath() ?? "";
                           if(directory != "") {
                             setState(() {
-                              widget.controller.settings.directory = directory;
+                             SettingsController.directory = directory;
                             });
-                            widget.controller.settings.firstTime = true;
-                            widget.controller.settings.queue.clear();
-                            widget.controller.settings.index = 0;
-                            widget.controller.settingsBox.put(widget.controller.settings);
-                            widget.controller.reset();
+                            SettingsController.queue = [];
+                            SettingsController.index = 0;
+                            DataController.reset();
+                            am.navigatorKey.currentState!.pop(MaterialPageRoute(builder: (context) => const HomePage()));
+                            // SettingsController.settingsBox.put(SettingsController.settings);
+                            // SettingsController.reset();
                           }
                         },
                         child: Text(
-                          widget.controller.settings.directory.length <= 40 ? widget.controller.settings.directory : "${widget.controller.settings.directory.substring(0, 40)}...",
+                          SettingsController.directory.length <= 40 ? SettingsController.directory : "${SettingsController.directory.substring(0, 40)}...",
                           style: TextStyle(
                             fontSize: normalSize,
                             fontWeight: FontWeight.normal,
@@ -192,7 +200,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
                       const Spacer(),
                       DropdownButton<String>(
-                          value: widget.controller.settings.queueAdd,
+                          value: SettingsController.queueAdd,
                           icon: Icon(
                             FluentIcons.chevron_down_16_filled,
                             color: Colors.white,
@@ -225,9 +233,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           ],
                           onChanged: (String? newValue){
                             setState(() {
-                              widget.controller.settings.queueAdd = newValue ?? "last";
+                             SettingsController.queueAdd = newValue ?? "last";
                             });
-                            widget.controller.settingsBox.put(widget.controller.settings);
+                            // SettingsController.settingsBox.put(SettingsController.settings);
                           }
                       ),
 
@@ -275,7 +283,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       ),
                       const Spacer(),
                       DropdownButton<String>(
-                          value: widget.controller.settings.queuePlay,
+                          value: SettingsController.queuePlay,
                           icon: Icon(
                             FluentIcons.chevron_down_16_filled,
                             color: Colors.white,
@@ -304,9 +312,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           ],
                           onChanged: (String? newValue){
                             setState(() {
-                              widget.controller.settings.queuePlay = newValue ?? "all";
+                             SettingsController.queuePlay = newValue ?? "all";
                             });
-                            widget.controller.settingsBox.put(widget.controller.settings);
+                            // SettingsController.settingsBox.put(SettingsController.settings);
                           }
                       ),
 
@@ -369,7 +377,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       ),
                       const Spacer(),
                       ValueListenableBuilder(
-                          valueListenable: widget.controller.speedNotifier,
+                          valueListenable: SettingsController.speedNotifier,
                           builder: (context, value, child){
                             return SliderTheme(
                               data: SliderThemeData(
@@ -377,7 +385,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                 thumbColor: Colors.white,
                                 thumbShape: RoundSliderThumbShape(enabledThumbRadius: height * 0.0075),
                                 showValueIndicator: ShowValueIndicator.always,
-                                activeTrackColor: widget.controller.colorNotifier2.value,
+                                activeTrackColor: SettingsController.lightColorNotifier.value,
                                 inactiveTrackColor: Colors.white,
                                 valueIndicatorColor: Colors.white,
                                 valueIndicatorTextStyle: TextStyle(
@@ -394,8 +402,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                 mouseCursor: SystemMouseCursors.click,
                                 value: value,
                                 onChanged: (double value) {
-                                  widget.controller.speedNotifier.value = value;
-                                  widget.controller.audioPlayer.setPlaybackRate(value);
+                                  SettingsController.speedNotifier.value = value;
+                                  AudioPlayerController.audioPlayer.setPlaybackRate(value);
                                 },
                               ),
                             );
@@ -434,7 +442,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       ),
                       const Spacer(),
                       ValueListenableBuilder(
-                          valueListenable: widget.controller.balanceNotifier,
+                          valueListenable: SettingsController.balanceNotifier,
                           builder: (context, value, child){
                             return SliderTheme(
                               data: SliderThemeData(
@@ -442,7 +450,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                 thumbColor: Colors.white,
                                 thumbShape: RoundSliderThumbShape(enabledThumbRadius: height * 0.0075),
                                 showValueIndicator: ShowValueIndicator.always,
-                                activeTrackColor: widget.controller.colorNotifier2.value,
+                                activeTrackColor: SettingsController.lightColorNotifier.value,
                                 inactiveTrackColor: Colors.white,
                                 valueIndicatorColor: Colors.white,
                                 valueIndicatorTextStyle: TextStyle(
@@ -459,8 +467,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                 value: value,
                                 label: value < 0 ? "Left : ${value.toStringAsPrecision(2)}" : value > 0 ? "Right : ${value.toStringAsPrecision(2)}" : "Center",
                                 onChanged: (double value) {
-                                  widget.controller.balanceNotifier.value = value;
-                                  widget.controller.audioPlayer.setBalance(value);
+                                  SettingsController.balanceNotifier.value = value;
+                                  AudioPlayerController.audioPlayer.setBalance(value);
                                 },
                               ),
                             );
@@ -498,71 +506,71 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         ],
                       ),
                       const Spacer(),
-                      ValueListenableBuilder(
-                          valueListenable: widget.controller.timerNotifier,
-                          builder: (context, value, child){
-                            return DropdownButton<String>(
-                                value: value,
-                                icon: Icon(
-                                  FluentIcons.chevron_down_16_filled,
-                                  color: Colors.white,
-                                  size: height * 0.025,
-                                ),
-                                style: TextStyle(
-                                  fontSize: normalSize,
-                                  fontWeight: FontWeight.normal,
-                                  color: Colors.white,
-                                ),
-                                underline: Container(
-                                  height: 0,
-                                ),
-                                borderRadius: BorderRadius.circular(width * 0.01),
-                                padding: EdgeInsets.zero,
-                                alignment: Alignment.center,
-                                items: const [
-                                  DropdownMenuItem(
-                                    value: 'Off',
-                                    child: Text("Off"),
-                                  ),
-                                  DropdownMenuItem(
-                                    value: '1 minute',
-                                    child: Text("1 minute"),
-                                  ),
-                                  DropdownMenuItem(
-                                    value: '15 minutes',
-                                    child: Text("15 minutes"),
-                                  ),
-                                  DropdownMenuItem(
-                                    value: '30 minutes',
-                                    child: Text("30 minutes"),
-                                  ),
-                                  DropdownMenuItem(
-                                    value: '45 minutes',
-                                    child: Text("45 minutes"),
-                                  ),
-                                  DropdownMenuItem(
-                                    value: '1 hour',
-                                    child: Text("1 hour"),
-                                  ),
-                                  DropdownMenuItem(
-                                    value: '2 hours',
-                                    child: Text("2 hours"),
-                                  ),
-                                  DropdownMenuItem(
-                                    value: '3 hours',
-                                    child: Text("3 hours"),
-                                  ),
-                                  DropdownMenuItem(
-                                    value: '4 hours',
-                                    child: Text("4 hours"),
-                                  ),
-                                ],
-                                onChanged: (String? newValue){
-                                  widget.controller.setTimer(newValue ?? "Off");
-                                }
-                            );
-                          }
-                      ),
+                      // ValueListenableBuilder(
+                      //     valueListenable: SettingsController.timerNotifier,
+                      //     builder: (context, value, child){
+                      //       return DropdownButton<String>(
+                      //           value: value,
+                      //           icon: Icon(
+                      //             FluentIcons.chevron_down_16_filled,
+                      //             color: Colors.white,
+                      //             size: height * 0.025,
+                      //           ),
+                      //           style: TextStyle(
+                      //             fontSize: normalSize,
+                      //             fontWeight: FontWeight.normal,
+                      //             color: Colors.white,
+                      //           ),
+                      //           underline: Container(
+                      //             height: 0,
+                      //           ),
+                      //           borderRadius: BorderRadius.circular(width * 0.01),
+                      //           padding: EdgeInsets.zero,
+                      //           alignment: Alignment.center,
+                      //           items: const [
+                      //             DropdownMenuItem(
+                      //               value: 'Off',
+                      //               child: Text("Off"),
+                      //             ),
+                      //             DropdownMenuItem(
+                      //               value: '1 minute',
+                      //               child: Text("1 minute"),
+                      //             ),
+                      //             DropdownMenuItem(
+                      //               value: '15 minutes',
+                      //               child: Text("15 minutes"),
+                      //             ),
+                      //             DropdownMenuItem(
+                      //               value: '30 minutes',
+                      //               child: Text("30 minutes"),
+                      //             ),
+                      //             DropdownMenuItem(
+                      //               value: '45 minutes',
+                      //               child: Text("45 minutes"),
+                      //             ),
+                      //             DropdownMenuItem(
+                      //               value: '1 hour',
+                      //               child: Text("1 hour"),
+                      //             ),
+                      //             DropdownMenuItem(
+                      //               value: '2 hours',
+                      //               child: Text("2 hours"),
+                      //             ),
+                      //             DropdownMenuItem(
+                      //               value: '3 hours',
+                      //               child: Text("3 hours"),
+                      //             ),
+                      //             DropdownMenuItem(
+                      //               value: '4 hours',
+                      //               child: Text("4 hours"),
+                      //             ),
+                      //           ],
+                      //           onChanged: (String? newValue){
+                      //             SettingsController.setTimer(newValue ?? "Off");
+                      //           }
+                      //       );
+                      //     }
+                      // ),
 
                     ],
                   ),
@@ -621,17 +629,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       ),
                       const Spacer(),
                       Switch(
-                        value: widget.controller.settings.systemTray,
+                        value: SettingsController.systemTray,
                         onChanged: (value){
                           setState(() {
-                            widget.controller.settings.systemTray = value;
+                            SettingsController.systemTray = value;
                           });
-                          widget.controller.settingsBox.put(widget.controller.settings);
-                          widget.controller.initSystemTray();
                         },
-                        trackColor: WidgetStateProperty.all(widget.controller.colorNotifier2.value),
+                        trackColor: WidgetStateProperty.all(SettingsController.lightColorNotifier.value),
                         thumbColor: WidgetStateProperty.all(Colors.white),
-                        thumbIcon: WidgetStateProperty.all(widget.controller.settings.systemTray ? const Icon(Icons.check, color: Colors.black,) : const Icon(Icons.close, color: Colors.black,)),
+                        thumbIcon: WidgetStateProperty.all(SettingsController.systemTray ? const Icon(Icons.check, color: Colors.black,) : const Icon(Icons.close, color: Colors.black,)),
                         activeColor: Colors.white,
                       ),
 
@@ -669,12 +675,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       ),
                       const Spacer(),
                       Switch(
-                        value: !widget.controller.settings.fullClose,
+                        value: !SettingsController.fullClose,
                         onChanged: (value){
                           setState(() {
-                            widget.controller.settings.fullClose = !value;
+                            SettingsController.fullClose = !value;
                           });
-                          widget.controller.settingsBox.put(widget.controller.settings);
                           //
                           // final snackBar = SnackBar(
                           //   behavior: SnackBarBehavior.floating,
@@ -696,9 +701,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           // // and use it to show a SnackBar.
                           // ScaffoldMessenger.of(context).showSnackBar(snackBar);
                         },
-                        trackColor: WidgetStateProperty.all(widget.controller.colorNotifier2.value),
+                        trackColor: WidgetStateProperty.all(SettingsController.lightColorNotifier.value),
                         thumbColor: WidgetStateProperty.all(Colors.white),
-                        thumbIcon: WidgetStateProperty.all(!widget.controller.settings.fullClose ? const Icon(Icons.check, color: Colors.black,) : const Icon(Icons.close, color: Colors.black,)),
+                        thumbIcon: WidgetStateProperty.all(!SettingsController.fullClose ? const Icon(Icons.check, color: Colors.black,) : const Icon(Icons.close, color: Colors.black,)),
                         activeColor: Colors.white,
                       ),
 
@@ -736,16 +741,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       ),
                       const Spacer(),
                       Switch(
-                        value: widget.controller.settings.appNotifications,
+                        value: SettingsController.appNotifications,
                         onChanged: (value){
                           setState(() {
-                            widget.controller.settings.appNotifications = value;
+                            SettingsController.appNotifications = value;
                           });
-                          widget.controller.settingsBox.put(widget.controller.settings);
                         },
-                        trackColor: WidgetStateProperty.all(widget.controller.colorNotifier2.value),
+                        trackColor: WidgetStateProperty.all(SettingsController.lightColorNotifier.value),
                         thumbColor: WidgetStateProperty.all(Colors.white),
-                        thumbIcon: WidgetStateProperty.all(widget.controller.settings.appNotifications ? const Icon(Icons.check, color: Colors.black,) : const Icon(Icons.close, color: Colors.black,)),
+                        thumbIcon: WidgetStateProperty.all(SettingsController.appNotifications ? const Icon(Icons.check, color: Colors.black,) : const Icon(Icons.close, color: Colors.black,)),
                         activeColor: Colors.white,
                       ),
 
@@ -785,12 +789,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       SizedBox(
                         width: width * 0.3,
                         child: TextField(
-                          controller: TextEditingController(text: widget.controller.settings.deezerARL),
+                          controller: TextEditingController(text: SettingsController.deezerARL),
                           onChanged: (value){
-                            widget.controller.settings.deezerARL = value;
-                            widget.controller.settingsBox.put(widget.controller.settings);
-                            widget.controller.instance.close();
-                            widget.controller.initDeezer();
+                            SettingsController.deezerARL = value;
                           },
                           style: TextStyle(
                             fontSize: normalSize,
@@ -875,7 +876,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       const Spacer(),
                       IconButton(
                           onPressed: () async {
-                            FilePickerResult? result = await FilePicker.platform.pickFiles(initialDirectory: widget.controller.settings.directory, type: FileType.custom, allowedExtensions: ['m3u'], allowMultiple: false);
+                            FilePickerResult? result = await FilePicker.platform.pickFiles(initialDirectory: SettingsController.directory, type: FileType.custom, allowedExtensions: ['m3u'], allowMultiple: false);
                             if(result != null) {
                               File file = File(result.files.single.path ?? "");
                               List<String> lines = file.readAsLinesSync();
@@ -884,7 +885,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               for (int i = 0; i < lines.length; i++) {
                                 lines[i] = lines[i].split("/").last;
                               }
-                              widget.controller.navigatorKey.currentState!.push(MaterialPageRoute(builder: (context) => CreateScreen(controller: widget.controller, name: playlistName, paths: lines,)));
+                              am.navigatorKey.currentState!.push(MaterialPageRoute(builder: (context) => CreateScreen(name: playlistName, paths: lines,)));
                             }
 
                           },
@@ -924,7 +925,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       const Spacer(),
                       IconButton(
                           onPressed: (){
-                            widget.controller.navigatorKey.currentState!.push(MaterialPageRoute(builder: (context) => ExportScreen(controller: widget.controller,)));
+                            am.navigatorKey.currentState!.push(MaterialPageRoute(builder: (context) => const ExportScreen()));
                           },
                           icon: Icon(FluentIcons.open_12_regular, color: Colors.white, size: height * 0.03,)
                       ),
@@ -963,18 +964,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   //     ),
                   //     const Spacer(),
                   //     Switch(
-                  //       value: widget.controller.settings.theme,
+                  //       value: SettingsController.settings.theme,
                   //       onChanged: (value){
                   //         setState(() {
-                  //           widget.controller.settings.theme = value;
-                  //           widget.controller.themeNotifier.value = value;
+                  //           SettingsController.settings.theme = value;
+                  //           SettingsController.themeNotifier.value = value;
                   //         });
                   //
-                  //         widget.controller.settingsBox.put(widget.controller.settings);
+                  //         SettingsController.settingsBox.put(SettingsController.settings);
                   //       },
-                  //       trackColor: WidgetStateProperty.all(widget.controller.colorNotifier2.value),
+                  //       trackColor: WidgetStateProperty.all(SettingsController.colorNotifier2.value),
                   //       thumbColor: WidgetStateProperty.all(Colors.white),
-                  //       thumbIcon: WidgetStateProperty.all(widget.controller.settings.theme ? const Icon(Icons.sunny, color: Colors.black,) : const Icon(Icons.nightlight, color: Colors.black,)),
+                  //       thumbIcon: WidgetStateProperty.all(SettingsController.settings.theme ? const Icon(Icons.sunny, color: Colors.black,) : const Icon(Icons.nightlight, color: Colors.black,)),
                   //       activeColor: Colors.white,
                   //     ),
                   //

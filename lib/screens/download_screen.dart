@@ -4,15 +4,16 @@ import 'dart:typed_data';
 import 'package:audiotags/audiotags.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
+import 'package:musicplayer/controller/app_manager.dart';
+import 'package:musicplayer/controller/online_controller.dart';
+import 'package:musicplayer/controller/settings_controller.dart';
 import 'package:musicplayer/screens/image_widget.dart';
 import 'dart:async';
 import 'package:http/http.dart' as http;
-
-import '../controller/controller.dart';
+import 'package:provider/provider.dart';
 
 class Download extends StatefulWidget{
-  final Controller controller;
-  const Download({super.key, required this.controller});
+  const Download({super.key});
 
   @override
   _DownloadState createState() => _DownloadState();
@@ -29,14 +30,14 @@ class _DownloadState extends State<Download>{
   @override
   void initState(){
     super.initState();
-    downloadFuture = widget.controller.searchDeezer('');
+    downloadFuture = OnlineController.searchDeezer('');
   }
 
   _onSearchChanged(String query) {
     if (_debounce?.isActive ?? false) _debounce?.cancel();
     _debounce = Timer(const Duration(milliseconds: 1000), () {
       setState(() {
-        downloadFuture = widget.controller.searchDeezer(query);
+        downloadFuture = OnlineController.searchDeezer(query);
       });
     });
   }
@@ -51,6 +52,8 @@ class _DownloadState extends State<Download>{
 
   @override
   Widget build(BuildContext context) {
+    final oc = Provider.of<OnlineController>(context);
+    final am = Provider.of<AppManager>(context);
     var width = MediaQuery.of(context).size.width;
     var height = MediaQuery.of(context).size.height;
     // var boldSize = height * 0.025;
@@ -159,29 +162,26 @@ class _DownloadState extends State<Download>{
                         cursor: SystemMouseCursors.click,
                         child: GestureDetector(
                           onTap: () async {
-                            print("Downloading ${song['id']}, arl: ${widget.controller.settings.deezerARL}");
+                            print("Downloading ${song['id']}, arl: ${SettingsController.settings.deezerARL}");
                             try {
-                              final stream = await widget.controller.instance
-                                  .getSong(song['id'].toString(),
+                              final stream = await oc.instance.getSong(song['id'].toString(),
                                 onProgress: (received, total) {
                                   //print("received: $received, total: $total");
                                   progress.value = received / total;
                                 },
                               );
-                              File file = File("${widget.controller.settings
-                                  .directory}/${song['artist']['name']
+                              File file = File("${SettingsController.directory}/${song['artist']['name']
                                   .toString()} - ${song['title']
                                   .toString()}.mp3");
                               if (stream != null) {
                                 await file.writeAsBytes(stream.data);
-                                widget.controller.showNotification("Song downloaded successfully.", 3500);
+                                am.showNotification("Song downloaded successfully.", 3500);
                               } else {
-                                widget.controller.showNotification("Something went wrong.", 3500);
+                                am.showNotification("Something went wrong.", 3500);
                               }
                               http.Response response = await http.get(
                                 Uri.parse(song['album']['cover_big']),
                               );
-
                               await AudioTags.write(file.path,
                                 Tag(
                                     title: song['title'].toString(),
@@ -202,11 +202,11 @@ class _DownloadState extends State<Download>{
                             }
                             catch(e){
                               print(e);
-                              if(widget.controller.settings.deezerARL.isEmpty){
-                                widget.controller.showNotification("Cannot download song without a working Deezer ARL. Please add one in settings.", 3500);
+                              if(SettingsController.deezerARL.isEmpty){
+                                am.showNotification("Cannot download song without a working Deezer ARL. Please add one in settings.", 3500);
                               }
                               else{
-                                widget.controller.showNotification("Something went wrong. Try again later.", 3500);
+                                am.showNotification("Something went wrong. Try again later.", 3500);
                               }
                             }
                           },
@@ -215,7 +215,6 @@ class _DownloadState extends State<Download>{
                               ClipRRect(
                                 borderRadius: BorderRadius.circular(width * 0.01),
                                 child: ImageWidget(
-                                  controller: widget.controller,
                                   url: song['album']['cover_medium'],
                                   buttons: ValueListenableBuilder(
                                       valueListenable: progress,

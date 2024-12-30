@@ -1,16 +1,18 @@
 import 'package:collection/collection.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
+import 'package:musicplayer/controller/settings_controller.dart';
 import 'package:musicplayer/utils/hover_widget/hover_container.dart';
 import 'package:musicplayer/domain/artist_type.dart';
-import '../controller/controller.dart';
+import 'package:provider/provider.dart';
+import '../controller/audio_player_controller.dart';
+import '../controller/data_controller.dart';
 import 'add_screen.dart';
 import 'image_widget.dart';
 
 class ArtistScreen extends StatefulWidget {
-  final Controller controller;
   final ArtistType artist;
-  const ArtistScreen({super.key, required this.controller, required this.artist});
+  const ArtistScreen({super.key, required this.artist});
 
   @override
   _ArtistScreenState createState() => _ArtistScreenState();
@@ -36,6 +38,8 @@ class _ArtistScreenState extends State<ArtistScreen> {
   @override
   Widget build(BuildContext context) {
     print(widget.artist.name);
+    final dc = Provider.of<DataController>(context);
+    final apc = Provider.of<AudioPlayerController>(context);
     var width = MediaQuery.of(context).size.width;
     var height = MediaQuery.of(context).size.height;
     var boldSize = height * 0.025;
@@ -89,7 +93,6 @@ class _ArtistScreenState extends State<ArtistScreen> {
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(width * 0.025),
                           child: ImageWidget(
-                            controller: widget.controller,
                             path: widget.artist.songs.first.path,
                           ),
                         ),
@@ -128,13 +131,12 @@ class _ArtistScreenState extends State<ArtistScreen> {
                         children: [
                           IconButton(
                             onPressed: () async {
-                              //print("Playing ${widget.controller.indexNotifier.value}");
                               var songPaths = widget.artist.songs.map((e) => e.path).toList();
-                              if(widget.controller.settings.queue.equals(songPaths) == false){
-                                widget.controller.updatePlaying(songPaths, 0);
+                              if(SettingsController.queue.equals(songPaths) == false){
+                                dc.updatePlaying(songPaths, 0);
                               }
-                              widget.controller.indexChange(songPaths.first);
-                              await widget.controller.playSong();
+                              SettingsController.index = SettingsController.currentQueue.indexOf(widget.artist.songs.first.path);
+                              await apc.playSong();
                             },
                             icon: Icon(
                               FluentIcons.play_12_filled,
@@ -147,7 +149,7 @@ class _ArtistScreenState extends State<ArtistScreen> {
                               Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                      builder: (context) => AddScreen(controller: widget.controller, songs: widget.artist.songs)
+                                      builder: (context) => AddScreen(songs: widget.artist.songs)
                                   )
                               );
                             },
@@ -185,13 +187,12 @@ class _ArtistScreenState extends State<ArtistScreen> {
                       child: GestureDetector(
                         behavior: HitTestBehavior.translucent,
                         onTap: () async {
-                          //print(widget.controller.playingSongsUnShuffled[index].title);
                           var songPaths = widget.artist.songs.map((e) => e.path).toList();
-                          if(widget.controller.settings.queue.equals(songPaths) == false){
-                            widget.controller.updatePlaying(songPaths, index);
+                          if(SettingsController.queue.equals(songPaths) == false){
+                            dc.updatePlaying(songPaths, index);
                           }
-                          widget.controller.indexChange(widget.controller.settings.queue[index]);
-                          await widget.controller.playSong();
+                          SettingsController.index = SettingsController.currentQueue.indexOf(widget.artist.songs[index].path);
+                          await apc.playSong();
                         },
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(width * 0.01),
@@ -210,7 +211,6 @@ class _ArtistScreenState extends State<ArtistScreen> {
                                 ClipRRect(
                                   borderRadius: BorderRadius.circular(width * 0.01),
                                   child: ImageWidget(
-                                    controller: widget.controller,
                                     path: widget.artist.songs[index].path,
                                   ),
                                 ),

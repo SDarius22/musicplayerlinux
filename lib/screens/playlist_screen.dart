@@ -2,17 +2,19 @@ import 'package:collection/collection.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:musicplayer/utils/hover_widget/hover_container.dart';
+import 'package:provider/provider.dart';
+import '../controller/audio_player_controller.dart';
+import '../controller/data_controller.dart';
+import '../controller/settings_controller.dart';
 import '../domain/song_type.dart';
 import 'package:musicplayer/domain/playlist_type.dart';
-import '../controller/controller.dart';
-import '../utils/objectbox.g.dart';
+import '../repository/objectbox.g.dart';
 import 'add_screen.dart';
 import 'image_widget.dart';
 
 class PlaylistScreen extends StatefulWidget {
-  final Controller controller;
   final PlaylistType playlist;
-  const PlaylistScreen({super.key, required this.controller, required this.playlist});
+  const PlaylistScreen({super.key, required this.playlist});
 
   @override
   _PlaylistScreenState createState() => _PlaylistScreenState();
@@ -28,7 +30,7 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
   @override
   void initState() {
     for (int i = 0; i < widget.playlist.paths.length; i++){
-      SongType song = widget.controller.songBox.query(SongType_.path.equals(widget.playlist.paths[i])).build().find().first;
+      SongType song = DataController.songBox.query(SongType_.path.equals(widget.playlist.paths[i])).build().findFirst();
        songs.value.add(song);
     }
     int totalDuration = 0;
@@ -58,6 +60,8 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final dc = Provider.of<DataController>(context);
+    final apc = Provider.of<AudioPlayerController>(context);
     var width = MediaQuery.of(context).size.width;
     var height = MediaQuery.of(context).size.height;
     var boldSize = height * 0.025;
@@ -116,7 +120,6 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
                               child: ClipRRect(
                                 borderRadius: BorderRadius.circular(width * 0.025),
                                 child: ImageWidget(
-                                  controller: widget.controller,
                                   path: widget.playlist.paths.first,
                                 ),
                               ),
@@ -216,12 +219,10 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
                         children: [
                           IconButton(
                             onPressed: () async {
-                              if(widget.controller.settings.queue.equals(widget.playlist.paths) == false){
-                                widget.controller.updatePlaying(widget.playlist.paths, 0);
+                              if(SettingsController.queue.equals(widget.playlist.paths) == false){
+                                dc.updatePlaying(widget.playlist.paths, 0);
                               }
-                              widget.controller.indexChange(widget.playlist.paths.first);
-                              await widget.controller.playSong();
-
+                              SettingsController.index = SettingsController.currentQueue.indexOf(widget.playlist.paths.first);
                             },
                             icon: Icon(
                               FluentIcons.play_12_filled,
@@ -236,7 +237,7 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
                               Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                      builder: (context) => AddScreen(controller: widget.controller, songs: songs.value)
+                                      builder: (context) => AddScreen(songs: songs.value)
                                   )
                               );
                             },
@@ -249,7 +250,7 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
                           IconButton(
                             onPressed: () {
                               print("Delete ${widget.playlist.name}");
-                              widget.controller.deletePlaylist(widget.playlist);
+                              dc.deletePlaylist(widget.playlist);
                               Navigator.pop(context);
                             },
                             icon: Icon(
@@ -298,11 +299,11 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
                             child: GestureDetector(
                               behavior: HitTestBehavior.translucent,
                               onTap: () async {
-                                if(widget.controller.settings.queue.equals(widget.playlist.paths) == false){
-                                  widget.controller.updatePlaying(widget.playlist.paths, index);
+                                if(SettingsController.queue.equals(widget.playlist.paths) == false){
+                                  dc.updatePlaying(widget.playlist.paths, index);
                                 }
-                                widget.controller.indexChange(widget.controller.settings.queue[index]);
-                                await widget.controller.playSong();
+                                SettingsController.index = SettingsController.currentQueue.indexOf(widget.playlist.paths[index]);
+                                await apc.playSong();
                               },
                               child: ClipRRect(
                                 borderRadius: BorderRadius.circular(width * 0.01),
@@ -321,7 +322,6 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
                                       ClipRRect(
                                         borderRadius: BorderRadius.circular(width * 0.01),
                                         child: ImageWidget(
-                                          controller: widget.controller,
                                           path: song.path,
                                         ),
                                       ),
@@ -400,7 +400,6 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
                                       ClipRRect(
                                           borderRadius: BorderRadius.circular(width * 0.01),
                                           child: ImageWidget(
-                                            controller: widget.controller,
                                             path: song.path,
                                             buttons: IconButton(
                                               onPressed: (){
@@ -464,7 +463,7 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
                               widget.playlist.paths.insert(newIndex, temp);
                               var temp2 =  songs.value.removeAt(oldIndex);
                               songs.value.insert(newIndex, temp2);
-                              //widget.controller.playlistBox.put(widget.playlist);
+                              DataController.playlistBox.put(widget.playlist);
                             },
                           );
                         }
@@ -485,7 +484,7 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
                       }
                       else{
                         editMode.value = false;
-                        widget.controller.playlistBox.put(widget.playlist);
+                        DataController.playlistBox.put(widget.playlist);
                       }
                     },
                     icon: Icon(

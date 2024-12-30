@@ -3,13 +3,14 @@ import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:musicplayer/screens/image_widget.dart';
 import 'package:musicplayer/utils/hover_widget/stack_hover_widget.dart';
-import 'package:musicplayer/utils/objectbox.g.dart';
+import 'package:musicplayer/repository/objectbox.g.dart';
+import 'package:provider/provider.dart';
+import '../controller/data_controller.dart';
+import '../controller/settings_controller.dart';
 import '../domain/playlist_type.dart';
-import '../controller/controller.dart';
 
 class ExportScreen extends StatefulWidget {
-  final Controller controller;
-  const ExportScreen({super.key, required this.controller});
+  const ExportScreen({super.key});
 
   @override
   _ExportScreenState createState() => _ExportScreenState();
@@ -19,12 +20,13 @@ class _ExportScreenState extends State<ExportScreen> {
   List<int> selected = [];
   @override
   Widget build(BuildContext context) {
+    final dc = Provider.of<DataController>(context);
     var width = MediaQuery.of(context).size.width;
     var height = MediaQuery.of(context).size.height;
     //var boldSize = height * 0.025;
     var normalSize = height * 0.02;
     var smallSize = height * 0.015;
-    var query = widget.controller.playlistBox.query().order(PlaylistType_.name).build();
+    var query = DataController.playlistBox.query().order(PlaylistType_.name).build();
     return Scaffold(
       body: Container(
         width: width,
@@ -70,12 +72,12 @@ class _ExportScreenState extends State<ExportScreen> {
                         if(i == 0){
                           PlaylistType queuePlaylist = PlaylistType();
                           queuePlaylist.name = "Current Queue";
-                          queuePlaylist.paths = widget.controller.settings.queue;
-                          widget.controller.exportPlaylist(queuePlaylist);
+                          queuePlaylist.paths = SettingsController.queue;
+                          dc.exportPlaylist(queuePlaylist);
                         }
                         else{
                           var playlist = query.find()[i-1];
-                          widget.controller.exportPlaylist(playlist);
+                          dc.exportPlaylist(playlist);
                         }
                       }
                       Navigator.pop(context);
@@ -149,7 +151,6 @@ class _ExportScreenState extends State<ExportScreen> {
                                   )
                                 else
                                   ImageWidget(
-                                    controller: widget.controller,
                                     path: playlist.paths.first,
                                   ),
                                 if(selected.contains(index))

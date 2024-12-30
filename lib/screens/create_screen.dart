@@ -1,17 +1,19 @@
 import 'dart:ui';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
+import 'package:musicplayer/controller/worker_controller.dart';
 import 'package:musicplayer/domain/song_type.dart';
 import 'package:musicplayer/domain/playlist_type.dart';
-import '../controller/controller.dart';
+import 'package:provider/provider.dart';
+import '../controller/app_manager.dart';
+import '../controller/data_controller.dart';
+import '../repository/objectbox.g.dart';
 import '../utils/hover_widget/hover_widget.dart';
-import '../utils/objectbox.g.dart';
 
 class CreateScreen extends StatefulWidget {
-  final Controller controller;
   final List<String>? paths;
-  final String? name;
-  const CreateScreen({super.key, required this.controller, this.paths, this.name});
+  final String name;
+  const CreateScreen({super.key, this.paths, required this.name});
 
   @override
   _CreateScreenState createState() => _CreateScreenState();
@@ -27,12 +29,12 @@ class _CreateScreenState extends State<CreateScreen> {
 
   @override
   void initState() {
-    playlistName = widget.name ?? "";
+    playlistName = widget.name;
     if (widget.paths != null && widget.paths!.isNotEmpty) {
       for (var path in widget.paths!) {
         print(path);
         try {
-          selected.add(widget.controller.songBox.query(SongType_.path.contains(path)).build().find().first);
+          selected.add(DataController.songBox.query(SongType_.path.contains(path)).build().findFirst());
         } catch (e) {
           print(e);
         }
@@ -45,6 +47,8 @@ class _CreateScreenState extends State<CreateScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final dc = Provider.of<DataController>(context);
+    final am = Provider.of<AppManager>(context);
     var width = MediaQuery.of(context).size.width;
     var height = MediaQuery.of(context).size.height;
     //var boldSize = height * 0.025;
@@ -91,11 +95,11 @@ class _CreateScreenState extends State<CreateScreen> {
                 ElevatedButton(
                     onPressed: (){
                       if (playlistName.isEmpty) {
-                        widget.controller.showNotification("Playlist name cannot be empty", 3500);
+                        am.showNotification("Playlist name cannot be empty", 3500);
                         return;
                       }
                       if (selected.isEmpty) {
-                        widget.controller.showNotification("No songs selected", 3500);
+                        am.showNotification("No songs selected", 3500);
                         return;
                       }
                       print("Create new playlist");
@@ -103,11 +107,11 @@ class _CreateScreenState extends State<CreateScreen> {
                       newPlaylist.name = playlistName;
                       newPlaylist.paths = selected.map((e) => e.path).toList();
                       newPlaylist.nextAdded = playlistAdd;
-                      widget.controller.createPlaylist(newPlaylist);
+                      dc.createPlaylist(newPlaylist);
                       Navigator.pop(context);
                     },
                     child: Text(
-                      widget.name == null ? "Create" : "Import",
+                      widget.name.isEmpty ? "Create" : "Import",
                       style: TextStyle(
                           color: Colors.white,
                           fontSize: normalSize
@@ -236,7 +240,7 @@ class _CreateScreenState extends State<CreateScreen> {
                   SizedBox(
                     height: height * 0.5,
                     child: FutureBuilder(
-                      future: widget.controller.searchLocal(search),
+                      future: DataController.getSongs(search, 25),
                       builder: (context, snapshot) {
                         if(snapshot.hasData){
                           List<SongType> songs = snapshot.data ?? [];
@@ -272,7 +276,7 @@ class _CreateScreenState extends State<CreateScreen> {
                                               ClipRRect(
                                                   borderRadius: BorderRadius.circular(width * 0.01),
                                                   child: FutureBuilder(
-                                                    future: widget.controller.getImage(song.path),
+                                                    future: WorkerController.getImage(song.path),
                                                     builder: (context, snapshot) {
                                                       return AspectRatio(
                                                         aspectRatio: 1.0,
@@ -381,7 +385,7 @@ class _CreateScreenState extends State<CreateScreen> {
                                               ClipRRect(
                                                   borderRadius: BorderRadius.circular(width * 0.01),
                                                   child: FutureBuilder(
-                                                    future: widget.controller.getImage(song.path),
+                                                    future: WorkerController.getImage(song.path),
                                                     builder: (context, snapshot) {
                                                       return AspectRatio(
                                                         aspectRatio: 1.0,

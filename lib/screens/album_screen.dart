@@ -3,16 +3,18 @@ import 'dart:ui';
 import 'package:collection/collection.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
+import 'package:musicplayer/controller/settings_controller.dart';
 import 'package:musicplayer/utils/hover_widget/hover_container.dart';
 import 'package:musicplayer/domain/album_type.dart';
-import '../controller/controller.dart';
+import 'package:provider/provider.dart';
+import '../controller/audio_player_controller.dart';
+import '../controller/data_controller.dart';
 import 'add_screen.dart';
 import 'image_widget.dart';
 
 class AlbumScreen extends StatefulWidget {
-  final Controller controller;
   final AlbumType album;
-  const AlbumScreen({super.key, required this.controller, required this.album});
+  const AlbumScreen({super.key, required this.album});
 
   @override
   _AlbumScreenState createState() => _AlbumScreenState();
@@ -39,6 +41,8 @@ class _AlbumScreenState extends State<AlbumScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final dc = Provider.of<DataController>(context);
+    final apc = Provider.of<AudioPlayerController>(context);
     var width = MediaQuery.of(context).size.width;
     var height = MediaQuery.of(context).size.height;
     var boldSize = height * 0.025;
@@ -94,7 +98,6 @@ class _AlbumScreenState extends State<AlbumScreen> {
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(width * 0.025),
                           child: ImageWidget(
-                            controller: widget.controller,
                             path: widget.album.songs.first.path,
                           ),
                         ),
@@ -146,14 +149,12 @@ class _AlbumScreenState extends State<AlbumScreen> {
                         children: [
                           IconButton(
                             onPressed: () async {
-                              //print("Playing ${widget.controller.indexNotifier.value}");
-                              //widget.controller.audioPlayer.stop();
                               var songPaths = widget.album.songs.map((e) => e.path).toList();
-                              if(widget.controller.settings.queue.equals(songPaths) == false){
-                                widget.controller.updatePlaying(songPaths, 0);
+                              if(SettingsController.queue.equals(songPaths) == false){
+                                dc.updatePlaying(songPaths, 0);
                               }
-                              widget.controller.indexChange(songPaths.first);
-                              await widget.controller.playSong();
+                              SettingsController.index = SettingsController.currentQueue.indexOf(widget.album.songs.first.path);
+                              await apc.playSong();
                             },
                             icon: Icon(
                               FluentIcons.play_12_filled,
@@ -167,7 +168,7 @@ class _AlbumScreenState extends State<AlbumScreen> {
                               Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                      builder: (context) => AddScreen(controller: widget.controller, songs: widget.album.songs)
+                                      builder: (context) => AddScreen(songs: widget.album.songs)
                                   )
                               );
                             },
@@ -206,12 +207,11 @@ class _AlbumScreenState extends State<AlbumScreen> {
                         behavior: HitTestBehavior.translucent,
                         onTap: () async {
                           var songPaths = widget.album.songs.map((e) => e.path).toList();
-                          if(widget.controller.settings.queue.equals(songPaths) == false){
-                            widget.controller.updatePlaying(songPaths, index);
+                          if(SettingsController.queue.equals(songPaths) == false){
+                            dc.updatePlaying(songPaths, index);
                           }
-                          widget.controller.indexChange(widget.controller.settings.queue[index]);
-                          await widget.controller.playSong();
-                          // widget.album.name.substring(0, widget.album.name.length > 60 ? 60 : widget.album.name.length);
+                          SettingsController.index = SettingsController.currentQueue.indexOf(widget.album.songs[index].path);
+                          await apc.playSong();
                         },
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(width * 0.01),
@@ -233,7 +233,6 @@ class _AlbumScreenState extends State<AlbumScreen> {
                                     ClipRRect(
                                       borderRadius: BorderRadius.circular(height * 0.02),
                                       child: ImageWidget(
-                                        controller: widget.controller,
                                         path: widget.album.songs[index].path,
                                       ),
                                     ),

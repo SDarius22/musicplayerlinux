@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
-import '../controller/controller.dart';
-
+import 'package:provider/provider.dart';
+import '../controller/app_manager.dart';
 
 class NotificationWidget extends StatefulWidget {
-  final Controller controller;
-  const NotificationWidget({super.key, required this.controller});
+  const NotificationWidget({super.key});
 
   @override
   _NotificationWidgetState createState() => _NotificationWidgetState();
@@ -14,13 +13,18 @@ class _NotificationWidgetState extends State<NotificationWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final am = Provider.of<AppManager>(context);
     var width = MediaQuery.of(context).size.width;
     var height = MediaQuery.of(context).size.height;
     //var boldSize = height * 0.025;
     var normalSize = height * 0.02;
     //var smallSize = height * 0.015;
+    // return Container(
+    //   height: 1,
+    //   color: Colors.red,
+    // );
     return ValueListenableBuilder(
-      valueListenable: widget.controller.notification,
+      valueListenable: am.notification,
       builder: (context, value, child){
         return AnimatedContainer(
           duration: const Duration(milliseconds: 500),
@@ -38,7 +42,7 @@ class _NotificationWidgetState extends State<NotificationWidget> {
                 ),
               ),
               const Spacer(),
-              widget.controller.actions,
+              am.actions,
             ],
           ),
         );

@@ -1,19 +1,21 @@
 import 'package:collection/collection.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
+import 'package:musicplayer/controller/data_controller.dart';
+import 'package:musicplayer/controller/settings_controller.dart';
 import 'package:musicplayer/screens/add_screen.dart';
 import 'package:musicplayer/screens/image_widget.dart';
+import 'package:provider/provider.dart';
 import 'dart:async';
 
 
+import '../controller/audio_player_controller.dart';
 import '../domain/song_type.dart';
-import '../utils/objectbox.g.dart';
-import '../controller/controller.dart';
+import '../repository/objectbox.g.dart';
 import 'album_screen.dart';
 
 class Tracks extends StatefulWidget{
-  final Controller controller;
-  const Tracks({super.key, required this.controller});
+  const Tracks({super.key});
 
   @override
   _TracksState createState() => _TracksState();
@@ -30,18 +32,17 @@ class _TracksState extends State<Tracks>{
   @override
   void initState(){
     super.initState();
-    songsFuture = widget.controller.getSongs('');
+    songsFuture = DataController.getSongs('');
   }
 
   _onSearchChanged(String query) {
     if (_debounce?.isActive ?? false) _debounce?.cancel();
     _debounce = Timer(const Duration(milliseconds: 500), () {
       setState(() {
-        songsFuture = widget.controller.getSongs(query);
+        songsFuture = DataController.getSongs(query);
       });
     });
   }
-  
 
   @override
   void dispose() {
@@ -52,6 +53,8 @@ class _TracksState extends State<Tracks>{
 
   @override
   Widget build(BuildContext context) {
+    final dc = Provider.of<DataController>(context);
+    final apc = Provider.of<AudioPlayerController>(context);
     var width = MediaQuery.of(context).size.width;
     var height = MediaQuery.of(context).size.height;
     // var boldSize = height * 0.025;
@@ -111,7 +114,7 @@ class _TracksState extends State<Tracks>{
                           color: Colors.red,
                         ),
                         Text(
-                          "Error loading songs",
+                          snapshot.error.toString(),
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: smallSize,
@@ -119,7 +122,9 @@ class _TracksState extends State<Tracks>{
                         ),
                         ElevatedButton(
                           onPressed: (){
-                            setState(() {});
+                            setState(() {
+                              songsFuture = DataController.getSongs('');
+                            });
                           },
                           child: Text(
                             "Retry",
@@ -160,23 +165,39 @@ class _TracksState extends State<Tracks>{
                         child: GestureDetector(
                           onTap: () async {
                             //print("Playing ${widget.controller.indexNotifier.value}");
-                            if (widget.controller.controllerQueue[widget.controller.indexNotifier.value] != song.path) {
-                              //print("path match");
-                              var songPaths = snapshot.data!.map((e) => e.path).toList();
-                              if(widget.controller.settings.queue.equals(songPaths) == false){
-                                print("Updating playing songs");
-                                widget.controller.updatePlaying(songPaths, index);
+                            try {
+                              if (SettingsController.currentSongPath != song.path) {
+                                //print("path match");
+                                var songPaths = snapshot.data!.map((e) => e.path).toList();
+                                if (SettingsController.queue.equals(songPaths) == false) {
+                                  print("Updating playing songs");
+                                  dc.updatePlaying(songPaths, index);
+                                }
+                                SettingsController.index = SettingsController.currentQueue.indexOf(song.path);
+                                await apc.playSong();
                               }
-                              widget.controller.indexChange(song.path);
+                              else {
+                                if (SettingsController.playing == true) {
+                                  await apc.pauseSong();
+                                }
+                                else {
+                                  await apc.playSong();
+                                }
+                              }
                             }
-                            await widget.controller.playSong();
+                            catch (e) {
+                              print(e);
+                              var songPaths = snapshot.data!.map((e) => e.path).toList();
+                              dc.updatePlaying(songPaths, index);
+                              SettingsController.index = index;
+                              await apc.playSong();
+                            }
                           },
                           child: Column(
                             children: [
                               ClipRRect(
                                 borderRadius: BorderRadius.circular(width * 0.01),
                                 child: ImageWidget(
-                                  controller: widget.controller,
                                   path: song.path,
                                   heroTag: "${song.path}+$index",
                                   buttons: Row(
@@ -191,7 +212,7 @@ class _TracksState extends State<Tracks>{
                                             Navigator.push(
                                                 context,
                                                 MaterialPageRoute(
-                                                    builder: (context) => AddScreen(controller: widget.controller, songs: [song])
+                                                    builder: (context) => AddScreen(songs: [song])
                                                 )
                                             );
                                           },
@@ -205,12 +226,12 @@ class _TracksState extends State<Tracks>{
                                       ),
                                       Expanded(
                                         child: ValueListenableBuilder(
-                                          valueListenable: widget.controller.playingNotifier,
+                                          valueListenable: SettingsController.playingNotifier,
                                           builder: (context, value, child){
                                             return FittedBox(
                                               fit: BoxFit.fill,
                                               child: Icon(
-                                                widget.controller.controllerQueue.isNotEmpty && widget.controller.controllerQueue[widget.controller.indexNotifier.value] == song.path && widget.controller.playingNotifier.value == true ?
+                                                SettingsController.currentSongPath  == song.path && SettingsController.playing == true ?
                                                 FluentIcons.pause_32_filled : FluentIcons.play_32_filled,
                                                 color: Colors.white,
                                               ),
@@ -224,7 +245,7 @@ class _TracksState extends State<Tracks>{
                                           onPressed: (){
                                             Navigator.push(
                                                 context,
-                                                MaterialPageRoute(builder: (context) => AlbumScreen(controller: widget.controller, album: widget.controller.albumBox.query(AlbumType_.name.equals(song.album)).build().find().first))
+                                                MaterialPageRoute(builder: (context) => AlbumScreen(album: DataController.albumBox.query(AlbumType_.name.equals(song.album)).build().findFirst()))
                                             );
                                           },
                                           padding: const EdgeInsets.all(0),
@@ -243,7 +264,7 @@ class _TracksState extends State<Tracks>{
                                 height: height * 0.005,
                               ),
                               ValueListenableBuilder(
-                                  valueListenable: widget.controller.indexNotifier,
+                                  valueListenable: SettingsController.indexNotifier,
                                   builder: (context, value, child){
                                     return Text(
                                       song.title,
@@ -252,7 +273,7 @@ class _TracksState extends State<Tracks>{
                                       textAlign: TextAlign.center,
                                       style: TextStyle(
                                         height: 1,
-                                        color: widget.controller.controllerQueue.isNotEmpty && widget.controller.controllerQueue[widget.controller.indexNotifier.value] == song.path ? Colors.blue : Colors.white,
+                                        color: SettingsController.currentSongPath == song.path ? Colors.blue : Colors.white,
                                         fontSize: smallSize,
                                         fontWeight: FontWeight.normal,
                                       ),

@@ -3,19 +3,21 @@ import 'dart:ui';
 import 'package:collection/collection.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
+import 'package:musicplayer/controller/data_controller.dart';
 import 'package:musicplayer/screens/image_widget.dart';
 import 'package:musicplayer/screens/playlist_screen.dart';
-import '../controller/controller.dart';
+import 'package:provider/provider.dart';
+import '../controller/audio_player_controller.dart';
+import '../controller/settings_controller.dart';
 import '../domain/song_type.dart';
 import '../domain/playlist_type.dart';
 import '../utils/hover_widget/stack_hover_widget.dart';
-import '../utils/objectbox.g.dart';
+import '../repository/objectbox.g.dart';
 import 'add_screen.dart';
 import 'create_screen.dart';
 
 class Playlists extends StatefulWidget{
-  final Controller controller;
-  const Playlists({super.key, required this.controller});
+  const Playlists({super.key});
 
   @override
   _PlaylistsState createState() => _PlaylistsState();
@@ -33,12 +35,14 @@ class _PlaylistsState extends State<Playlists>{
   @override
   void initState(){
     super.initState();
-    playlistsFuture = widget.controller.getPlaylists('');
-    widget.controller.playingNotifier.addListener(() {
+    playlistsFuture = DataController.getPlaylists('');
+    Stream<Query> query = DataController.playlistBox.query().watch(triggerImmediately: true);
+    query.listen((event) {
       setState(() {
-        playlistsFuture = widget.controller.getPlaylists('');
+        playlistsFuture = DataController.getPlaylists(value);
       });
     });
+
   }
 
   _onSearchChanged(String query) {
@@ -46,7 +50,7 @@ class _PlaylistsState extends State<Playlists>{
     _debounce = Timer(const Duration(milliseconds: 500), () {
       setState(() {
         value = query;
-        playlistsFuture = widget.controller.getPlaylists(query);
+        playlistsFuture = DataController.getPlaylists(query);
       });
     });
   }
@@ -55,12 +59,15 @@ class _PlaylistsState extends State<Playlists>{
   @override
   void dispose() {
     _debounce?.cancel();
+    searchNode.dispose();
     super.dispose();
   }
 
 
   @override
   Widget build(BuildContext context) {
+    final dc = Provider.of<DataController>(context);
+    final apc = Provider.of<AudioPlayerController>(context);
     var width = MediaQuery.of(context).size.width;
     var height = MediaQuery.of(context).size.height;
     var normalSize = height * 0.02;
@@ -165,7 +172,7 @@ class _PlaylistsState extends State<Playlists>{
                         cursor: SystemMouseCursors.click,
                         child: GestureDetector(
                           onTap: (){
-                            Navigator.push(context, MaterialPageRoute(builder: (context) => CreateScreen(controller: widget.controller, name: value,)));
+                            Navigator.push(context, MaterialPageRoute(builder: (context) => CreateScreen( name: value,)));
                           },
                           child: Column(
                             children: [
@@ -221,14 +228,13 @@ class _PlaylistsState extends State<Playlists>{
                         child: GestureDetector(
                           onTap: () {
                             //print(playlist.name);
-                            Navigator.push(context, MaterialPageRoute(builder: (context) => PlaylistScreen(controller: widget.controller, playlist: playlist)));
+                            Navigator.push(context, MaterialPageRoute(builder: (context) => PlaylistScreen(playlist: playlist)));
                           },
                           child: Column(
                             children: [
                               ClipRRect(
                                 borderRadius: BorderRadius.circular(width * 0.01),
                                 child: ImageWidget(
-                                  controller: widget.controller,
                                   path: playlist.paths.first,
                                   heroTag: playlist.name,
                                   buttons: Row(
@@ -242,12 +248,12 @@ class _PlaylistsState extends State<Playlists>{
                                             print("Add $index");
                                             List<SongType> songs = [];
                                             for (var path in playlist.paths){
-                                              songs.add(widget.controller.songBox.query(SongType_.path.equals(path)).build().find().first);
+                                              songs.add(DataController.songBox.query(SongType_.path.equals(path)).build().findFirst());
                                             }
                                             Navigator.push(
                                                 context,
                                                 MaterialPageRoute(
-                                                    builder: (context) => AddScreen(controller: widget.controller, songs: songs)
+                                                    builder: (context) => AddScreen(songs: songs)
                                                 )
                                             );
                                           },
@@ -273,11 +279,11 @@ class _PlaylistsState extends State<Playlists>{
                                         width: width * 0.035,
                                         child: IconButton(
                                           onPressed: () async {
-                                            if(widget.controller.settings.queue.equals(playlist.paths) == false){
-                                              widget.controller.updatePlaying(playlist.paths, 0);
+                                            if(SettingsController.queue.equals(playlist.paths) == false){
+                                              dc.updatePlaying(playlist.paths, 0);
                                             }
-                                            widget.controller.indexChange(playlist.paths.first);
-                                            await widget.controller.playSong();
+                                            SettingsController.index = SettingsController.currentQueue.indexOf(playlist.paths.first);
+                                            await apc.playSong();
                                           },
                                           padding: const EdgeInsets.all(0),
                                           icon: Icon(

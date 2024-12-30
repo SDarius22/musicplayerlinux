@@ -3,15 +3,15 @@ import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:musicplayer/screens/image_widget.dart';
 import 'package:musicplayer/utils/hover_widget/stack_hover_widget.dart';
-import 'package:musicplayer/utils/objectbox.g.dart';
+import 'package:musicplayer/repository/objectbox.g.dart';
+import 'package:provider/provider.dart';
+import '../controller/data_controller.dart';
 import '../domain/playlist_type.dart';
 import 'package:musicplayer/domain/song_type.dart';
-import '../controller/controller.dart';
 
 class AddScreen extends StatefulWidget {
-  final Controller controller;
   final List<SongType> songs;
-  const AddScreen({super.key, required this.controller, required this.songs});
+  const AddScreen({super.key, required this.songs});
 
   @override
   _AddScreenState createState() => _AddScreenState();
@@ -21,13 +21,14 @@ class _AddScreenState extends State<AddScreen> {
   List<int> selected = [];
   @override
   Widget build(BuildContext context) {
+    final dc = Provider.of<DataController>(context);
     //print(widget.songs.length);
     var width = MediaQuery.of(context).size.width;
     var height = MediaQuery.of(context).size.height;
     //var boldSize = height * 0.025;
     var normalSize = height * 0.02;
     var smallSize = height * 0.015;
-    var query = widget.controller.playlistBox.query().order(PlaylistType_.name).build();
+    var query = DataController.playlistBox.query().order(PlaylistType_.name).build();
     return Scaffold(
       body: Container(
         width: width,
@@ -73,11 +74,11 @@ class _AddScreenState extends State<AddScreen> {
                         if(selected[i] == 0){
                           List<String> paths = widget.songs.map((e) => e.path).toList();
                           //print(paths);
-                          widget.controller.addToQueue(paths);
+                          dc.addToQueue(paths);
                         }
                         else{
                           var playlist = query.find()[i];
-                          widget.controller.addToPlaylist(playlist, widget.songs);
+                          dc.addToPlaylist(playlist, widget.songs);
                         }
                       }
                       Navigator.pop(context);
@@ -156,7 +157,6 @@ class _AddScreenState extends State<AddScreen> {
                                   )
                                 else
                                   ImageWidget(
-                                    controller: widget.controller,
                                     path: playlist.paths.first,
                                   ),
                                 if(selected.contains(index))

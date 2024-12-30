@@ -1,14 +1,13 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
-import '../controller/controller.dart';
+import 'package:musicplayer/controller/worker_controller.dart';
 
 class ImageWidget extends StatefulWidget {
-  final Controller controller;
   final String? path;
   final String? url;
   final String? heroTag;
   final Widget? buttons;
-  const ImageWidget({super.key, required this.controller, this.path, this.buttons, this.heroTag, this.url})
+  const ImageWidget({super.key, this.path, this.buttons, this.heroTag, this.url})
       : assert(path == null || url == null, "Cannot provide both a path and a url!")
   ;
 
@@ -23,7 +22,7 @@ class _ImageWidgetState extends State<ImageWidget> {
   Widget build(BuildContext context) {
     if(widget.path != null){
       return FutureBuilder(
-        future: widget.controller.getImage(widget.path ?? ""),
+        future: WorkerController.getImage(widget.path ?? ""),
         builder: (context, snapshot) {
           return AspectRatio(
             aspectRatio: 1.0,
