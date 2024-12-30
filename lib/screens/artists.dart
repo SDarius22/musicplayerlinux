@@ -5,7 +5,6 @@ import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:musicplayer/controller/data_controller.dart';
 import 'package:musicplayer/controller/settings_controller.dart';
-import 'package:provider/provider.dart';
 import '../controller/audio_player_controller.dart';
 import '../domain/artist_type.dart';
 import 'add_screen.dart';
@@ -51,7 +50,7 @@ class _ArtistsState extends State<Artists>{
   
   @override
   Widget build(BuildContext context) {
-    final dc = Provider.of<DataController>(context);
+    final dc = DataController();
     var width = MediaQuery.of(context).size.width;
     var height = MediaQuery.of(context).size.height;
     var normalSize = height * 0.02;

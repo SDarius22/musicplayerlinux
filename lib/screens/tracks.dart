@@ -5,7 +5,6 @@ import 'package:musicplayer/controller/data_controller.dart';
 import 'package:musicplayer/controller/settings_controller.dart';
 import 'package:musicplayer/screens/add_screen.dart';
 import 'package:musicplayer/screens/image_widget.dart';
-import 'package:provider/provider.dart';
 import 'dart:async';
 
 
@@ -53,7 +52,7 @@ class _TracksState extends State<Tracks>{
 
   @override
   Widget build(BuildContext context) {
-    final dc = Provider.of<DataController>(context);
+    final dc = DataController();
     var width = MediaQuery.of(context).size.width;
     var height = MediaQuery.of(context).size.height;
     // var boldSize = height * 0.025;

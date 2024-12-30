@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:musicplayer/controller/settings_controller.dart';
 import 'package:musicplayer/utils/hover_widget/hover_container.dart';
 import 'package:musicplayer/domain/album_type.dart';
-import 'package:provider/provider.dart';
 import '../controller/audio_player_controller.dart';
 import '../controller/data_controller.dart';
 import 'add_screen.dart';
@@ -41,7 +40,7 @@ class _AlbumScreenState extends State<AlbumScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final dc = Provider.of<DataController>(context);
+    final dc = DataController();
     var width = MediaQuery.of(context).size.width;
     var height = MediaQuery.of(context).size.height;
     var boldSize = height * 0.025;

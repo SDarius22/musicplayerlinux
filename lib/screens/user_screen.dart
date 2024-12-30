@@ -7,7 +7,6 @@ import 'package:flutter/material.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:musicplayer/controller/online_controller.dart';
 import 'package:musicplayer/controller/settings_controller.dart';
-import 'package:provider/provider.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 class UserScreen extends StatefulWidget {
@@ -31,7 +30,7 @@ class _UserScreenState extends State<UserScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final oc = Provider.of<OnlineController>(context);
+    final oc = OnlineController();
     var width = MediaQuery.of(context).size.width;
     var height = MediaQuery.of(context).size.height;
     var boldSize = height * 0.025;

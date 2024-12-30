@@ -12,10 +12,20 @@ import '../repository/objectBox.dart';
 import '../repository/objectbox.g.dart';
 
 class DataController {
+  static final DataController _instance = DataController._internal();
+
+  factory DataController() => _instance;
+
+  DataController._internal();
+
   static get albumBox => ObjectBox.store.box<AlbumType>();
   static get artistBox => ObjectBox.store.box<ArtistType>();
   static get playlistBox => ObjectBox.store.box<PlaylistType>();
   static get songBox => ObjectBox.store.box<SongType>();
+
+  static void init() {
+    // initialize the data controller
+  }
 
   static void reset() {
     ObjectBox.store.box<AlbumType>().removeAll();

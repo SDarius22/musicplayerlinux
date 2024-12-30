@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:musicplayer/controller/worker_controller.dart';
 import 'package:musicplayer/domain/song_type.dart';
 import 'package:musicplayer/domain/playlist_type.dart';
-import 'package:provider/provider.dart';
 import '../controller/app_manager.dart';
 import '../controller/data_controller.dart';
 import '../repository/objectbox.g.dart';
@@ -47,8 +46,8 @@ class _CreateScreenState extends State<CreateScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final dc = Provider.of<DataController>(context);
-    final am = Provider.of<AppManager>(context);
+    final dc = DataController();
+    final am = AppManager();
     var width = MediaQuery.of(context).size.width;
     var height = MediaQuery.of(context).size.height;
     //var boldSize = height * 0.025;

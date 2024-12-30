@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import '../controller/app_manager.dart';
 
 class NotificationWidget extends StatefulWidget {
@@ -13,18 +12,13 @@ class _NotificationWidgetState extends State<NotificationWidget> {
 
   @override
   Widget build(BuildContext context) {
-    final am = Provider.of<AppManager>(context);
+    final am = AppManager();
     var width = MediaQuery.of(context).size.width;
     var height = MediaQuery.of(context).size.height;
     //var boldSize = height * 0.025;
     var normalSize = height * 0.02;
-    //var smallSize = height * 0.015;
-    // return Container(
-    //   height: 1,
-    //   color: Colors.red,
-    // );
     return ValueListenableBuilder(
-      valueListenable: am.notification,
+      valueListenable: am.notificationMessage,
       builder: (context, value, child){
         return AnimatedContainer(
           duration: const Duration(milliseconds: 500),

@@ -10,16 +10,29 @@ import 'package:system_tray/system_tray.dart';
 
 
 class AppManager{
-  final Menu _menuMain = Menu();
-  final SystemTray _systemTray = SystemTray();
+  static final AppManager _instance = AppManager._internal();
+
+  factory AppManager() => _instance;
+
+  AppManager._internal();
+
+
+  static final Menu _menuMain = Menu();
+  static final SystemTray _systemTray = SystemTray();
   final navigatorKey = GlobalKey<NavigatorState>();
   ValueNotifier<bool> minimizedNotifier = ValueNotifier<bool>(true);
-  ValueNotifier<String> notification = ValueNotifier<String>('');
+  ValueNotifier<String> notificationMessage = ValueNotifier<String>('');
   Widget actions = const SizedBox();
 
-  AppManager(){
+  static void init(){
     initSystemTray();
     SettingsController.systemTrayNotifier.addListener(() async {
+      await initSystemTray();
+    });
+    SettingsController.repeatNotifier.addListener(() async {
+      await initSystemTray();
+    });
+    SettingsController.shuffleNotifier.addListener(() async {
       await initSystemTray();
     });
   }
@@ -28,19 +41,19 @@ class AppManager{
     if (SettingsController.appNotifications == false) {
       return;
     }
-    notification.value = message;
+    notificationMessage.value = message;
     actions = newActions;
     Timer.periodic(
       Duration(milliseconds: duration),
           (timer) {
-        notification.value = '';
+        notificationMessage.value = '';
         actions = const SizedBox();
         timer.cancel();
       },
     );
   }
 
-  Future<void> initSystemTray() async {
+  static Future<void> initSystemTray() async {
     if (SettingsController.systemTray == false) {
       try {
       await _systemTray.destroy();

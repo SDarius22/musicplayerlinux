@@ -7,13 +7,20 @@ import 'package:http/http.dart' as http;
 import 'package:musicplayer/controller/settings_controller.dart';
 
 class OnlineController{
+  static final OnlineController _instance = OnlineController._internal();
+
+  factory OnlineController() => _instance;
+
+  OnlineController._internal();
+
+
   final secretKey = encrypt.Key.fromUtf8("eP9CLbcaUxKfvhhFLWcusXWo3ZS2nR1P");
   final iv = encrypt.IV.fromUtf8("1234567890123456");
-  late Deezer instance;
+  static late Deezer instance;
   ValueNotifier<bool> loggedInNotifier = ValueNotifier<bool>(false);
   ValueNotifier<bool> downloadNotifier = ValueNotifier<bool>(false);
 
-  OnlineController(){
+  static void init(){
     initDeezer();
     SettingsController.deezerARLNotifier.addListener(() async {
       instance.close();
@@ -29,7 +36,7 @@ class OnlineController{
     return encrypted.base64;
   }
 
-  Future<dynamic> initDeezer() async {
+  static Future<dynamic> initDeezer() async {
     print("Initialising Deezer");
     print(SettingsController.deezerARL);
     try {

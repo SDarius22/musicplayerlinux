@@ -10,7 +10,6 @@ import 'package:musicplayer/controller/settings_controller.dart';
 import 'package:musicplayer/screens/image_widget.dart';
 import 'dart:async';
 import 'package:http/http.dart' as http;
-import 'package:provider/provider.dart';
 
 class Download extends StatefulWidget{
   const Download({super.key});
@@ -52,8 +51,7 @@ class _DownloadState extends State<Download>{
 
   @override
   Widget build(BuildContext context) {
-    final oc = Provider.of<OnlineController>(context);
-    final am = Provider.of<AppManager>(context);
+    final am = AppManager();
     var width = MediaQuery.of(context).size.width;
     var height = MediaQuery.of(context).size.height;
     // var boldSize = height * 0.025;
@@ -164,7 +162,7 @@ class _DownloadState extends State<Download>{
                           onTap: () async {
                             print("Downloading ${song['id']}, arl: ${SettingsController.settings.deezerARL}");
                             try {
-                              final stream = await oc.instance.getSong(song['id'].toString(),
+                              final stream = await OnlineController.instance.getSong(song['id'].toString(),
                                 onProgress: (received, total) {
                                   //print("received: $received, total: $total");
                                   progress.value = received / total;

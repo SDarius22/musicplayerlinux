@@ -7,7 +7,6 @@ import 'package:musicplayer/screens/create_screen.dart';
 import 'package:musicplayer/screens/export_screen.dart';
 import 'package:musicplayer/controller/settings_controller.dart';
 import 'package:musicplayer/screens/home.dart';
-import 'package:provider/provider.dart';
 
 import '../controller/app_manager.dart';
 import '../controller/audio_player_controller.dart';
@@ -23,7 +22,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final am = Provider.of<AppManager>(context);
+    final am = AppManager();
     var width = MediaQuery.of(context).size.width;
     var height = MediaQuery.of(context).size.height;
     //var boldSize = height * 0.025;
@@ -505,71 +504,73 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         ],
                       ),
                       const Spacer(),
-                      // ValueListenableBuilder(
-                      //     valueListenable: SettingsController.timerNotifier,
-                      //     builder: (context, value, child){
-                      //       return DropdownButton<String>(
-                      //           value: value,
-                      //           icon: Icon(
-                      //             FluentIcons.chevron_down_16_filled,
-                      //             color: Colors.white,
-                      //             size: height * 0.025,
-                      //           ),
-                      //           style: TextStyle(
-                      //             fontSize: normalSize,
-                      //             fontWeight: FontWeight.normal,
-                      //             color: Colors.white,
-                      //           ),
-                      //           underline: Container(
-                      //             height: 0,
-                      //           ),
-                      //           borderRadius: BorderRadius.circular(width * 0.01),
-                      //           padding: EdgeInsets.zero,
-                      //           alignment: Alignment.center,
-                      //           items: const [
-                      //             DropdownMenuItem(
-                      //               value: 'Off',
-                      //               child: Text("Off"),
-                      //             ),
-                      //             DropdownMenuItem(
-                      //               value: '1 minute',
-                      //               child: Text("1 minute"),
-                      //             ),
-                      //             DropdownMenuItem(
-                      //               value: '15 minutes',
-                      //               child: Text("15 minutes"),
-                      //             ),
-                      //             DropdownMenuItem(
-                      //               value: '30 minutes',
-                      //               child: Text("30 minutes"),
-                      //             ),
-                      //             DropdownMenuItem(
-                      //               value: '45 minutes',
-                      //               child: Text("45 minutes"),
-                      //             ),
-                      //             DropdownMenuItem(
-                      //               value: '1 hour',
-                      //               child: Text("1 hour"),
-                      //             ),
-                      //             DropdownMenuItem(
-                      //               value: '2 hours',
-                      //               child: Text("2 hours"),
-                      //             ),
-                      //             DropdownMenuItem(
-                      //               value: '3 hours',
-                      //               child: Text("3 hours"),
-                      //             ),
-                      //             DropdownMenuItem(
-                      //               value: '4 hours',
-                      //               child: Text("4 hours"),
-                      //             ),
-                      //           ],
-                      //           onChanged: (String? newValue){
-                      //             SettingsController.setTimer(newValue ?? "Off");
-                      //           }
-                      //       );
-                      //     }
-                      // ),
+                      ValueListenableBuilder(
+                          valueListenable: SettingsController.sleepTimerNotifier,
+                          builder: (context, value, child){
+                            String timer = value == 0 ? "Off" : value == 1 ? "1 minute" : value == 15 ? "15 minutes" : value == 30 ? "30 minutes" : value == 45 ? "45 minutes" : value == 60 ? "1 hour" : value == 120 ? "2 hours" : value == 180 ? "3 hours" : "4 hours";
+                            return DropdownButton<String>(
+                                value: timer,
+                                icon: Icon(
+                                  FluentIcons.chevron_down_16_filled,
+                                  color: Colors.white,
+                                  size: height * 0.025,
+                                ),
+                                style: TextStyle(
+                                  fontSize: normalSize,
+                                  fontWeight: FontWeight.normal,
+                                  color: Colors.white,
+                                ),
+                                underline: Container(
+                                  height: 0,
+                                ),
+                                borderRadius: BorderRadius.circular(width * 0.01),
+                                padding: EdgeInsets.zero,
+                                alignment: Alignment.center,
+                                items: const [
+                                  DropdownMenuItem(
+                                    value: 'Off',
+                                    child: Text("Off"),
+                                  ),
+                                  DropdownMenuItem(
+                                    value: '1 minute',
+                                    child: Text("1 minute"),
+                                  ),
+                                  DropdownMenuItem(
+                                    value: '15 minutes',
+                                    child: Text("15 minutes"),
+                                  ),
+                                  DropdownMenuItem(
+                                    value: '30 minutes',
+                                    child: Text("30 minutes"),
+                                  ),
+                                  DropdownMenuItem(
+                                    value: '45 minutes',
+                                    child: Text("45 minutes"),
+                                  ),
+                                  DropdownMenuItem(
+                                    value: '1 hour',
+                                    child: Text("1 hour"),
+                                  ),
+                                  DropdownMenuItem(
+                                    value: '2 hours',
+                                    child: Text("2 hours"),
+                                  ),
+                                  DropdownMenuItem(
+                                    value: '3 hours',
+                                    child: Text("3 hours"),
+                                  ),
+                                  DropdownMenuItem(
+                                    value: '4 hours',
+                                    child: Text("4 hours"),
+                                  ),
+                                ],
+                                onChanged: (String? newValue){
+                                  final apc = AudioPlayerController();
+                                  apc.setTimer(newValue ?? "Off");
+                                }
+                            );
+                          }
+                      ),
 
                     ],
                   ),

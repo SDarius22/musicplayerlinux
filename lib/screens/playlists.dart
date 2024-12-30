@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:musicplayer/controller/data_controller.dart';
 import 'package:musicplayer/screens/image_widget.dart';
 import 'package:musicplayer/screens/playlist_screen.dart';
-import 'package:provider/provider.dart';
 import '../controller/audio_player_controller.dart';
 import '../controller/settings_controller.dart';
 import '../domain/song_type.dart';
@@ -66,7 +65,7 @@ class _PlaylistsState extends State<Playlists>{
 
   @override
   Widget build(BuildContext context) {
-    final dc = Provider.of<DataController>(context);
+    final dc = DataController();
     var width = MediaQuery.of(context).size.width;
     var height = MediaQuery.of(context).size.height;
     var normalSize = height * 0.02;

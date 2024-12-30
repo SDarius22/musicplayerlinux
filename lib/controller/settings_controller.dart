@@ -2,7 +2,6 @@ import 'package:flutter/cupertino.dart';
 
 import '../domain/settings_type.dart';
 import '../repository/objectBox.dart';
-import '../repository/objectbox.g.dart';
 
 
 class SettingsController {
@@ -22,6 +21,10 @@ class SettingsController {
   static List<String> get currentQueue => shuffle ? shuffledQueue : queue;
 
   static Settings get settings => ObjectBox.store.box<Settings>().getAll().last;
+
+  static set settings(Settings settings) {
+    ObjectBox.store.box<Settings>().put(settings);
+  }
 
   static ValueNotifier<String> mongoIDNotifier = ValueNotifier<String>(settings.mongoID);
 
@@ -157,7 +160,9 @@ class SettingsController {
 
   static set slider(int slider) {
     sliderNotifier.value = slider;
-    _instance._updateSettings((settings) => settings.slider = slider);
+    if (slider % 1000 == 0){
+      _instance._updateSettings((settings) => settings.slider = slider);
+    }
   }
 
   static ValueNotifier<bool> playingNotifier = ValueNotifier<bool>(false);
@@ -252,29 +257,23 @@ class SettingsController {
     _instance._updateSettings((settings) => settings.darkColor = darkColor);
   }
 
-  static void save() {
-    ObjectBox.store.box<Settings>().put(settings);
-  }
-
-  static void delete() {
-    ObjectBox.store.box<Settings>().remove(settings.id);
-  }
-
-  static void clear() {
-    ObjectBox.store.box<Settings>().removeAll();
-  }
-
   static void init() {
     if (ObjectBox.store.box<Settings>().isEmpty()) {
       ObjectBox.store.box<Settings>().put(Settings());
     }
-    Stream<Query> query = ObjectBox.store.box<Settings>().query().watch(triggerImmediately: true);
-    query.listen((event) {
-      // print("Settings updated");
-      var newSettings = event.find().last;
-      if (newSettings.index < -99){
-        index = newSettings.index + 100;
-      }
-    });
+    // Stream<Query> query = ObjectBox.store.box<Settings>().query().watch(triggerImmediately: true);
+    // query.listen((event) async {
+    //   // print("Settings updated");
+    //   var newSettings = event.find().last;
+    //   if (newSettings.index == -100){
+    //     print("New instance detected");
+    //     print("Queue: ${newSettings.queue}");
+    //     for(var song in queue){
+    //       await DataController.getSong(song);
+    //     }
+    //     index = currentQueue.indexOf(queue[0]);
+    //     AudioPlayerController.playSong();
+    //   }
+    // });
   }
 }

@@ -7,7 +7,6 @@ import 'package:musicplayer/controller/worker_controller.dart';
 import 'package:musicplayer/screens/settings_screen.dart';
 import 'package:musicplayer/screens/song_player_widget.dart';
 import 'package:musicplayer/screens/user_screen.dart';
-import 'package:provider/provider.dart';
 import '../controller/app_manager.dart';
 import '../controller/audio_player_controller.dart';
 import '../controller/data_controller.dart';
@@ -57,9 +56,9 @@ class _HomePageState extends State<HomePage>{
 
   @override
   Widget build(BuildContext context) {
-    final dc = Provider.of<DataController>(context);
-    final am = Provider.of<AppManager>(context);
-    final oc = Provider.of<OnlineController>(context);
+    final dc = DataController();
+    final am = AppManager();
+    final oc = OnlineController();
 
     var width = MediaQuery.of(context).size.width;
     var height = MediaQuery.of(context).size.height;
@@ -528,10 +527,12 @@ class _HomePageState extends State<HomePage>{
                               }
                               if(songs.isNotEmpty) {
                                 // widget.controller.finishedRetrievingNotifier.value = false;
-                                // for(var song in songs){
-                                //   await widget.controller.getSong(song);
-                                // }
+                                for(var song in songs){
+                                  await DataController.getSong(song);
+                                }
                                 dc.updatePlaying(songs, 0);
+                                SettingsController.index = SettingsController.currentQueue.indexOf(songs[0]);
+                                AudioPlayerController.playSong();
                                 // DataController.indexChange(songs[0]);
                                 // await widget.controller.playSong();
                                 //widget.controller.showNotification("Playing ${songs.length} new song${songs.length == 1 ? '' : 's'}. Do you want to add ${songs.length == 1 ? 'it' : 'them'} to your library?", 7500);

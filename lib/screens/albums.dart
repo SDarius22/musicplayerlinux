@@ -8,7 +8,6 @@ import 'package:musicplayer/controller/settings_controller.dart';
 import 'package:musicplayer/domain/album_type.dart';
 import 'package:musicplayer/screens/add_screen.dart';
 import 'package:musicplayer/screens/album_screen.dart';
-import 'package:provider/provider.dart';
 import '../controller/audio_player_controller.dart';
 import 'image_widget.dart';
 
@@ -53,7 +52,7 @@ class _AlbumsState extends State<Albums>{
 
   @override
   Widget build(BuildContext context) {
-    final dc = Provider.of<DataController>(context);
+    final dc = DataController();
     var width = MediaQuery.of(context).size.width;
     var height = MediaQuery.of(context).size.height;
     // var boldSize = height * 0.025;

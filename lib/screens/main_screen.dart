@@ -30,10 +30,6 @@ class _MyAppState extends State<MyApp>{
 
   @override
   Widget build(BuildContext context) {
-    // print("Building main screen");
-
-    // print(widget.controller.settings.firstTime);
-    // Widget finalWidget = SettingsController.firstTime ? const WelcomeScreen() : const HomePage();
     return FutureBuilder(
       future: _timerFuture,
       builder: (context, snapshot) {

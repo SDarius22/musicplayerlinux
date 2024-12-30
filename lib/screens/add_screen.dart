@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:musicplayer/screens/image_widget.dart';
 import 'package:musicplayer/utils/hover_widget/stack_hover_widget.dart';
 import 'package:musicplayer/repository/objectbox.g.dart';
-import 'package:provider/provider.dart';
 import '../controller/data_controller.dart';
 import '../domain/playlist_type.dart';
 import 'package:musicplayer/domain/song_type.dart';
@@ -21,7 +20,7 @@ class _AddScreenState extends State<AddScreen> {
   List<int> selected = [];
   @override
   Widget build(BuildContext context) {
-    final dc = Provider.of<DataController>(context);
+    final dc = DataController();
     //print(widget.songs.length);
     var width = MediaQuery.of(context).size.width;
     var height = MediaQuery.of(context).size.height;
