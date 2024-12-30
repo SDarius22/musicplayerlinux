@@ -61,7 +61,6 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
   @override
   Widget build(BuildContext context) {
     final dc = Provider.of<DataController>(context);
-    final apc = Provider.of<AudioPlayerController>(context);
     var width = MediaQuery.of(context).size.width;
     var height = MediaQuery.of(context).size.height;
     var boldSize = height * 0.025;
@@ -303,7 +302,7 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
                                   dc.updatePlaying(widget.playlist.paths, index);
                                 }
                                 SettingsController.index = SettingsController.currentQueue.indexOf(widget.playlist.paths[index]);
-                                await apc.playSong();
+                                await AudioPlayerController.playSong();
                               },
                               child: ClipRRect(
                                 borderRadius: BorderRadius.circular(width * 0.01),

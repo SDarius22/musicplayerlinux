@@ -154,7 +154,6 @@ class _SongPlayerWidgetState extends State<SongPlayerWidget> {
   Widget build(BuildContext context) {
     final dc = Provider.of<DataController>(context);
     final am = Provider.of<AppManager>(context);
-    final apc = Provider.of<AudioPlayerController>(context);
     var width = MediaQuery.of(context).size.width;
     var height = MediaQuery.of(context).size.height;
     var boldSize = height * 0.025;
@@ -281,7 +280,8 @@ class _SongPlayerWidgetState extends State<SongPlayerWidget> {
                                                       //print(SettingsController.playingSongsUnShuffled[index].title);
                                                       //widget.controller.audioPlayer.stop();
                                                       // DataController.indexChange(SettingsController.queue[index]);
-                                                      await apc.playSong();
+                                                      SettingsController.index = SettingsController.currentQueue.indexOf(SettingsController.queue[index]);
+                                                      await AudioPlayerController.playSong();
                                                     },
                                                     child: ClipRRect(
                                                       borderRadius: BorderRadius.circular(width * 0.01),
@@ -686,11 +686,11 @@ class _SongPlayerWidgetState extends State<SongPlayerWidget> {
                                             listNotifier.value = !listNotifier.value;
                                           });
                                           if (listNotifier.value == true) {
-                                            Future.delayed(const Duration(milliseconds: 200), () {
+                                            Future.delayed(const Duration(milliseconds: 250), () {
                                               if (itemScrollController.hasClients) {
                                                 itemScrollController.animateTo(
                                                   SettingsController.queue.indexOf(SettingsController.currentSongPath) * height * 0.125,
-                                                  duration: const Duration(milliseconds: 250),
+                                                  duration: Duration(milliseconds: SettingsController.queue.indexOf(SettingsController.currentSongPath) * 20),
                                                   curve: Curves.easeInOut,
                                                 );
                                               }
@@ -786,7 +786,7 @@ class _SongPlayerWidgetState extends State<SongPlayerWidget> {
 
                                       IconButton(
                                         onPressed: () async {
-                                          await apc.previousSong();
+                                          await AudioPlayerController.previousSong();
                                         },
                                         icon: Icon(
                                           FluentIcons.previous_16_filled,
@@ -802,9 +802,9 @@ class _SongPlayerWidgetState extends State<SongPlayerWidget> {
                                               onPressed: () async {
                                                 //print("pressed pause play");
                                                 if (SettingsController.playing) {
-                                                  await apc.pauseSong();
+                                                  await AudioPlayerController.pauseSong();
                                                 } else {
-                                                  await apc.playSong();
+                                                  await AudioPlayerController.playSong();
                                                 }
                                               },
                                               icon: SettingsController.playing ?
@@ -820,7 +820,7 @@ class _SongPlayerWidgetState extends State<SongPlayerWidget> {
                                       IconButton(
                                         onPressed: () async {
                                           print("next");
-                                          return await apc.nextSong();
+                                          return await AudioPlayerController.nextSong();
                                         },
                                         icon: Icon(FluentIcons.next_16_filled, color: Colors.white.withOpacity(hiddenNotifier.value ? 0.0 : 1.0), size: height * 0.022, ),
                                       ),

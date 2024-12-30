@@ -85,7 +85,7 @@ Future<void> main(List<String> args) async {
   } else {
     if (args.isNotEmpty) {
       SettingsController.queue = args;
-      SettingsController.index = 0;
+      SettingsController.index = -100;
     }
     else{
       print("App is already running");

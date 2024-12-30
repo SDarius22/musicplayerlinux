@@ -3,6 +3,7 @@ import 'dart:typed_data';
 
 import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:flutter/material.dart';
+import 'package:musicplayer/controller/audio_player_controller.dart';
 import 'package:musicplayer/controller/settings_controller.dart';
 import 'package:musicplayer/controller/worker_controller.dart';
 import 'package:system_tray/system_tray.dart';
@@ -69,7 +70,7 @@ class AppManager{
             //image: getImagePath('darts_icon'),
             onClicked: (menuItem) async {
               debugPrint("click 'Previous'");
-              // await previousSong();
+              await AudioPlayerController.previousSong();
             },
           ),
           MenuItemLabel(
@@ -77,7 +78,7 @@ class AppManager{
             //image: getImagePath('darts_icon'),
             onClicked: (menuItem) async {
               debugPrint("click 'Play'");
-              // await playSong();
+              SettingsController.playing ? await AudioPlayerController.pauseSong() : await AudioPlayerController.playSong();
             },
           ),
           MenuItemLabel(
@@ -85,7 +86,7 @@ class AppManager{
             //image: getImagePath('darts_icon'),
             onClicked: (menuItem) async {
               debugPrint("click 'Next'");
-              // await nextSong();
+              await AudioPlayerController.nextSong();
             },
           ),
           MenuSeparator(),
@@ -96,7 +97,7 @@ class AppManager{
             onClicked: (menuItem) async {
               debugPrint("click 'Repeat'");
               await menuItem.setCheck(!menuItem.checked);
-              // setRepeat();
+              SettingsController.repeat = !SettingsController.repeat;
             },
           ),
           MenuItemCheckbox(
@@ -106,7 +107,7 @@ class AppManager{
             onClicked: (menuItem) async {
               debugPrint("click 'Shuffle'");
               await menuItem.setCheck(!menuItem.checked);
-              // setShuffle();
+              SettingsController.shuffle = !SettingsController.shuffle;
             },
           ),
           MenuSeparator(),

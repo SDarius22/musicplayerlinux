@@ -39,7 +39,6 @@ class _ArtistScreenState extends State<ArtistScreen> {
   Widget build(BuildContext context) {
     print(widget.artist.name);
     final dc = Provider.of<DataController>(context);
-    final apc = Provider.of<AudioPlayerController>(context);
     var width = MediaQuery.of(context).size.width;
     var height = MediaQuery.of(context).size.height;
     var boldSize = height * 0.025;
@@ -136,7 +135,7 @@ class _ArtistScreenState extends State<ArtistScreen> {
                                 dc.updatePlaying(songPaths, 0);
                               }
                               SettingsController.index = SettingsController.currentQueue.indexOf(widget.artist.songs.first.path);
-                              await apc.playSong();
+                              await AudioPlayerController.playSong();
                             },
                             icon: Icon(
                               FluentIcons.play_12_filled,
@@ -192,7 +191,7 @@ class _ArtistScreenState extends State<ArtistScreen> {
                             dc.updatePlaying(songPaths, index);
                           }
                           SettingsController.index = SettingsController.currentQueue.indexOf(widget.artist.songs[index].path);
-                          await apc.playSong();
+                          await AudioPlayerController.playSong();
                         },
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(width * 0.01),

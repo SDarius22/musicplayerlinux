@@ -26,7 +26,7 @@ class AudioPlayerController {
     });
   }
 
-  Future<void> playSong() async {
+  static Future<void> playSong() async {
       print("play");
       await audioPlayer.play(
           DeviceFileSource(SettingsController.currentSongPath),
@@ -37,13 +37,13 @@ class AudioPlayerController {
       SettingsController.playing = true;
   }
   
-  Future<void> pauseSong() async{
+  static Future<void> pauseSong() async{
     print("pause");
     await audioPlayer.pause();
     SettingsController.playing = false;
   }
 
-  Future<void> nextSong() async {
+  static Future<void> nextSong() async {
     if (SettingsController.index == SettingsController.queue.length - 1) {
       SettingsController.index = 0;
     } else {
@@ -52,7 +52,7 @@ class AudioPlayerController {
     playSong();
   }
 
-  Future<void> previousSong() async {
+  static Future<void> previousSong() async {
     if (SettingsController.slider > 5000) {
       audioPlayer.seek(const Duration(milliseconds: 0));
     } else {

@@ -54,7 +54,6 @@ class _TracksState extends State<Tracks>{
   @override
   Widget build(BuildContext context) {
     final dc = Provider.of<DataController>(context);
-    final apc = Provider.of<AudioPlayerController>(context);
     var width = MediaQuery.of(context).size.width;
     var height = MediaQuery.of(context).size.height;
     // var boldSize = height * 0.025;
@@ -174,14 +173,14 @@ class _TracksState extends State<Tracks>{
                                   dc.updatePlaying(songPaths, index);
                                 }
                                 SettingsController.index = SettingsController.currentQueue.indexOf(song.path);
-                                await apc.playSong();
+                                await AudioPlayerController.playSong();
                               }
                               else {
                                 if (SettingsController.playing == true) {
-                                  await apc.pauseSong();
+                                  await AudioPlayerController.pauseSong();
                                 }
                                 else {
-                                  await apc.playSong();
+                                  await AudioPlayerController.playSong();
                                 }
                               }
                             }
@@ -190,7 +189,7 @@ class _TracksState extends State<Tracks>{
                               var songPaths = snapshot.data!.map((e) => e.path).toList();
                               dc.updatePlaying(songPaths, index);
                               SettingsController.index = index;
-                              await apc.playSong();
+                              await AudioPlayerController.playSong();
                             }
                           },
                           child: Column(

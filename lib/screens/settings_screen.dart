@@ -23,7 +23,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final apc = Provider.of<AudioPlayerController>(context);
     final am = Provider.of<AppManager>(context);
     var width = MediaQuery.of(context).size.width;
     var height = MediaQuery.of(context).size.height;

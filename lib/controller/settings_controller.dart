@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 
 import '../domain/settings_type.dart';
 import '../repository/objectBox.dart';
+import '../repository/objectbox.g.dart';
 
 
 class SettingsController {
@@ -267,11 +268,13 @@ class SettingsController {
     if (ObjectBox.store.box<Settings>().isEmpty()) {
       ObjectBox.store.box<Settings>().put(Settings());
     }
-    // Stream<Query> query = ObjectBox.store.box<Settings>().query().watch(triggerImmediately: true);
-    // query.listen((event) {
-    //   print("Settings updated");
-    //   var newSettings = event.find().last;
-    //   indexNotifier.value = newSettings.index;
-    // });
+    Stream<Query> query = ObjectBox.store.box<Settings>().query().watch(triggerImmediately: true);
+    query.listen((event) {
+      // print("Settings updated");
+      var newSettings = event.find().last;
+      if (newSettings.index < -99){
+        index = newSettings.index + 100;
+      }
+    });
   }
 }

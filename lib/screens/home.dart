@@ -59,7 +59,6 @@ class _HomePageState extends State<HomePage>{
   Widget build(BuildContext context) {
     final dc = Provider.of<DataController>(context);
     final am = Provider.of<AppManager>(context);
-    final apc = Provider.of<AudioPlayerController>(context);
     final oc = Provider.of<OnlineController>(context);
 
     var width = MediaQuery.of(context).size.width;

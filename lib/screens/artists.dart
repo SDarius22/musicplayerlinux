@@ -52,7 +52,6 @@ class _ArtistsState extends State<Artists>{
   @override
   Widget build(BuildContext context) {
     final dc = Provider.of<DataController>(context);
-    final apc = Provider.of<AudioPlayerController>(context);
     var width = MediaQuery.of(context).size.width;
     var height = MediaQuery.of(context).size.height;
     var normalSize = height * 0.02;
@@ -211,7 +210,7 @@ class _ArtistsState extends State<Artists>{
                                               dc.updatePlaying(songPaths, 0);
                                             }
                                             SettingsController.index = SettingsController.currentQueue.indexOf(artist.songs.first.path);
-                                            await apc.playSong();
+                                            await AudioPlayerController.playSong();
                                           },
                                           padding: const EdgeInsets.all(0),
                                           icon: Icon(
