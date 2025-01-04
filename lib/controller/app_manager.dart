@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:musicplayer/controller/audio_player_controller.dart';
 import 'package:musicplayer/controller/settings_controller.dart';
 import 'package:musicplayer/controller/worker_controller.dart';
+import 'package:musicplayer/main.dart';
 import 'package:system_tray/system_tray.dart';
 
 
@@ -83,7 +84,7 @@ class AppManager{
             //image: getImagePath('darts_icon'),
             onClicked: (menuItem) async {
               debugPrint("click 'Previous'");
-              await AudioPlayerController.previousSong();
+              await audioHandler.skipToPrevious();
             },
           ),
           MenuItemLabel(
@@ -91,7 +92,7 @@ class AppManager{
             //image: getImagePath('darts_icon'),
             onClicked: (menuItem) async {
               debugPrint("click 'Play'");
-              SettingsController.playing ? await AudioPlayerController.pauseSong() : await AudioPlayerController.playSong();
+              SettingsController.playing ? await audioHandler.pause() : await audioHandler.play();
             },
           ),
           MenuItemLabel(
@@ -99,7 +100,7 @@ class AppManager{
             //image: getImagePath('darts_icon'),
             onClicked: (menuItem) async {
               debugPrint("click 'Next'");
-              await AudioPlayerController.nextSong();
+              await audioHandler.skipToNext();
             },
           ),
           MenuSeparator(),

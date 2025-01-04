@@ -1,15 +1,15 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:fluentui_system_icons/fluentui_system_icons.dart';
+import 'package:musicplayer/utils/fluenticons/fluenticons.dart';
 import 'package:musicplayer/controller/data_controller.dart';
-import 'package:musicplayer/screens/create_screen.dart';
-import 'package:musicplayer/screens/export_screen.dart';
+import 'package:musicplayer/interface/screens/create_screen.dart';
+import 'package:musicplayer/interface/screens/export_screen.dart';
 import 'package:musicplayer/controller/settings_controller.dart';
-import 'package:musicplayer/screens/home.dart';
+import 'package:musicplayer/interface/screens/home.dart';
 
-import '../controller/app_manager.dart';
-import '../controller/audio_player_controller.dart';
+import '../../controller/app_manager.dart';
+import '../../controller/audio_player_controller.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -49,7 +49,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 Navigator.pop(context);
               },
               icon: Icon(
-                FluentIcons.arrow_left_16_filled,
+                FluentIcons.back,
                 size: height * 0.02,
                 color: Colors.white,
               ),
@@ -200,7 +200,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       DropdownButton<String>(
                           value: SettingsController.queueAdd,
                           icon: Icon(
-                            FluentIcons.chevron_down_16_filled,
+                            FluentIcons.down,
                             color: Colors.white,
                             size: height * 0.025,
                           ),
@@ -283,7 +283,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       DropdownButton<String>(
                           value: SettingsController.queuePlay,
                           icon: Icon(
-                            FluentIcons.chevron_down_16_filled,
+                            FluentIcons.down,
                             color: Colors.white,
                             size: height * 0.025,
                           ),
@@ -511,7 +511,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             return DropdownButton<String>(
                                 value: timer,
                                 icon: Icon(
-                                  FluentIcons.chevron_down_16_filled,
+                                  FluentIcons.down,
                                   color: Colors.white,
                                   size: height * 0.025,
                                 ),
@@ -889,7 +889,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             }
 
                           },
-                          icon: Icon(FluentIcons.open_12_regular, color: Colors.white, size: height * 0.03,)
+                          icon: Icon(FluentIcons.open, color: Colors.white, size: height * 0.03,)
                       ),
                     ],
                   ),
@@ -927,7 +927,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           onPressed: (){
                             am.navigatorKey.currentState!.push(MaterialPageRoute(builder: (context) => const ExportScreen()));
                           },
-                          icon: Icon(FluentIcons.open_12_regular, color: Colors.white, size: height * 0.03,)
+                          icon: Icon(FluentIcons.open, color: Colors.white, size: height * 0.03,)
                       ),
                     ],
                   ),

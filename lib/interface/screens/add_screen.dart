@@ -1,11 +1,11 @@
 import 'dart:ui';
-import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
-import 'package:musicplayer/screens/image_widget.dart';
+import 'package:musicplayer/interface/widgets/image_widget.dart';
+import 'package:musicplayer/utils/fluenticons/fluenticons.dart';
 import 'package:musicplayer/utils/hover_widget/stack_hover_widget.dart';
 import 'package:musicplayer/repository/objectbox.g.dart';
-import '../controller/data_controller.dart';
-import '../domain/playlist_type.dart';
+import '../../controller/data_controller.dart';
+import '../../domain/playlist_type.dart';
 import 'package:musicplayer/domain/song_type.dart';
 
 class AddScreen extends StatefulWidget {
@@ -52,10 +52,13 @@ class _AddScreenState extends State<AddScreen> {
                     Navigator.pop(context);
                   },
                   icon: Icon(
-                    FluentIcons.arrow_left_16_filled,
+                    FluentIcons.back,
                     size: height * 0.02,
                     color: Colors.white,
                   ),
+                ),
+                SizedBox(
+                  width: width * 0.01,
                 ),
                 Text(
                   "Choose one or more playlists to add the selected songs to:",
@@ -164,7 +167,7 @@ class _AddScreenState extends State<AddScreen> {
                                     child: Container(
                                       alignment: Alignment.center,
                                       child: Icon(
-                                        FluentIcons.checkmark_16_filled,
+                                        FluentIcons.check,
                                         size: height * 0.1,
                                         color: Colors.white,
                                       ),

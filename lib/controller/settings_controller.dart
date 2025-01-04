@@ -160,9 +160,7 @@ class SettingsController {
 
   static set slider(int slider) {
     sliderNotifier.value = slider;
-    if (slider % 1000 == 0){
-      _instance._updateSettings((settings) => settings.slider = slider);
-    }
+    _instance._updateSettings((settings) => settings.slider = slider);
   }
 
   static ValueNotifier<bool> playingNotifier = ValueNotifier<bool>(false);

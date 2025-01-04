@@ -1,15 +1,16 @@
 import 'package:collection/collection.dart';
-import 'package:fluentui_system_icons/fluentui_system_icons.dart';
+import 'package:musicplayer/utils/fluenticons/fluenticons.dart';
 import 'package:flutter/material.dart';
 import 'package:musicplayer/utils/hover_widget/hover_container.dart';
-import '../controller/audio_player_controller.dart';
-import '../controller/data_controller.dart';
-import '../controller/settings_controller.dart';
-import '../domain/song_type.dart';
+import '../../controller/audio_player_controller.dart';
+import '../../controller/data_controller.dart';
+import '../../controller/settings_controller.dart';
+import '../../domain/song_type.dart';
 import 'package:musicplayer/domain/playlist_type.dart';
-import '../repository/objectbox.g.dart';
+import '../../main.dart';
+import '../../repository/objectbox.g.dart';
 import 'add_screen.dart';
-import 'image_widget.dart';
+import '../widgets/image_widget.dart';
 
 class PlaylistScreen extends StatefulWidget {
   final PlaylistType playlist;
@@ -86,7 +87,7 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
                 Navigator.pop(context);
               },
               icon: Icon(
-                FluentIcons.arrow_left_16_filled,
+                FluentIcons.back,
                 size: height * 0.02,
                 color: Colors.white,
               ),
@@ -223,7 +224,7 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
                               SettingsController.index = SettingsController.currentQueue.indexOf(widget.playlist.paths.first);
                             },
                             icon: Icon(
-                              FluentIcons.play_12_filled,
+                              FluentIcons.play,
                               color: Colors.white,
                               size: height * 0.025,
                             ),
@@ -240,7 +241,7 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
                               );
                             },
                             icon: Icon(
-                              FluentIcons.add_12_filled,
+                              FluentIcons.add,
                               color: Colors.white,
                               size: height * 0.025,
                             ),
@@ -252,7 +253,7 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
                               Navigator.pop(context);
                             },
                             icon: Icon(
-                              FluentIcons.delete_12_filled,
+                              FluentIcons.trash,
                               color: Colors.white,
                               size: height * 0.025,
                             ),
@@ -301,7 +302,7 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
                                   dc.updatePlaying(widget.playlist.paths, index);
                                 }
                                 SettingsController.index = SettingsController.currentQueue.indexOf(widget.playlist.paths[index]);
-                                await AudioPlayerController.playSong();
+                               await audioHandler.play();
                               },
                               child: ClipRRect(
                                 borderRadius: BorderRadius.circular(width * 0.01),
@@ -406,7 +407,7 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
                                                 widget.playlist.paths.removeAt(index);
                                               },
                                               icon: Icon(
-                                                FluentIcons.delete_12_filled,
+                                                FluentIcons.trash,
                                                 color: Colors.white,
                                                 size: height * 0.02,
                                               ),
@@ -486,7 +487,7 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
                       }
                     },
                     icon: Icon(
-                      value ? FluentIcons.checkmark_12_filled : FluentIcons.edit_12_filled,
+                      value ? FluentIcons.editOff : FluentIcons.editOn,
                       size: height * 0.02,
                       color: Colors.white,
                     ),

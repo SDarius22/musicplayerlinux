@@ -1,13 +1,13 @@
 import 'dart:ui';
-import 'package:fluentui_system_icons/fluentui_system_icons.dart';
+import 'package:musicplayer/utils/fluenticons/fluenticons.dart';
 import 'package:flutter/material.dart';
 import 'package:musicplayer/controller/worker_controller.dart';
 import 'package:musicplayer/domain/song_type.dart';
 import 'package:musicplayer/domain/playlist_type.dart';
-import '../controller/app_manager.dart';
-import '../controller/data_controller.dart';
-import '../repository/objectbox.g.dart';
-import '../utils/hover_widget/hover_widget.dart';
+import '../../controller/app_manager.dart';
+import '../../controller/data_controller.dart';
+import '../../repository/objectbox.g.dart';
+import '../../utils/hover_widget/hover_widget.dart';
 
 class CreateScreen extends StatefulWidget {
   final List<String>? paths;
@@ -77,7 +77,7 @@ class _CreateScreenState extends State<CreateScreen> {
                     Navigator.pop(context);
                   },
                   icon: Icon(
-                    FluentIcons.arrow_left_16_filled,
+                    FluentIcons.back,
                     size: height * 0.02,
                     color: Colors.white,
                   ),
@@ -161,7 +161,7 @@ class _CreateScreenState extends State<CreateScreen> {
                 DropdownButton<String>(
                     value: playlistAdd,
                     icon: Icon(
-                      FluentIcons.chevron_down_16_filled,
+                      FluentIcons.down,
                       color: Colors.white,
                       size: height * 0.025,
                     ),
@@ -230,7 +230,7 @@ class _CreateScreenState extends State<CreateScreen> {
                           color: Colors.white,
                           fontSize: smallSize,
                         ),
-                        labelText: 'Search', suffixIcon: Icon(FluentIcons.search_16_filled, color: Colors.white, size: height * 0.02,)
+                        labelText: 'Search', suffixIcon: Icon(FluentIcons.search, color: Colors.white, size: height * 0.02,)
                     ),
                   ),
                   SizedBox(
@@ -299,7 +299,7 @@ class _CreateScreenState extends State<CreateScreen> {
                                                                   color: Colors.black.withOpacity(0.3),
                                                                   alignment: Alignment.center,
                                                                   child: IconButton(
-                                                                    icon: Icon(selected.contains(song) ? FluentIcons.subtract_16_filled : FluentIcons.add_16_filled, color: Colors.white, size: height * 0.03,),
+                                                                    icon: Icon(selected.contains(song) ? FluentIcons.subtract : FluentIcons.add, color: Colors.white, size: height * 0.03,),
                                                                     onPressed: () {
                                                                       print("Add");
                                                                       setState(() {
@@ -407,7 +407,7 @@ class _CreateScreenState extends State<CreateScreen> {
                                                                 child: Container(
                                                                   alignment: Alignment.center,
                                                                   child: Icon(
-                                                                    FluentIcons.checkmark_16_filled,
+                                                                    FluentIcons.check,
                                                                     size: height * 0.03,
                                                                     color: Colors.white,
                                                                   ),

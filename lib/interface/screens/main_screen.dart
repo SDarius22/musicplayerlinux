@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../controller/settings_controller.dart';
+import '../../controller/settings_controller.dart';
 import 'home.dart';
 import 'welcome_screen.dart';
 

@@ -1,42 +1,44 @@
 import 'dart:async';
 
 import 'package:collection/collection.dart';
-import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:musicplayer/controller/data_controller.dart';
 import 'package:musicplayer/controller/settings_controller.dart';
-import '../controller/audio_player_controller.dart';
-import '../domain/artist_type.dart';
-import 'add_screen.dart';
-import 'artist_screen.dart';
-import 'image_widget.dart';
+import 'package:musicplayer/domain/album_type.dart';
+import 'package:musicplayer/interface/screens/add_screen.dart';
+import 'package:musicplayer/interface/screens/album_screen.dart';
+import '../../controller/audio_player_controller.dart';
+import '../../main.dart';
+import '../../utils/fluenticons/fluenticons.dart';
+import '../widgets/image_widget.dart';
 
-class Artists extends StatefulWidget{
-  const Artists({super.key});
+
+class Albums extends StatefulWidget{
+  const Albums({super.key});
 
   @override
-  _ArtistsState createState() => _ArtistsState();
+  _AlbumsState createState() => _AlbumsState();
 }
 
 
-class _ArtistsState extends State<Artists>{
+class _AlbumsState extends State<Albums>{
   FocusNode searchNode = FocusNode();
 
   Timer? _debounce;
 
-  late Future<List<ArtistType>> artistsFuture;
+  late Future<List<AlbumType>> albumsFuture;
 
   @override
   void initState(){
     super.initState();
-    artistsFuture = DataController.getArtists('');
+    albumsFuture = DataController.getAlbums('');
   }
 
   _onSearchChanged(String query) {
     if (_debounce?.isActive ?? false) _debounce?.cancel();
     _debounce = Timer(const Duration(milliseconds: 500), () {
       setState(() {
-        artistsFuture = DataController.getArtists(query);
+        albumsFuture = DataController.getAlbums(query);
       });
     });
   }
@@ -47,12 +49,14 @@ class _ArtistsState extends State<Artists>{
     _debounce?.cancel();
     super.dispose();
   }
-  
+
+
   @override
   Widget build(BuildContext context) {
     final dc = DataController();
     var width = MediaQuery.of(context).size.width;
     var height = MediaQuery.of(context).size.height;
+    // var boldSize = height * 0.025;
     var normalSize = height * 0.02;
     var smallSize = height * 0.015;
     return Column(
@@ -89,13 +93,13 @@ class _ArtistsState extends State<Artists>{
                   color: Colors.white,
                   fontSize: smallSize,
                 ),
-                labelText: 'Search', suffixIcon: Icon(FluentIcons.search_16_filled, color: Colors.white, size: height * 0.02,)
+                labelText: 'Search', suffixIcon: Icon(FluentIcons.search, color: Colors.white, size: height * 0.02,)
             ),
           ),
         ),
         Expanded(
           child: FutureBuilder(
-              future: artistsFuture,
+              future: albumsFuture,
               builder: (context, snapshot){
                 if(snapshot.hasError){
                   return Center(
@@ -103,12 +107,12 @@ class _ArtistsState extends State<Artists>{
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Icon(
-                          FluentIcons.error_circle_24_regular,
+                          FluentIcons.error,
                           size: height * 0.1,
                           color: Colors.red,
                         ),
                         Text(
-                          "Error loading artists",
+                          "Error loading albums",
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: smallSize,
@@ -133,7 +137,7 @@ class _ArtistsState extends State<Artists>{
                 else if(snapshot.hasData){
                   if (snapshot.data!.isEmpty){
                     return Center(
-                      child: Text("No artists found.", style: TextStyle(color: Colors.white, fontSize: smallSize),),
+                      child: Text("No albums found.", style: TextStyle(color: Colors.white, fontSize: smallSize),),
                     );
                   }
                   return GridView.builder(
@@ -148,24 +152,26 @@ class _ArtistsState extends State<Artists>{
                       childAspectRatio: 0.825,
                       maxCrossAxisExtent: width * 0.125,
                       crossAxisSpacing: width * 0.0125,
-                      //mainAxisSpacing: width * 0.0125,
+                      //mainAxisSpacing: width * 0.01,
                     ),
                     itemBuilder: (BuildContext context, int index) {
-                      ArtistType artist = snapshot.data![index];
-                      return MouseRegion(
+                      AlbumType album = snapshot.data![index];
+                      return  MouseRegion(
                         cursor: SystemMouseCursors.click,
                         child: GestureDetector(
                           onTap: () {
-                            //print(artist.name);
-                            Navigator.push(context, MaterialPageRoute(builder: (context) => ArtistScreen(artist: artist)));
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (context) => AlbumScreen(album: album))
+                            );
                           },
                           child: Column(
                             children: [
                               ClipRRect(
                                 borderRadius: BorderRadius.circular(width * 0.01),
                                 child: ImageWidget(
-                                  path: artist.songs.first.path,
-                                  heroTag: artist.name,
+                                  path: album.songs.first.path,
+                                  heroTag: album.name,
                                   buttons: Row(
                                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                                     crossAxisAlignment: CrossAxisAlignment.center,
@@ -178,24 +184,23 @@ class _ArtistsState extends State<Artists>{
                                             Navigator.push(
                                                 context,
                                                 MaterialPageRoute(
-                                                    builder: (context) => AddScreen(songs: artist.songs)
+                                                    builder: (context) => AddScreen(songs: album.songs)
                                                 )
                                             );
                                           },
                                           padding: const EdgeInsets.all(0),
                                           icon: Icon(
-                                            FluentIcons.add_12_filled,
+                                            FluentIcons.add,
                                             color: Colors.white,
                                             size: height * 0.035,
                                           ),
                                         ),
                                       ),
-                                      Expanded(
+                                      const Expanded(
                                         child: FittedBox(
                                           fit: BoxFit.fill,
                                           child: Icon(
-                                            FluentIcons.open_16_filled,
-                                            size: height * 0.1,
+                                            FluentIcons.open,
                                             color: Colors.white,
                                           ),
                                         ),
@@ -204,16 +209,16 @@ class _ArtistsState extends State<Artists>{
                                         width: width * 0.035,
                                         child: IconButton(
                                           onPressed: () async {
-                                            var songPaths = artist.songs.map((e) => e.path).toList();
+                                            var songPaths = album.songs.map((e) => e.path).toList();
                                             if(SettingsController.queue.equals(songPaths) == false){
                                               dc.updatePlaying(songPaths, 0);
                                             }
-                                            SettingsController.index = SettingsController.currentQueue.indexOf(artist.songs.first.path);
-                                            await AudioPlayerController.playSong();
+                                            SettingsController.index = SettingsController.currentQueue.indexOf(album.songs.first.path);
+                                           await audioHandler.play();
                                           },
                                           padding: const EdgeInsets.all(0),
                                           icon: Icon(
-                                            FluentIcons.play_12_filled,
+                                            FluentIcons.play,
                                             color: Colors.white,
                                             size: height * 0.035,
                                           ),
@@ -223,11 +228,12 @@ class _ArtistsState extends State<Artists>{
                                   ),
                                 ),
                               ),
+
                               SizedBox(
                                 height: width * 0.005,
                               ),
                               Text(
-                                artist.name,
+                                album.name,
                                 maxLines: 2,
                                 overflow: TextOverflow.ellipsis,
                                 textAlign: TextAlign.center,
@@ -243,6 +249,7 @@ class _ArtistsState extends State<Artists>{
                         ),
 
                       );
+
                     },
                   );
                 }
@@ -259,6 +266,6 @@ class _ArtistsState extends State<Artists>{
       ],
     );
 
-
   }
+
 }

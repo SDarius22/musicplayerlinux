@@ -1,42 +1,43 @@
-import 'dart:io';
-import 'dart:typed_data';
-
-import 'package:audiotags/audiotags.dart';
-import 'package:fluentui_system_icons/fluentui_system_icons.dart';
-import 'package:flutter/material.dart';
-import 'package:musicplayer/controller/app_manager.dart';
-import 'package:musicplayer/controller/online_controller.dart';
-import 'package:musicplayer/controller/settings_controller.dart';
-import 'package:musicplayer/screens/image_widget.dart';
 import 'dart:async';
-import 'package:http/http.dart' as http;
 
-class Download extends StatefulWidget{
-  const Download({super.key});
+import 'package:collection/collection.dart';
+import 'package:flutter/material.dart';
+import 'package:musicplayer/controller/data_controller.dart';
+import 'package:musicplayer/controller/settings_controller.dart';
+import '../../controller/audio_player_controller.dart';
+import '../../domain/artist_type.dart';
+import '../../main.dart';
+import '../../utils/fluenticons/fluenticons.dart';
+import 'add_screen.dart';
+import 'artist_screen.dart';
+import '../widgets/image_widget.dart';
+
+class Artists extends StatefulWidget{
+  const Artists({super.key});
 
   @override
-  _DownloadState createState() => _DownloadState();
+  _ArtistsState createState() => _ArtistsState();
 }
 
 
-class _DownloadState extends State<Download>{
+class _ArtistsState extends State<Artists>{
   FocusNode searchNode = FocusNode();
 
   Timer? _debounce;
 
-  late Future downloadFuture;
+  late Future<List<ArtistType>> artistsFuture;
 
   @override
   void initState(){
     super.initState();
-    downloadFuture = OnlineController.searchDeezer('');
+    artistsFuture = DataController.getArtists('');
   }
 
   _onSearchChanged(String query) {
     if (_debounce?.isActive ?? false) _debounce?.cancel();
-    _debounce = Timer(const Duration(milliseconds: 1000), () {
+    _debounce = Timer(const Duration(milliseconds: 500), () {
       setState(() {
-        downloadFuture = OnlineController.searchDeezer(query);
+        artistsFuture = DataController.getArtists(query);
       });
     });
   }
@@ -47,14 +48,12 @@ class _DownloadState extends State<Download>{
     _debounce?.cancel();
     super.dispose();
   }
-
-
+  
   @override
   Widget build(BuildContext context) {
-    final am = AppManager();
+    final dc = DataController();
     var width = MediaQuery.of(context).size.width;
     var height = MediaQuery.of(context).size.height;
-    // var boldSize = height * 0.025;
     var normalSize = height * 0.02;
     var smallSize = height * 0.015;
     return Column(
@@ -91,13 +90,13 @@ class _DownloadState extends State<Download>{
                   color: Colors.white,
                   fontSize: smallSize,
                 ),
-                labelText: 'Search', suffixIcon: Icon(FluentIcons.search_16_filled, color: Colors.white, size: height * 0.02,)
+                labelText: 'Search', suffixIcon: Icon(FluentIcons.search, color: Colors.white, size: height * 0.02,)
             ),
           ),
         ),
         Expanded(
           child: FutureBuilder(
-              future: downloadFuture,
+              future: artistsFuture,
               builder: (context, snapshot){
                 if(snapshot.hasError){
                   return Center(
@@ -105,12 +104,12 @@ class _DownloadState extends State<Download>{
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Icon(
-                          FluentIcons.error_circle_24_regular,
+                          FluentIcons.error,
                           size: height * 0.1,
                           color: Colors.red,
                         ),
                         Text(
-                          "Error loading songs",
+                          "Error loading artists",
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: smallSize,
@@ -135,10 +134,9 @@ class _DownloadState extends State<Download>{
                 else if(snapshot.hasData){
                   if (snapshot.data!.isEmpty){
                     return Center(
-                      child: Text("No songs found", style: TextStyle(color: Colors.white, fontSize: smallSize),),
+                      child: Text("No artists found.", style: TextStyle(color: Colors.white, fontSize: smallSize),),
                     );
                   }
-                  List<dynamic> songs = snapshot.data;
                   return GridView.builder(
                     padding: EdgeInsets.only(
                       left: width * 0.01,
@@ -154,89 +152,83 @@ class _DownloadState extends State<Download>{
                       //mainAxisSpacing: width * 0.0125,
                     ),
                     itemBuilder: (BuildContext context, int index) {
-                      var song = songs[index];
-                      ValueNotifier<double> progress = ValueNotifier<double>(0.0);
+                      ArtistType artist = snapshot.data![index];
                       return MouseRegion(
                         cursor: SystemMouseCursors.click,
                         child: GestureDetector(
-                          onTap: () async {
-                            print("Downloading ${song['id']}, arl: ${SettingsController.settings.deezerARL}");
-                            try {
-                              final stream = await OnlineController.instance.getSong(song['id'].toString(),
-                                onProgress: (received, total) {
-                                  //print("received: $received, total: $total");
-                                  progress.value = received / total;
-                                },
-                              );
-                              File file = File("${SettingsController.directory}/${song['artist']['name']
-                                  .toString()} - ${song['title']
-                                  .toString()}.mp3");
-                              if (stream != null) {
-                                await file.writeAsBytes(stream.data);
-                                am.showNotification("Song downloaded successfully.", 3500);
-                              } else {
-                                am.showNotification("Something went wrong.", 3500);
-                              }
-                              http.Response response = await http.get(
-                                Uri.parse(song['album']['cover_big']),
-                              );
-                              await AudioTags.write(file.path,
-                                Tag(
-                                    title: song['title'].toString(),
-                                    trackArtist: song['artist']['name'],
-                                    album: song['album']['title'],
-                                    albumArtist: song['artist']['name'],
-                                    duration: song['duration'],
-                                    pictures: [
-                                      Picture(
-                                          bytes: Uint8List.fromList(
-                                              response.bodyBytes),
-                                          mimeType: null,
-                                          pictureType: PictureType.other
-                                      )
-                                    ]
-                                ),
-                              );
-                            }
-                            catch(e){
-                              print(e);
-                              if(SettingsController.deezerARL.isEmpty){
-                                am.showNotification("Cannot download song without a working Deezer ARL. Please add one in settings.", 3500);
-                              }
-                              else{
-                                am.showNotification("Something went wrong. Try again later.", 3500);
-                              }
-                            }
+                          onTap: () {
+                            //print(artist.name);
+                            Navigator.push(context, MaterialPageRoute(builder: (context) => ArtistScreen(artist: artist)));
                           },
                           child: Column(
                             children: [
                               ClipRRect(
                                 borderRadius: BorderRadius.circular(width * 0.01),
                                 child: ImageWidget(
-                                  url: song['album']['cover_medium'],
-                                  buttons: ValueListenableBuilder(
-                                      valueListenable: progress,
-                                      builder: (context, value, child){
-                                        return value == 0.0 ?
-                                        Icon(
-                                            FluentIcons.arrow_download_16_filled
-                                        ) :
-                                        value == 1.0 ?
-                                        Icon(
-                                          FluentIcons.checkmark_12_filled,
-                                        ) :
-                                        CircularProgressIndicator(
-                                          value: value,
-                                        );
-                                      }
+                                  path: artist.songs.first.path,
+                                  heroTag: artist.name,
+                                  buttons: Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                    crossAxisAlignment: CrossAxisAlignment.center,
+                                    children: [
+                                      SizedBox(
+                                        width: width * 0.035,
+                                        child: IconButton(
+                                          onPressed: (){
+                                            print("Add $index");
+                                            Navigator.push(
+                                                context,
+                                                MaterialPageRoute(
+                                                    builder: (context) => AddScreen(songs: artist.songs)
+                                                )
+                                            );
+                                          },
+                                          padding: const EdgeInsets.all(0),
+                                          icon: Icon(
+                                            FluentIcons.add,
+                                            color: Colors.white,
+                                            size: height * 0.035,
+                                          ),
+                                        ),
+                                      ),
+                                      Expanded(
+                                        child: FittedBox(
+                                          fit: BoxFit.fill,
+                                          child: Icon(
+                                            FluentIcons.open,
+                                            size: height * 0.1,
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                      ),
+                                      SizedBox(
+                                        width: width * 0.035,
+                                        child: IconButton(
+                                          onPressed: () async {
+                                            var songPaths = artist.songs.map((e) => e.path).toList();
+                                            if(SettingsController.queue.equals(songPaths) == false){
+                                              dc.updatePlaying(songPaths, 0);
+                                            }
+                                            SettingsController.index = SettingsController.currentQueue.indexOf(artist.songs.first.path);
+                                           await audioHandler.play();
+                                          },
+                                          padding: const EdgeInsets.all(0),
+                                          icon: Icon(
+                                            FluentIcons.play,
+                                            color: Colors.white,
+                                            size: height * 0.035,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
                               ),
                               SizedBox(
-                                height: height * 0.005,
+                                height: width * 0.005,
                               ),
                               Text(
-                                song['title'].toString(),
+                                artist.name,
                                 maxLines: 2,
                                 overflow: TextOverflow.ellipsis,
                                 textAlign: TextAlign.center,
@@ -252,7 +244,6 @@ class _DownloadState extends State<Download>{
                         ),
 
                       );
-
                     },
                   );
                 }
@@ -266,9 +257,9 @@ class _DownloadState extends State<Download>{
               }
           ),
         ),
-
       ],
     );
-  }
 
+
+  }
 }

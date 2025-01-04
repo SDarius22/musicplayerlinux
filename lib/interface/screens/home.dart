@@ -1,21 +1,22 @@
 import 'dart:ui';
 import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:desktop_drop/desktop_drop.dart';
-import 'package:fluentui_system_icons/fluentui_system_icons.dart';
+import 'package:musicplayer/main.dart';
+import 'package:musicplayer/utils/fluenticons/fluenticons.dart';
 import 'package:flutter/material.dart';
 import 'package:musicplayer/controller/worker_controller.dart';
-import 'package:musicplayer/screens/settings_screen.dart';
-import 'package:musicplayer/screens/song_player_widget.dart';
-import 'package:musicplayer/screens/user_screen.dart';
-import '../controller/app_manager.dart';
-import '../controller/audio_player_controller.dart';
-import '../controller/data_controller.dart';
-import '../controller/online_controller.dart';
-import '../controller/settings_controller.dart';
+import 'package:musicplayer/interface/screens/settings_screen.dart';
+import 'package:musicplayer/interface/widgets/song_player_widget.dart';
+import 'package:musicplayer/interface/screens/user_screen.dart';
+import '../../controller/app_manager.dart';
+import '../../controller/audio_player_controller.dart';
+import '../../controller/data_controller.dart';
+import '../../controller/online_controller.dart';
+import '../../controller/settings_controller.dart';
 import 'albums.dart';
 import 'artists.dart';
 import 'download_screen.dart';
-import 'notification_widget.dart';
+import '../widgets/notification_widget.dart';
 import 'tracks.dart';
 import 'playlists.dart';
 
@@ -158,12 +159,12 @@ class _HomePageState extends State<HomePage>{
                                           builder: (context, value, child) {
                                             return IconButton(
                                               icon: volume ? Icon(
-                                                FluentIcons.speaker_2_16_filled,
+                                                FluentIcons.volumeOn,
                                                 size: height * 0.02,
                                                 color: Colors.white,
                                               ) :
                                               Icon(
-                                                FluentIcons.speaker_mute_16_filled,
+                                                FluentIcons.volumeOff,
                                                 size: height * 0.02,
                                                 color: Colors.white,
                                               ),
@@ -203,7 +204,7 @@ class _HomePageState extends State<HomePage>{
                                           });;
                                         },
                                         icon: Icon(
-                                          FluentIcons.settings_16_filled,
+                                          FluentIcons.settings,
                                           size: height * 0.02,
                                           color: Colors.white,
                                         )
@@ -230,7 +231,7 @@ class _HomePageState extends State<HomePage>{
                                               ),
                                             ),
                                             icon: Icon(
-                                              value ? FluentIcons.person_24_filled : FluentIcons.person_24_regular,
+                                              value ? FluentIcons.circlePersonFilled : FluentIcons.circlePerson,
                                               size: height * 0.02,
                                               color: Colors.white,
                                             ),
@@ -247,7 +248,7 @@ class _HomePageState extends State<HomePage>{
                                 ),
                           ),
                           Icon(
-                            FluentIcons.divider_tall_16_regular,
+                            FluentIcons.divider,
                             size: height * 0.02,
                             color: Colors.white,
                           ),
@@ -532,7 +533,7 @@ class _HomePageState extends State<HomePage>{
                                 }
                                 dc.updatePlaying(songs, 0);
                                 SettingsController.index = SettingsController.currentQueue.indexOf(songs[0]);
-                                AudioPlayerController.playSong();
+                                await audioHandler.play();
                                 // DataController.indexChange(songs[0]);
                                 // await widget.controller.playSong();
                                 //widget.controller.showNotification("Playing ${songs.length} new song${songs.length == 1 ? '' : 's'}. Do you want to add ${songs.length == 1 ? 'it' : 'them'} to your library?", 7500);
@@ -557,7 +558,7 @@ class _HomePageState extends State<HomePage>{
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
                                       Icon(
-                                        FluentIcons.drag_20_regular,
+                                        FluentIcons.drag,
                                         size: height * 0.1,
                                         color: Colors.white,
                                       ),

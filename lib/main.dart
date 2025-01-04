@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:audio_service/audio_service.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:musicplayer/controller/settings_controller.dart';
@@ -12,19 +13,26 @@ import 'package:musicplayer/controller/data_controller.dart';
 import 'package:musicplayer/controller/online_controller.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:flutter_single_instance/flutter_single_instance.dart';
-import 'domain/settings_type.dart';
 import 'repository/objectBox.dart';
-import 'screens/main_screen.dart';
+import 'interface/screens/main_screen.dart';
+
+late AudioHandler audioHandler;
 
 Future<void> main(List<String> args) async {
-  //print(args);
   await ObjectBox.initialize();
   WidgetsFlutterBinding.ensureInitialized();
 
   SettingsController.init();
   WorkerController.init();
   DataController.init();
-  AudioPlayerController.init();
+  audioHandler = await AudioService.init(
+    builder: () => AudioPlayerController(),
+    config: const AudioServiceConfig(
+      androidNotificationChannelId: 'com.example.musicplayer',
+      androidNotificationChannelName: 'Music Player',
+      androidNotificationOngoing: true,
+    ),
+  );
   AppManager.init();
   OnlineController.init();
 

@@ -1,16 +1,17 @@
 import 'package:collection/collection.dart';
-import 'package:fluentui_system_icons/fluentui_system_icons.dart';
+import 'package:musicplayer/utils/fluenticons/fluenticons.dart';
 import 'package:flutter/material.dart';
 import 'package:musicplayer/controller/data_controller.dart';
 import 'package:musicplayer/controller/settings_controller.dart';
-import 'package:musicplayer/screens/add_screen.dart';
-import 'package:musicplayer/screens/image_widget.dart';
+import 'package:musicplayer/interface/screens/add_screen.dart';
+import 'package:musicplayer/interface/widgets/image_widget.dart';
 import 'dart:async';
 
 
-import '../controller/audio_player_controller.dart';
-import '../domain/song_type.dart';
-import '../repository/objectbox.g.dart';
+import '../../controller/audio_player_controller.dart';
+import '../../domain/song_type.dart';
+import '../../main.dart';
+import '../../repository/objectbox.g.dart';
 import 'album_screen.dart';
 
 class Tracks extends StatefulWidget{
@@ -93,7 +94,7 @@ class _TracksState extends State<Tracks>{
                 color: Colors.white,
                 fontSize: smallSize,
               ),
-              labelText: 'Search', suffixIcon: Icon(FluentIcons.search_16_filled, color: Colors.white, size: height * 0.02,),
+              labelText: 'Search', suffixIcon: Icon(FluentIcons.search, color: Colors.white, size: height * 0.02,),
             ),
           ),
         ),
@@ -107,7 +108,7 @@ class _TracksState extends State<Tracks>{
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Icon(
-                          FluentIcons.error_circle_24_regular,
+                          FluentIcons.error,
                           size: height * 0.1,
                           color: Colors.red,
                         ),
@@ -172,14 +173,14 @@ class _TracksState extends State<Tracks>{
                                   dc.updatePlaying(songPaths, index);
                                 }
                                 SettingsController.index = SettingsController.currentQueue.indexOf(song.path);
-                                await AudioPlayerController.playSong();
+                               await audioHandler.play();
                               }
                               else {
                                 if (SettingsController.playing == true) {
-                                  await AudioPlayerController.pauseSong();
+                                  await audioHandler.pause();
                                 }
                                 else {
-                                  await AudioPlayerController.playSong();
+                                 await audioHandler.play();
                                 }
                               }
                             }
@@ -188,7 +189,7 @@ class _TracksState extends State<Tracks>{
                               var songPaths = snapshot.data!.map((e) => e.path).toList();
                               dc.updatePlaying(songPaths, index);
                               SettingsController.index = index;
-                              await AudioPlayerController.playSong();
+                             await audioHandler.play();
                             }
                           },
                           child: Column(
@@ -216,7 +217,7 @@ class _TracksState extends State<Tracks>{
                                           },
                                           padding: const EdgeInsets.all(0),
                                           icon: Icon(
-                                            FluentIcons.add_12_filled,
+                                            FluentIcons.add,
                                             color: Colors.white,
                                             size: height * 0.03,
                                           ),
@@ -230,7 +231,7 @@ class _TracksState extends State<Tracks>{
                                               fit: BoxFit.fill,
                                               child: Icon(
                                                 SettingsController.currentSongPath  == song.path && SettingsController.playing == true ?
-                                                FluentIcons.pause_32_filled : FluentIcons.play_32_filled,
+                                                FluentIcons.pause : FluentIcons.play,
                                                 color: Colors.white,
                                               ),
                                             );
@@ -248,7 +249,7 @@ class _TracksState extends State<Tracks>{
                                           },
                                           padding: const EdgeInsets.all(0),
                                           icon: Icon(
-                                            FluentIcons.album_24_filled,
+                                            FluentIcons.album,
                                             color: Colors.white,
                                             size: height * 0.03,
                                           ),

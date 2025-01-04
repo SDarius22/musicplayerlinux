@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../controller/app_manager.dart';
+import '../../controller/app_manager.dart';
 
 class NotificationWidget extends StatefulWidget {
   const NotificationWidget({super.key});

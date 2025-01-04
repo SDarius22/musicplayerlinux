@@ -1,17 +1,18 @@
 import 'dart:async';
 import 'dart:ui';
 import 'package:collection/collection.dart';
-import 'package:fluentui_system_icons/fluentui_system_icons.dart';
+import 'package:musicplayer/utils/fluenticons/fluenticons.dart';
 import 'package:flutter/material.dart';
 import 'package:musicplayer/controller/data_controller.dart';
-import 'package:musicplayer/screens/image_widget.dart';
-import 'package:musicplayer/screens/playlist_screen.dart';
-import '../controller/audio_player_controller.dart';
-import '../controller/settings_controller.dart';
-import '../domain/song_type.dart';
-import '../domain/playlist_type.dart';
-import '../utils/hover_widget/stack_hover_widget.dart';
-import '../repository/objectbox.g.dart';
+import 'package:musicplayer/interface/widgets/image_widget.dart';
+import 'package:musicplayer/interface/screens/playlist_screen.dart';
+import '../../controller/audio_player_controller.dart';
+import '../../controller/settings_controller.dart';
+import '../../domain/song_type.dart';
+import '../../domain/playlist_type.dart';
+import '../../main.dart';
+import '../../utils/hover_widget/stack_hover_widget.dart';
+import '../../repository/objectbox.g.dart';
 import 'add_screen.dart';
 import 'create_screen.dart';
 
@@ -104,7 +105,7 @@ class _PlaylistsState extends State<Playlists>{
                   color: Colors.white,
                   fontSize: smallSize,
                 ),
-                labelText: 'Search', suffixIcon: Icon(FluentIcons.search_16_filled, color: Colors.white, size: height * 0.02,)
+                labelText: 'Search', suffixIcon: Icon(FluentIcons.search, color: Colors.white, size: height * 0.02,)
             ),
           ),
         ),
@@ -118,7 +119,7 @@ class _PlaylistsState extends State<Playlists>{
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Icon(
-                          FluentIcons.error_circle_24_regular,
+                          FluentIcons.error,
                           size: height * 0.1,
                           color: Colors.red,
                         ),
@@ -257,7 +258,7 @@ class _PlaylistsState extends State<Playlists>{
                                           },
                                           padding: const EdgeInsets.all(0),
                                           icon: Icon(
-                                            FluentIcons.add_12_filled,
+                                            FluentIcons.add,
                                             color: Colors.white,
                                             size: height * 0.035,
                                           ),
@@ -267,7 +268,7 @@ class _PlaylistsState extends State<Playlists>{
                                         child: FittedBox(
                                           fit: BoxFit.fill,
                                           child: Icon(
-                                            FluentIcons.open_16_filled,
+                                            FluentIcons.open,
                                             size: height * 0.1,
                                             color: Colors.white,
                                           ),
@@ -281,11 +282,11 @@ class _PlaylistsState extends State<Playlists>{
                                               dc.updatePlaying(playlist.paths, 0);
                                             }
                                             SettingsController.index = SettingsController.currentQueue.indexOf(playlist.paths.first);
-                                            await AudioPlayerController.playSong();
+                                           await audioHandler.play();
                                           },
                                           padding: const EdgeInsets.all(0),
                                           icon: Icon(
-                                            FluentIcons.play_12_filled,
+                                            FluentIcons.play,
                                             color: Colors.white,
                                             size: height * 0.035,
                                           ),

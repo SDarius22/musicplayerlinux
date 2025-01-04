@@ -1,8 +1,8 @@
 import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:fluentui_system_icons/fluentui_system_icons.dart';
-import '../controller/settings_controller.dart';
+import 'package:musicplayer/utils/fluenticons/fluenticons.dart';
+import '../../controller/settings_controller.dart';
 import 'home.dart';
 
 class WelcomeScreen extends StatefulWidget {
@@ -172,7 +172,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                             ),
                           ) :
                           Icon(
-                            FluentIcons.folder_24_regular,
+                            FluentIcons.folder,
                             color: Colors.white,
                             size: height * 0.03,
                           ),
@@ -257,7 +257,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                               return const HomePage();
                             }));
                           },
-                          child: Icon(FluentIcons.arrow_right_12_filled, color: Colors.white, size: height * 0.03,),
+                          child: Icon(FluentIcons.forward, color: Colors.white, size: height * 0.03,),
                         ),
                       ),
                     ],

@@ -1,20 +1,28 @@
 import 'dart:async';
+import 'dart:io';
+import 'dart:typed_data';
 
+import 'package:audio_service/audio_service.dart';
 import 'package:audioplayers/audioplayers.dart';
+import 'package:flutter/services.dart';
 import 'package:musicplayer/controller/app_manager.dart';
 import 'package:musicplayer/controller/settings_controller.dart';
+import 'package:musicplayer/domain/song_type.dart';
+import 'package:path_provider/path_provider.dart';
 
 
-class AudioPlayerController {
+class AudioPlayerController extends BaseAudioHandler {
   static final AudioPlayerController _instance = AudioPlayerController._internal();
-
+  String _filePath = "SomeNonExistentPath";
   factory AudioPlayerController() => _instance;
 
-  AudioPlayerController._internal();
+  AudioPlayerController._internal(){
+    init();
+  }
 
   static AudioPlayer audioPlayer = AudioPlayer();
-  
-  static void init (){
+
+  void init (){
     audioPlayer.onPositionChanged.listen((Duration event) {
       SettingsController.slider = event.inMilliseconds;
     });
@@ -24,17 +32,45 @@ class AudioPlayerController {
         if (SettingsController.repeat) {
           print("repeat");
           SettingsController.slider = 0;
-          playSong();
+          play();
         } else {
           print("next");
-          nextSong();
+          skipToNext();
         }
       }
     });
   }
 
-  static Future<void> playSong() async {
+
+  Future<void> addSong(SongType song, Uint8List bytes) async {
+    File lastFile = File(_filePath);
+    if (lastFile.existsSync()) {
+      lastFile.deleteSync();
+    }
+    final ByteData data = ByteData.view(bytes.buffer);
+    final String dir = (await getApplicationCacheDirectory()).path;
+    final String path = '$dir/${song.album}-${song.title}.jpeg';
+    _filePath = path;
+    final File file = File(path);
+    await file.writeAsBytes(data.buffer.asUint8List());
+    MediaItem item = MediaItem(
+      id: song.id.toString(),
+      album: song.album,
+      title: song.title,
+      artist: song.artists,
+      duration: Duration(milliseconds: song.duration),
+      artUri: Uri.file(path),
+    );
+    mediaItem.add(item);
+  }
+
+  @override
+  Future<void> play() async {
       print("play");
+      playbackState.add(playbackState.value.copyWith(
+        playing: true,
+        controls: [MediaControl.pause],
+      ));
       await audioPlayer.play(
           DeviceFileSource(SettingsController.currentSongPath),
           position: Duration(milliseconds: SettingsController.slider),
@@ -43,23 +79,36 @@ class AudioPlayerController {
       );
       SettingsController.playing = true;
   }
-  
-  static Future<void> pauseSong() async{
+
+  @override
+  Future<void> pause() async{
     print("pause");
+    playbackState.add(playbackState.value.copyWith(
+      playing: false,
+      controls: [MediaControl.play],
+    ));
     await audioPlayer.pause();
     SettingsController.playing = false;
   }
 
-  static Future<void> nextSong() async {
+  @override
+  Future<void> skipToNext() async {
+    playbackState.add(playbackState.value.copyWith(
+      controls: [MediaControl.skipToNext],
+    ));
     if (SettingsController.index == SettingsController.queue.length - 1) {
       SettingsController.index = 0;
     } else {
       SettingsController.index = SettingsController.index + 1;
     }
-    playSong();
+    play();
   }
 
-  static Future<void> previousSong() async {
+  @override
+  Future<void> skipToPrevious() async {
+    playbackState.add(playbackState.value.copyWith(
+      controls: [MediaControl.skipToPrevious],
+    ));
     if (SettingsController.slider > 5000) {
       audioPlayer.seek(const Duration(milliseconds: 0));
     } else {
@@ -68,7 +117,7 @@ class AudioPlayerController {
         } else {
           SettingsController.index = SettingsController.index - 1;
         }
-        playSong();
+        play();
     }
   }
 

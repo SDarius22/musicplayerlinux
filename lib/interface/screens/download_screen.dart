@@ -1,43 +1,42 @@
-import 'dart:async';
+import 'dart:io';
+import 'dart:typed_data';
 
-import 'package:collection/collection.dart';
-import 'package:fluentui_system_icons/fluentui_system_icons.dart';
+import 'package:audiotags/audiotags.dart';
+import 'package:musicplayer/utils/fluenticons/fluenticons.dart';
 import 'package:flutter/material.dart';
-import 'package:musicplayer/controller/data_controller.dart';
+import 'package:musicplayer/controller/app_manager.dart';
+import 'package:musicplayer/controller/online_controller.dart';
 import 'package:musicplayer/controller/settings_controller.dart';
-import 'package:musicplayer/domain/album_type.dart';
-import 'package:musicplayer/screens/add_screen.dart';
-import 'package:musicplayer/screens/album_screen.dart';
-import '../controller/audio_player_controller.dart';
-import 'image_widget.dart';
+import 'package:musicplayer/interface/widgets/image_widget.dart';
+import 'dart:async';
+import 'package:http/http.dart' as http;
 
-
-class Albums extends StatefulWidget{
-  const Albums({super.key});
+class Download extends StatefulWidget{
+  const Download({super.key});
 
   @override
-  _AlbumsState createState() => _AlbumsState();
+  _DownloadState createState() => _DownloadState();
 }
 
 
-class _AlbumsState extends State<Albums>{
+class _DownloadState extends State<Download>{
   FocusNode searchNode = FocusNode();
 
   Timer? _debounce;
 
-  late Future<List<AlbumType>> albumsFuture;
+  late Future downloadFuture;
 
   @override
   void initState(){
     super.initState();
-    albumsFuture = DataController.getAlbums('');
+    downloadFuture = OnlineController.searchDeezer('');
   }
 
   _onSearchChanged(String query) {
     if (_debounce?.isActive ?? false) _debounce?.cancel();
-    _debounce = Timer(const Duration(milliseconds: 500), () {
+    _debounce = Timer(const Duration(milliseconds: 1000), () {
       setState(() {
-        albumsFuture = DataController.getAlbums(query);
+        downloadFuture = OnlineController.searchDeezer(query);
       });
     });
   }
@@ -52,7 +51,7 @@ class _AlbumsState extends State<Albums>{
 
   @override
   Widget build(BuildContext context) {
-    final dc = DataController();
+    final am = AppManager();
     var width = MediaQuery.of(context).size.width;
     var height = MediaQuery.of(context).size.height;
     // var boldSize = height * 0.025;
@@ -92,13 +91,13 @@ class _AlbumsState extends State<Albums>{
                   color: Colors.white,
                   fontSize: smallSize,
                 ),
-                labelText: 'Search', suffixIcon: Icon(FluentIcons.search_16_filled, color: Colors.white, size: height * 0.02,)
+                labelText: 'Search', suffixIcon: Icon(FluentIcons.search, color: Colors.white, size: height * 0.02,)
             ),
           ),
         ),
         Expanded(
           child: FutureBuilder(
-              future: albumsFuture,
+              future: downloadFuture,
               builder: (context, snapshot){
                 if(snapshot.hasError){
                   return Center(
@@ -106,12 +105,12 @@ class _AlbumsState extends State<Albums>{
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Icon(
-                          FluentIcons.error_circle_24_regular,
+                          FluentIcons.error,
                           size: height * 0.1,
                           color: Colors.red,
                         ),
                         Text(
-                          "Error loading albums",
+                          "Error loading songs",
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: smallSize,
@@ -136,9 +135,10 @@ class _AlbumsState extends State<Albums>{
                 else if(snapshot.hasData){
                   if (snapshot.data!.isEmpty){
                     return Center(
-                      child: Text("No albums found.", style: TextStyle(color: Colors.white, fontSize: smallSize),),
+                      child: Text("No songs found", style: TextStyle(color: Colors.white, fontSize: smallSize),),
                     );
                   }
+                  List<dynamic> songs = snapshot.data;
                   return GridView.builder(
                     padding: EdgeInsets.only(
                       left: width * 0.01,
@@ -151,88 +151,92 @@ class _AlbumsState extends State<Albums>{
                       childAspectRatio: 0.825,
                       maxCrossAxisExtent: width * 0.125,
                       crossAxisSpacing: width * 0.0125,
-                      //mainAxisSpacing: width * 0.01,
+                      //mainAxisSpacing: width * 0.0125,
                     ),
                     itemBuilder: (BuildContext context, int index) {
-                      AlbumType album = snapshot.data![index];
-                      return  MouseRegion(
+                      var song = songs[index];
+                      ValueNotifier<double> progress = ValueNotifier<double>(0.0);
+                      return MouseRegion(
                         cursor: SystemMouseCursors.click,
                         child: GestureDetector(
-                          onTap: () {
-                            Navigator.push(
-                                context,
-                                MaterialPageRoute(builder: (context) => AlbumScreen(album: album))
-                            );
+                          onTap: () async {
+                            print("Downloading ${song['id']}, arl: ${SettingsController.settings.deezerARL}");
+                            try {
+                              final stream = await OnlineController.instance.getSong(song['id'].toString(),
+                                onProgress: (received, total) {
+                                  //print("received: $received, total: $total");
+                                  progress.value = received / total;
+                                },
+                              );
+                              File file = File("${SettingsController.directory}/${song['artist']['name']
+                                  .toString()} - ${song['title']
+                                  .toString()}.mp3");
+                              if (stream != null) {
+                                await file.writeAsBytes(stream.data);
+                                am.showNotification("Song downloaded successfully.", 3500);
+                              } else {
+                                am.showNotification("Something went wrong.", 3500);
+                              }
+                              http.Response response = await http.get(
+                                Uri.parse(song['album']['cover_big']),
+                              );
+                              await AudioTags.write(file.path,
+                                Tag(
+                                    title: song['title'].toString(),
+                                    trackArtist: song['artist']['name'],
+                                    album: song['album']['title'],
+                                    albumArtist: song['artist']['name'],
+                                    duration: song['duration'],
+                                    pictures: [
+                                      Picture(
+                                          bytes: Uint8List.fromList(
+                                              response.bodyBytes),
+                                          mimeType: null,
+                                          pictureType: PictureType.other
+                                      )
+                                    ]
+                                ),
+                              );
+                            }
+                            catch(e){
+                              print(e);
+                              if(SettingsController.deezerARL.isEmpty){
+                                am.showNotification("Cannot download song without a working Deezer ARL. Please add one in settings.", 3500);
+                              }
+                              else{
+                                am.showNotification("Something went wrong. Try again later.", 3500);
+                              }
+                            }
                           },
                           child: Column(
                             children: [
                               ClipRRect(
                                 borderRadius: BorderRadius.circular(width * 0.01),
                                 child: ImageWidget(
-                                  path: album.songs.first.path,
-                                  heroTag: album.name,
-                                  buttons: Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                                    crossAxisAlignment: CrossAxisAlignment.center,
-                                    children: [
-                                      SizedBox(
-                                        width: width * 0.035,
-                                        child: IconButton(
-                                          onPressed: (){
-                                            print("Add $index");
-                                            Navigator.push(
-                                                context,
-                                                MaterialPageRoute(
-                                                    builder: (context) => AddScreen(songs: album.songs)
-                                                )
-                                            );
-                                          },
-                                          padding: const EdgeInsets.all(0),
-                                          icon: Icon(
-                                            FluentIcons.add_12_filled,
-                                            color: Colors.white,
-                                            size: height * 0.035,
-                                          ),
-                                        ),
-                                      ),
-                                      const Expanded(
-                                        child: FittedBox(
-                                          fit: BoxFit.fill,
-                                          child: Icon(
-                                            FluentIcons.open_16_filled,
-                                            color: Colors.white,
-                                          ),
-                                        ),
-                                      ),
-                                      SizedBox(
-                                        width: width * 0.035,
-                                        child: IconButton(
-                                          onPressed: () async {
-                                            var songPaths = album.songs.map((e) => e.path).toList();
-                                            if(SettingsController.queue.equals(songPaths) == false){
-                                              dc.updatePlaying(songPaths, 0);
-                                            }
-                                            SettingsController.index = SettingsController.currentQueue.indexOf(album.songs.first.path);
-                                            await AudioPlayerController.playSong();
-                                          },
-                                          padding: const EdgeInsets.all(0),
-                                          icon: Icon(
-                                            FluentIcons.play_12_filled,
-                                            color: Colors.white,
-                                            size: height * 0.035,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
+                                  url: song['album']['cover_medium'],
+                                  buttons: ValueListenableBuilder(
+                                      valueListenable: progress,
+                                      builder: (context, value, child){
+                                        return value == 0.0 ?
+                                        const Icon(
+                                            FluentIcons.download
+                                        ) :
+                                        value == 1.0 ?
+                                        const Icon(
+                                          FluentIcons.check,
+                                        ) :
+                                        CircularProgressIndicator(
+                                          value: value,
+                                        );
+                                      }
                                   ),
                                 ),
                               ),
-
                               SizedBox(
-                                height: width * 0.005,
+                                height: height * 0.005,
                               ),
                               Text(
-                                album.name,
+                                song['title'].toString(),
                                 maxLines: 2,
                                 overflow: TextOverflow.ellipsis,
                                 textAlign: TextAlign.center,
@@ -262,9 +266,9 @@ class _AlbumsState extends State<Albums>{
               }
           ),
         ),
+
       ],
     );
-
   }
 
 }

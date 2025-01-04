@@ -4,7 +4,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 import 'package:flutter/material.dart';
-import 'package:fluentui_system_icons/fluentui_system_icons.dart';
+import 'package:musicplayer/utils/fluenticons/fluenticons.dart';
 import 'package:musicplayer/controller/online_controller.dart';
 import 'package:musicplayer/controller/settings_controller.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -57,7 +57,7 @@ class _UserScreenState extends State<UserScreen> {
                   Navigator.pop(context);
                 },
                 icon: Icon(
-                  FluentIcons.arrow_left_16_filled,
+                  FluentIcons.back,
                   size: height * 0.02,
                   color: Colors.white,
                 ),
@@ -276,7 +276,7 @@ class _UserScreenState extends State<UserScreen> {
                                       loading = loadingFuture();
                                     });
                                   },
-                                  child: Icon(FluentIcons.arrow_right_12_filled, color: Colors.white, size: height * 0.03,),
+                                  child: Icon(FluentIcons.forward, color: Colors.white, size: height * 0.03,),
                                 ),
                               ],
                             ),
