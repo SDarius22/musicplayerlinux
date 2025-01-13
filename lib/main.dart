@@ -1,22 +1,19 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:audio_service/audio_service.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:musicplayer/controller/app_audio_handler.dart';
 import 'package:musicplayer/controller/settings_controller.dart';
 import 'package:musicplayer/controller/worker_controller.dart';
 import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:musicplayer/controller/app_manager.dart';
-import 'package:musicplayer/controller/audio_player_controller.dart';
 import 'package:musicplayer/controller/data_controller.dart';
 import 'package:musicplayer/controller/online_controller.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:flutter_single_instance/flutter_single_instance.dart';
 import 'repository/objectBox.dart';
 import 'interface/screens/main_screen.dart';
-
-late AudioHandler audioHandler;
 
 Future<void> main(List<String> args) async {
   await ObjectBox.initialize();
@@ -25,14 +22,7 @@ Future<void> main(List<String> args) async {
   SettingsController.init();
   WorkerController.init();
   DataController.init();
-  audioHandler = await AudioService.init(
-    builder: () => AudioPlayerController(),
-    config: const AudioServiceConfig(
-      androidNotificationChannelId: 'com.example.musicplayer',
-      androidNotificationChannelName: 'Music Player',
-      androidNotificationOngoing: true,
-    ),
-  );
+  await AppAudioHandler.init();
   AppManager.init();
   OnlineController.init();
 

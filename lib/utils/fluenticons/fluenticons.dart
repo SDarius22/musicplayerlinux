@@ -40,7 +40,6 @@ class FluentIcons{
   static const IconData volumeOn = IconData(0xEFA0, fontFamily: 'FluentIcons-Resizable');
   static const IconData volumeOff = IconData(0xEFAA, fontFamily: 'FluentIcons-Resizable');
 
-
   static const IconData repeatOn = IconData(0xE118, fontFamily: 'FluentIcons-Resizable');
   static const IconData repeatOff = IconData(0xE11A, fontFamily: 'FluentIcons-Resizable');
 
@@ -50,9 +49,8 @@ class FluentIcons{
   static const IconData previous = IconData(0xEDB0, fontFamily: 'FluentIcons-Resizable');
   static const IconData next = IconData(0xEB9F, fontFamily: 'FluentIcons-Resizable');
 
-
-  static const IconData hide = IconData(0xE7E0, fontFamily: 'FluentIcons-Resizable');
-  static const IconData show = IconData(0xE7E4, fontFamily: 'FluentIcons-Resizable');
+  static const IconData hide = IconData(0xE7E4, fontFamily: 'FluentIcons-Resizable');
+  static const IconData show = IconData(0xE7E0, fontFamily: 'FluentIcons-Resizable');
 
   static const IconData search = IconData(0xEE9C, fontFamily: 'FluentIcons-Resizable');
 

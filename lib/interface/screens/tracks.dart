@@ -6,11 +6,8 @@ import 'package:musicplayer/controller/settings_controller.dart';
 import 'package:musicplayer/interface/screens/add_screen.dart';
 import 'package:musicplayer/interface/widgets/image_widget.dart';
 import 'dart:async';
-
-
-import '../../controller/audio_player_controller.dart';
+import '../../controller/app_audio_handler.dart';
 import '../../domain/song_type.dart';
-import '../../main.dart';
 import '../../repository/objectbox.g.dart';
 import 'album_screen.dart';
 
@@ -173,14 +170,14 @@ class _TracksState extends State<Tracks>{
                                   dc.updatePlaying(songPaths, index);
                                 }
                                 SettingsController.index = SettingsController.currentQueue.indexOf(song.path);
-                               await audioHandler.play();
+                               await AppAudioHandler.play();
                               }
                               else {
                                 if (SettingsController.playing == true) {
-                                  await audioHandler.pause();
+                                  await AppAudioHandler.pause();
                                 }
                                 else {
-                                 await audioHandler.play();
+                                 await AppAudioHandler.play();
                                 }
                               }
                             }
@@ -189,7 +186,7 @@ class _TracksState extends State<Tracks>{
                               var songPaths = snapshot.data!.map((e) => e.path).toList();
                               dc.updatePlaying(songPaths, index);
                               SettingsController.index = index;
-                             await audioHandler.play();
+                             await AppAudioHandler.play();
                             }
                           },
                           child: Column(

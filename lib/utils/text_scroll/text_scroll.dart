@@ -23,7 +23,7 @@ import 'package:flutter/material.dart';
 class TextScroll extends StatefulWidget {
   const TextScroll(
       this.text, {
-        Key? key,
+        super.key,
         this.style,
         this.textAlign,
         this.textDirection = TextDirection.ltr,
@@ -39,7 +39,7 @@ class TextScroll extends StatefulWidget {
         this.fadedBorderWidth = 0.2,
         this.fadeBorderSide = FadeBorderSide.both,
         this.fadeBorderVisibility = FadeBorderVisibility.auto,
-      }) : super(key: key);
+      });
 
   /// The text string, that would be scrolled.
   /// In case text does fit into allocated space, it wouldn't be scrolled

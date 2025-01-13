@@ -4,9 +4,8 @@ import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:musicplayer/controller/data_controller.dart';
 import 'package:musicplayer/controller/settings_controller.dart';
-import '../../controller/audio_player_controller.dart';
+import '../../controller/app_audio_handler.dart';
 import '../../domain/artist_type.dart';
-import '../../main.dart';
 import '../../utils/fluenticons/fluenticons.dart';
 import 'add_screen.dart';
 import 'artist_screen.dart';
@@ -210,7 +209,7 @@ class _ArtistsState extends State<Artists>{
                                               dc.updatePlaying(songPaths, 0);
                                             }
                                             SettingsController.index = SettingsController.currentQueue.indexOf(artist.songs.first.path);
-                                           await audioHandler.play();
+                                           await AppAudioHandler.play();
                                           },
                                           padding: const EdgeInsets.all(0),
                                           icon: Icon(

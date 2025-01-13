@@ -6,9 +6,8 @@ import 'package:musicplayer/controller/settings_controller.dart';
 import 'package:musicplayer/utils/fluenticons/fluenticons.dart';
 import 'package:musicplayer/utils/hover_widget/hover_container.dart';
 import 'package:musicplayer/domain/album_type.dart';
-import '../../controller/audio_player_controller.dart';
+import '../../controller/app_audio_handler.dart';
 import '../../controller/data_controller.dart';
-import '../../main.dart';
 import 'add_screen.dart';
 import '../widgets/image_widget.dart';
 
@@ -153,7 +152,7 @@ class _AlbumScreenState extends State<AlbumScreen> {
                                 dc.updatePlaying(songPaths, 0);
                               }
                               SettingsController.index = SettingsController.currentQueue.indexOf(widget.album.songs.first.path);
-                             await audioHandler.play();
+                              await AppAudioHandler.play();
                             },
                             icon: Icon(
                               FluentIcons.play,
@@ -210,7 +209,7 @@ class _AlbumScreenState extends State<AlbumScreen> {
                             dc.updatePlaying(songPaths, index);
                           }
                           SettingsController.index = SettingsController.currentQueue.indexOf(widget.album.songs[index].path);
-                         await audioHandler.play();
+                         await AppAudioHandler.play();
                         },
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(width * 0.01),

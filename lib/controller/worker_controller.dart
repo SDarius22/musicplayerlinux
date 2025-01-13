@@ -16,6 +16,7 @@ import '../utils/dominant_color/dominant_color.dart';
 import '../utils/flac_metadata/flacstream.dart';
 import '../utils/id3tag/src/id3_tag_reader.dart';
 
+
 class WorkerController {
   static void init() {
     // Initialize the worker controller
@@ -99,9 +100,21 @@ class WorkerController {
   static Future<SongType> retrieveSong(String path) async {
     SongType metadataVariable = SongType();
     metadataVariable.path = path;
-    var metadataVar = await AudioTags.read(path);
-    if (metadataVar == null) {
-      print("metadata is null for $path");
+    // var metadataVar = await AudioTags.read(path);
+    var metadataVar;
+    try{
+      metadataVar = await AudioTags.read(path);
+      // metadataVar = readMetadata(File(path));
+      metadataVariable.title = metadataVar.title ?? path.replaceAll("\\", "/").split("/").last;
+      metadataVariable.album = metadataVar.album ?? "Unknown Album";
+      metadataVariable.duration = metadataVar.duration ?? 0;
+      metadataVariable.trackNumber = metadataVar.trackNumber ?? 0;
+      metadataVariable.artists = metadataVar.trackArtist ?? "Unknown Artist";
+      metadataVariable.albumArtist = metadataVar.albumArtist ?? "Unknown Album Artist";
+      metadataVariable.discNumber = metadataVar.discNumber ?? 0;
+    }
+    catch(e){
+      print(e);
       if (path.endsWith(".flac")) {
         var flac = FlacInfo(File(path));
         var metadatas = await flac.readMetadatas();
@@ -134,25 +147,21 @@ class WorkerController {
             metadataVariable.duration = int.parse(metadate2.substring(8));
           }
         }
-      } else {
+      }
+      else {
         //print(path);
         var parser = ID3TagReader.path(path);
         var tags = parser.readTagSync();
-        metadataVariable.title = tags.title ?? path.replaceAll("\\", "/").split("/").last;
+        metadataVariable.title = tags.title ?? path
+            .replaceAll("\\", "/")
+            .split("/")
+            .last;
         metadataVariable.artists = tags.artist ?? "Unknown Artist";
         metadataVariable.album = tags.album ?? 'Unknown Album';
         metadataVariable.discNumber = int.parse(tags.trackNumber ?? "0");
         metadataVariable.trackNumber = int.parse(tags.track ?? "0");
         metadataVariable.duration = tags.duration?.inSeconds ?? 0;
       }
-    } else {
-      metadataVariable.title = metadataVar.title ?? path.replaceAll("\\", "/").split("/").last;
-      metadataVariable.album = metadataVar.album ?? "Unknown Album";
-      metadataVariable.duration = metadataVar.duration ?? 0;
-      metadataVariable.trackNumber = metadataVar.trackNumber ?? 0;
-      metadataVariable.artists = metadataVar.trackArtist ?? "Unknown Artist";
-      metadataVariable.albumArtist = metadataVar.albumArtist ?? "Unknown Album Artist";
-      metadataVariable.discNumber = metadataVar.discNumber ?? 0;
     }
     var lyrPath = path.replaceRange(path.lastIndexOf("."), path.length, ".lrc");
     //print(lyrPath);
@@ -172,7 +181,6 @@ class WorkerController {
     var songBox = ObjectBox.store.box<SongType>();
     Set<String> paths = songBox.getAll().map((e) => e.path).toSet();
 
-    // Remove paths that no longer exist asynchronously
     List<String> toRemove = [];
     for (String path in paths) {
       if (!await File(path).exists()) {
@@ -211,10 +219,11 @@ class WorkerController {
               path.endsWith(".m4a")) {
             if (!paths.contains(path)) {
               paths.add(path);
+              // print("Adding $path");
               var song = await retrieveSong(path);
+              // print("Added song: ${song.title}");
               songBox.put(song);
               await makeAlbumArtist(song);
-              //newSongs.add(await retrieveSong(path));  // Async operation to retrieve song metadata
             }
           }
         } else if (entity is Directory) {

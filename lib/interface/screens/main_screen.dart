@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../../controller/settings_controller.dart';
 import 'home.dart';
 import 'welcome_screen.dart';
@@ -9,13 +10,12 @@ class MyApp extends StatefulWidget {
   _MyAppState createState() => _MyAppState();
 }
 
-class _MyAppState extends State<MyApp>{
+class _MyAppState extends State<MyApp> {
 
   late Future<Widget> _timerFuture;
 
   @override
   void initState() {
-    super.initState();
     _timerFuture = Future.delayed(const Duration(milliseconds: 500), () async {
       if (SettingsController.firstTime) {
         return const WelcomeScreen();
@@ -23,9 +23,8 @@ class _MyAppState extends State<MyApp>{
         return const HomePage();
       }
     });
+    super.initState();
   }
-
-
 
 
   @override

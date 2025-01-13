@@ -44,12 +44,9 @@ dependencies:
   path_provider: ^2.1.2
   http: ^1.2.1
   hex: ^0.2.0
-  dart_tags: ^0.4.0
-  id3tag: ^0.2.0
   audio_video_progress_bar: ^2.0.2
   scrollable_positioned_list: ^0.3.5
   queue: ^3.1.0+2
-  system_tray: ^2.0.3
   image: ^4.2.0
   objectbox: ^4.0.1
   objectbox_flutter_libs: any
@@ -64,6 +61,8 @@ dependencies:
   pointycastle: ^3.0.1
   audio_service_mpris: ^0.2.0
   audio_service: ^0.18.16
+  smtc_windows: ^0.1.2
+  system_tray: ^2.0.3
 
 dev_dependencies:
   flutter_test:

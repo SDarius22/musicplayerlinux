@@ -7,8 +7,7 @@ import 'package:musicplayer/controller/settings_controller.dart';
 import 'package:musicplayer/domain/album_type.dart';
 import 'package:musicplayer/interface/screens/add_screen.dart';
 import 'package:musicplayer/interface/screens/album_screen.dart';
-import '../../controller/audio_player_controller.dart';
-import '../../main.dart';
+import '../../controller/app_audio_handler.dart';
 import '../../utils/fluenticons/fluenticons.dart';
 import '../widgets/image_widget.dart';
 
@@ -214,7 +213,7 @@ class _AlbumsState extends State<Albums>{
                                               dc.updatePlaying(songPaths, 0);
                                             }
                                             SettingsController.index = SettingsController.currentQueue.indexOf(album.songs.first.path);
-                                           await audioHandler.play();
+                                           await AppAudioHandler.play();
                                           },
                                           padding: const EdgeInsets.all(0),
                                           icon: Icon(

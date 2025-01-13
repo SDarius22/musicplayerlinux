@@ -5,10 +5,12 @@ import 'dart:typed_data';
 import 'package:audio_service/audio_service.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/services.dart';
+import 'package:musicplayer/controller/app_audio_handler.dart';
 import 'package:musicplayer/controller/app_manager.dart';
 import 'package:musicplayer/controller/settings_controller.dart';
 import 'package:musicplayer/domain/song_type.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:smtc_windows/smtc_windows.dart';
 
 
 class AudioPlayerController extends BaseAudioHandler {
@@ -16,13 +18,13 @@ class AudioPlayerController extends BaseAudioHandler {
   String _filePath = "SomeNonExistentPath";
   factory AudioPlayerController() => _instance;
 
-  AudioPlayerController._internal(){
-    init();
-  }
+  AudioPlayerController._internal();
 
   static AudioPlayer audioPlayer = AudioPlayer();
 
-  void init (){
+
+
+  Future<void> init () async {
     audioPlayer.onPositionChanged.listen((Duration event) {
       SettingsController.slider = event.inMilliseconds;
     });
@@ -43,25 +45,43 @@ class AudioPlayerController extends BaseAudioHandler {
 
 
   Future<void> addSong(SongType song, Uint8List bytes) async {
-    File lastFile = File(_filePath);
-    if (lastFile.existsSync()) {
-      lastFile.deleteSync();
-    }
     final ByteData data = ByteData.view(bytes.buffer);
     final String dir = (await getApplicationCacheDirectory()).path;
     final String path = '$dir/${song.album}-${song.title}.jpeg';
-    _filePath = path;
     final File file = File(path);
     await file.writeAsBytes(data.buffer.asUint8List());
-    MediaItem item = MediaItem(
-      id: song.id.toString(),
-      album: song.album,
-      title: song.title,
-      artist: song.artists,
-      duration: Duration(milliseconds: song.duration),
-      artUri: Uri.file(path),
-    );
-    mediaItem.add(item);
+    if (Platform.isLinux){
+      MediaItem item = MediaItem(
+        id: song.id.toString(),
+        album: song.album,
+        title: song.title,
+        artist: song.artists,
+        duration: Duration(milliseconds: song.duration),
+        artUri: file.uri
+      );
+      mediaItem.add(item);
+    }
+    else if (Platform.isWindows){
+      AppAudioHandler.audioHandler.updateMetadata(
+        MusicMetadata(
+          title: song.title,
+          album: song.album,
+          albumArtist: song.albumArtist,
+          artist: song.artists,
+        ),
+     );
+    }
+
+    try{
+      File lastFile = File(_filePath);
+      if (lastFile.existsSync()) {
+        lastFile.deleteSync();
+      }
+      _filePath = path;
+    }
+    catch(e){
+      print(e);
+    }
   }
 
   @override

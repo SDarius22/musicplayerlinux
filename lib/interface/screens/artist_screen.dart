@@ -3,9 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:musicplayer/controller/settings_controller.dart';
 import 'package:musicplayer/utils/hover_widget/hover_container.dart';
 import 'package:musicplayer/domain/artist_type.dart';
-import '../../controller/audio_player_controller.dart';
+import '../../controller/app_audio_handler.dart';
 import '../../controller/data_controller.dart';
-import '../../main.dart';
 import '../../utils/fluenticons/fluenticons.dart';
 import 'add_screen.dart';
 import '../widgets/image_widget.dart';
@@ -135,7 +134,7 @@ class _ArtistScreenState extends State<ArtistScreen> {
                                 dc.updatePlaying(songPaths, 0);
                               }
                               SettingsController.index = SettingsController.currentQueue.indexOf(widget.artist.songs.first.path);
-                             await audioHandler.play();
+                             await AppAudioHandler.play();
                             },
                             icon: Icon(
                               FluentIcons.play,
@@ -191,7 +190,7 @@ class _ArtistScreenState extends State<ArtistScreen> {
                             dc.updatePlaying(songPaths, index);
                           }
                           SettingsController.index = SettingsController.currentQueue.indexOf(widget.artist.songs[index].path);
-                         await audioHandler.play();
+                         await AppAudioHandler.play();
                         },
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(width * 0.01),

@@ -2,12 +2,11 @@ import 'package:collection/collection.dart';
 import 'package:musicplayer/utils/fluenticons/fluenticons.dart';
 import 'package:flutter/material.dart';
 import 'package:musicplayer/utils/hover_widget/hover_container.dart';
-import '../../controller/audio_player_controller.dart';
+import '../../controller/app_audio_handler.dart';
 import '../../controller/data_controller.dart';
 import '../../controller/settings_controller.dart';
 import '../../domain/song_type.dart';
 import 'package:musicplayer/domain/playlist_type.dart';
-import '../../main.dart';
 import '../../repository/objectbox.g.dart';
 import 'add_screen.dart';
 import '../widgets/image_widget.dart';
@@ -222,6 +221,7 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
                                 dc.updatePlaying(widget.playlist.paths, 0);
                               }
                               SettingsController.index = SettingsController.currentQueue.indexOf(widget.playlist.paths.first);
+                              await AppAudioHandler.play();
                             },
                             icon: Icon(
                               FluentIcons.play,
@@ -302,7 +302,7 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
                                   dc.updatePlaying(widget.playlist.paths, index);
                                 }
                                 SettingsController.index = SettingsController.currentQueue.indexOf(widget.playlist.paths[index]);
-                               await audioHandler.play();
+                               await AppAudioHandler.play();
                               },
                               child: ClipRRect(
                                 borderRadius: BorderRadius.circular(width * 0.01),

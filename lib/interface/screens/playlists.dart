@@ -6,11 +6,10 @@ import 'package:flutter/material.dart';
 import 'package:musicplayer/controller/data_controller.dart';
 import 'package:musicplayer/interface/widgets/image_widget.dart';
 import 'package:musicplayer/interface/screens/playlist_screen.dart';
-import '../../controller/audio_player_controller.dart';
+import '../../controller/app_audio_handler.dart';
 import '../../controller/settings_controller.dart';
 import '../../domain/song_type.dart';
 import '../../domain/playlist_type.dart';
-import '../../main.dart';
 import '../../utils/hover_widget/stack_hover_widget.dart';
 import '../../repository/objectbox.g.dart';
 import 'add_screen.dart';
@@ -282,7 +281,7 @@ class _PlaylistsState extends State<Playlists>{
                                               dc.updatePlaying(playlist.paths, 0);
                                             }
                                             SettingsController.index = SettingsController.currentQueue.indexOf(playlist.paths.first);
-                                           await audioHandler.play();
+                                           await AppAudioHandler.play();
                                           },
                                           padding: const EdgeInsets.all(0),
                                           icon: Icon(

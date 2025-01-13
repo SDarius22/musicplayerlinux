@@ -1,13 +1,13 @@
 import 'dart:ui';
 import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:desktop_drop/desktop_drop.dart';
-import 'package:musicplayer/main.dart';
 import 'package:musicplayer/utils/fluenticons/fluenticons.dart';
 import 'package:flutter/material.dart';
 import 'package:musicplayer/controller/worker_controller.dart';
 import 'package:musicplayer/interface/screens/settings_screen.dart';
 import 'package:musicplayer/interface/widgets/song_player_widget.dart';
 import 'package:musicplayer/interface/screens/user_screen.dart';
+import '../../controller/app_audio_handler.dart';
 import '../../controller/app_manager.dart';
 import '../../controller/audio_player_controller.dart';
 import '../../controller/data_controller.dart';
@@ -533,7 +533,7 @@ class _HomePageState extends State<HomePage>{
                                 }
                                 dc.updatePlaying(songs, 0);
                                 SettingsController.index = SettingsController.currentQueue.indexOf(songs[0]);
-                                await audioHandler.play();
+                                await AppAudioHandler.play();
                                 // DataController.indexChange(songs[0]);
                                 // await widget.controller.playSong();
                                 //widget.controller.showNotification("Playing ${songs.length} new song${songs.length == 1 ? '' : 's'}. Do you want to add ${songs.length == 1 ? 'it' : 'them'} to your library?", 7500);

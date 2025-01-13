@@ -1,12 +1,12 @@
 import 'dart:async';
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:flutter/material.dart';
-import 'package:musicplayer/controller/audio_player_controller.dart';
+import 'package:musicplayer/controller/app_audio_handler.dart';
 import 'package:musicplayer/controller/settings_controller.dart';
 import 'package:musicplayer/controller/worker_controller.dart';
-import 'package:musicplayer/main.dart';
 import 'package:system_tray/system_tray.dart';
 
 
@@ -57,13 +57,13 @@ class AppManager{
   static Future<void> initSystemTray() async {
     if (SettingsController.systemTray == false) {
       try {
-      await _systemTray.destroy();
+        await _systemTray.destroy();
       } catch (e) {
         debugPrint(e.toString());
       }
 
     } else {
-      await _systemTray.initSystemTray(iconPath: 'assets/bg.png');
+      await _systemTray.initSystemTray(iconPath: Platform.isLinux ? 'assets/bg.png' : 'assets/bg.ico');
       _systemTray.registerSystemTrayEventHandler((eventName) {
         // debugPrint("eventName: $eventName");
         if (eventName == kSystemTrayEventClick) {
@@ -75,7 +75,7 @@ class AppManager{
         [
           MenuItemLabel(
             label: 'Music Player',
-            //image: 'bg.png',
+            // image: 'bg.png',
             enabled: false,
           ),
           MenuSeparator(),
@@ -84,7 +84,7 @@ class AppManager{
             //image: getImagePath('darts_icon'),
             onClicked: (menuItem) async {
               debugPrint("click 'Previous'");
-              await audioHandler.skipToPrevious();
+              await AppAudioHandler.skipToPrevious();
             },
           ),
           MenuItemLabel(
@@ -92,7 +92,8 @@ class AppManager{
             //image: getImagePath('darts_icon'),
             onClicked: (menuItem) async {
               debugPrint("click 'Play'");
-              SettingsController.playing ? await audioHandler.pause() : await audioHandler.play();
+              SettingsController.playing ? await AppAudioHandler.pause() : await AppAudioHandler.play();
+              menuItem.setLabel(SettingsController.playing ? 'Pause' : 'Play');
             },
           ),
           MenuItemLabel(
@@ -100,7 +101,7 @@ class AppManager{
             //image: getImagePath('darts_icon'),
             onClicked: (menuItem) async {
               debugPrint("click 'Next'");
-              await audioHandler.skipToNext();
+              await AppAudioHandler.skipToNext();
             },
           ),
           MenuSeparator(),
@@ -128,7 +129,18 @@ class AppManager{
           MenuItemLabel(
               label: 'Show',
               //image: getImagePath('darts_icon'),
-              onClicked: (menuItem) => appWindow.show()),
+              onClicked: (menuItem){
+                if (Platform.isWindows) {
+                  var size = appWindow.size;
+                  // print(size);
+                  size = Size(size.width - 10, size.height - 10);
+                  WidgetsBinding.instance.scheduleFrameCallback((timeStamp) {
+                    appWindow.size = size;
+                  });
+                }
+                appWindow.show();
+              }
+          ),
           MenuItemLabel(
               label: 'Exit',
               //image: getImagePath('darts_icon'),
