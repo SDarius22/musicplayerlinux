@@ -12,7 +12,7 @@ class ImageWidget extends StatefulWidget {
   ;
 
   @override
-  _ImageWidgetState createState() => _ImageWidgetState();
+  State<ImageWidget> createState() => _ImageWidgetState();
 }
 
 class _ImageWidgetState extends State<ImageWidget> {

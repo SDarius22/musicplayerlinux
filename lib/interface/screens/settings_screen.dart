@@ -14,7 +14,7 @@ import '../../controller/audio_player_controller.dart';
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
   @override
-  _SettingsScreenState createState() => _SettingsScreenState();
+  State<SettingsScreen> createState() => _SettingsScreenState();
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
@@ -45,7 +45,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           children: [
             IconButton(
               onPressed: (){
-                print("Back");
+                debugPrint("Back");
                 Navigator.pop(context);
               },
               icon: Icon(
@@ -216,10 +216,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           padding: EdgeInsets.zero,
                           alignment: Alignment.center,
                           items: const [
-                            DropdownMenuItem(
-                              value: 'first',
-                              child: Text("At the beginning"),
-                            ),
                             DropdownMenuItem(
                               value: 'next',
                               child: Text("After Current"),

@@ -30,6 +30,9 @@ class FluentIcons{
 
   static const IconData trash = IconData(0xE5F0, fontFamily: 'FluentIcons-Resizable');
 
+  static const IconData liked = IconData(0xE93A, fontFamily: 'FluentIcons-Resizable');
+  static const IconData unliked = IconData(0xE93B, fontFamily: 'FluentIcons-Resizable');
+
   static const IconData minimize = IconData(0xE104, fontFamily: 'FluentIcons-Resizable');
   static const IconData maximize = IconData(0xE100, fontFamily: 'FluentIcons-Resizable');
 

@@ -37,20 +37,20 @@ class OnlineController{
   }
 
   static Future<dynamic> initDeezer() async {
-    print("Initialising Deezer");
-    print(SettingsController.deezerARL);
+    debugPrint("Initialising Deezer");
+    debugPrint(SettingsController.deezerARL);
     try {
       instance = await Deezer.create(arl: SettingsController.deezerARL);
     } catch (e) {
-      print(e);
+      debugPrint(e.toString());
     }
   }
 
   Future<void> loginUser() async {
-    print("Log in");
+    debugPrint("Log in");
     var data = "{'email': '${SettingsController.email}', 'password': '${SettingsController.password}'}";
     var encryptedData = await encryptData(data);
-    print(encryptedData);
+    debugPrint(encryptedData);
     var uri = Uri.parse('http://localhost:8000/api/get-user');
     var request = http.Request('GET', uri)
       ..headers.addAll({
@@ -61,7 +61,7 @@ class OnlineController{
       });
     var response = await request.send();
     if (response.statusCode == 200) {
-      print("Success");
+      debugPrint("Success");
       String body = await response.stream.bytesToString();
       Map<String, dynamic> data = jsonDecode(body);
       if (data['message'] == "Not premium user") {
@@ -72,14 +72,14 @@ class OnlineController{
       // loggedInNotifier.value = true;
       // settingsBox.put(settings);
     } else {
-      print("Failed");
-      print(response.statusCode);
-      print(response.stream.bytesToString());
+      debugPrint("Failed");
+      debugPrint(response.statusCode.toString());
+      debugPrint(response.stream.bytesToString().toString());
     }
   }
 
   Future<void> registerUser() async {
-    print("Register user");
+    debugPrint("Register user");
     var data = "{'email': '${SettingsController.email}',"
         "'password': '${SettingsController.password}',"
         "'index': ${SettingsController.index},"
@@ -96,7 +96,7 @@ class OnlineController{
         "'missingSongs': ${SettingsController.missingSongs}}";
 
     var encryptedData = await encryptData(data);
-    print(encryptedData);
+    debugPrint(encryptedData);
     var uri = Uri.parse('http://localhost:8000/api/upload-user');
     var request = http.Request('POST', uri)
       ..headers.addAll({
@@ -107,16 +107,16 @@ class OnlineController{
       });
     var response = await request.send();
     if (response.statusCode == 201) {
-      print("Success");
+      debugPrint("Success");
       String body = await response.stream.bytesToString();
       Map<String, dynamic> data = jsonDecode(body);
       SettingsController.mongoID = data['id'];
       // loggedInNotifier.value = true;
       // settingsBox.put(settings);
     } else {
-      print("Failed");
-      print(response.statusCode);
-      print(await response.stream.bytesToString());
+      debugPrint("Failed");
+      debugPrint(response.statusCode.toString());
+      debugPrint(await response.stream.bytesToString()..toString());
     }
   }
 
@@ -126,7 +126,7 @@ class OnlineController{
     }
     // final Map<String, String> cookies = {'arl': SettingsController.deezerARL};
     String searchUrl = 'https://api.deezer.com/search?q=$searchValue&limit=56&index=0&output=json';
-    print(searchUrl);
+    debugPrint(searchUrl);
 
     // final http.Response getResponse = await http.get(Uri.parse(searchUrl), headers: {
     //   'Cookie': 'arl=${cookies['arl']}',
@@ -145,7 +145,7 @@ class OnlineController{
     const String loginUrl = 'https://auth.deezer.com/login/arl';
     const String deezerApiUrl = 'https://pipe.deezer.com/api';
     String searchUrl = 'https://api.deezer.com/search?q=$title-$artist&limit=1&index=0&output=json';
-    print(searchUrl);
+    debugPrint(searchUrl);
 
     final Uri uri = Uri.parse(loginUrl).replace(queryParameters: params);
     final http.Request postRequest = http.Request('POST', uri);
@@ -155,16 +155,16 @@ class OnlineController{
     final String postResponseString = await streamedResponse.stream.bytesToString();
     final Map<String, dynamic> postResponseJson = jsonDecode(postResponseString);
 
-    //print(postResponseJson);
+    //debugPrint(postResponseJson);
     final String jwt = postResponseJson['jwt'];
-    //print(jwt);
+    //debugPrint(jwt);
 
     final http.Response getResponse = await http.get(Uri.parse(searchUrl), headers: {
       'Cookie': 'arl=${cookies['arl']}',
     });
 
     final Map<String, dynamic> getResponseJson = jsonDecode(getResponse.body);
-    //print(getResponseJson['data'][0]['id']);
+    //debugPrint(getResponseJson['data'][0]['id']);
 
     final String trackId = getResponseJson['data'][0]['id'].toString();
 
@@ -231,17 +231,15 @@ class OnlineController{
     );
 
     final Map<String, dynamic> lyricResponseJson = jsonDecode(lyricResponse.body);
-    //print(lyricResponseJson);
+    //debugPrint(lyricResponseJson);
 
     String plainLyric = '';
     String syncedLyric = '';
     try {
       plainLyric += lyricResponseJson['data']['track']['lyrics']['text'] + "\n";
-      plainLyric +=
-          "${"\nWriters: " + lyricResponseJson['data']['track']['lyrics']['writers']}\nCopyright: " +
-              lyricResponseJson['data']['track']['lyrics']['copyright'];
+      plainLyric += "\nWriters: ${lyricResponseJson['data']['track']['lyrics']['writers']}\nCopyright: ${lyricResponseJson['data']['track']['lyrics']['copyright']}";
     } catch (e) {
-      print(e);
+      debugPrint(e.toString());
       plainLyric = 'No lyrics found';
     }
 
@@ -249,14 +247,12 @@ class OnlineController{
       for (var line in lyricResponseJson['data']['track']['lyrics']['synchronizedLines']) {
         syncedLyric += "${line['lrcTimestamp']} ${line['line']}\n";
       }
-      syncedLyric +=
-          "${"\nWriters: " + lyricResponseJson['data']['track']['lyrics']['writers']}\nCopyright: " +
-              lyricResponseJson['data']['track']['lyrics']['copyright'];
+      syncedLyric += "\nWriters: ${lyricResponseJson['data']['track']['lyrics']['writers']}\nCopyright: ${lyricResponseJson['data']['track']['lyrics']['copyright']}";
     } catch (e) {
-      print(e);
+      debugPrint(e.toString());
       syncedLyric = 'No lyrics found';
     }
-    //print(plainLyric);
+    //debugPrint(plainLyric);
 
     // lyricModelNotifier.value = LyricsModelBuilder.create().bindLyricToMain(syncedLyric).getModel();
     // plainLyricNotifier.value = plainLyric;
@@ -285,10 +281,10 @@ class OnlineController{
   }
 
   Future<void> updateUser() async {
-    // print("Update user");
+    // debugPrint("Update user");
     // var data = SettingsController.toMap().toString();
     // var encryptedData = await encryptData(data);
-    // print(encryptedData);
+    // debugPrint(encryptedData);
     // var uri = Uri.parse('http://localhost:8000/api/update-user');
     // var request = http.Request('POST', uri)
     //   ..headers.addAll({
@@ -298,7 +294,7 @@ class OnlineController{
     //     'data': encryptedData,
     //   });
     // var response = await request.send();
-    // print(response.statusCode);
-    // print(await response.stream.bytesToString());
+    // debugPrint(response.statusCode);
+    // debugPrint(await response.stream.bytesToString());
   }
 }

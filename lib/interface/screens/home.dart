@@ -24,7 +24,7 @@ import 'playlists.dart';
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
   @override
-  _HomePageState createState() => _HomePageState();
+  State<HomePage> createState() => _HomePageState();
 }
 
 class _HomePageState extends State<HomePage>{
@@ -45,11 +45,15 @@ class _HomePageState extends State<HomePage>{
     _init = Future(() async {
       await WorkerController.retrieveAllSongs();
       if (SettingsController.queue.isEmpty){
-        print("Queue is empty");
+        debugPrint("Queue is empty");
         var songs = await DataController.getSongs('');
         SettingsController.queue = songs.map((e) => e.path).toList();
         int newIndex = 0;
         SettingsController.index = newIndex;
+      }
+      else{
+        // debugPrint(SettingsController.index.toString());
+        // debugPrint(SettingsController.shuffledQueue.toString());
       }
     });
   }
@@ -184,7 +188,7 @@ class _HomePageState extends State<HomePage>{
                                     ),
                                     IconButton(
                                         onPressed: (){
-                                          print("Tapped settings");
+                                          debugPrint("Tapped settings");
                                           am.minimizedNotifier.value = true;
                                           am.navigatorKey.currentState!.push(MaterialPageRoute(builder: (BuildContext context){
                                             return const SettingsScreen();
@@ -193,7 +197,7 @@ class _HomePageState extends State<HomePage>{
                                               _init = Future(() async {
                                                 await WorkerController.retrieveAllSongs();
                                                 if (SettingsController.queue.isEmpty) {
-                                                  print("Queue is empty");
+                                                  debugPrint("Queue is empty");
                                                   var songs = await DataController.getSongs('');
                                                   SettingsController.queue =
                                                       songs.map((e) => e.path).toList();
@@ -201,7 +205,7 @@ class _HomePageState extends State<HomePage>{
                                                 }
                                               });
                                             });
-                                          });;
+                                          });
                                         },
                                         icon: Icon(
                                           FluentIcons.settings,
@@ -214,7 +218,7 @@ class _HomePageState extends State<HomePage>{
                                       builder: (context, value, child) =>
                                           ElevatedButton.icon(
                                             onPressed: () async {
-                                              print("Tapped user");
+                                              debugPrint("Tapped user");
                                               am.minimizedNotifier.value = true;
                                                 am.navigatorKey.currentState!.push(
                                                     MaterialPageRoute(
@@ -332,7 +336,7 @@ class _HomePageState extends State<HomePage>{
                                                   height: height * 0.05,
                                                   child: ElevatedButton(
                                                       onPressed: (){
-                                                        //print("Artists");
+                                                        //debugPrint("Artists");
                                                         _pageController.animateToPage(0,
                                                             duration: const Duration(milliseconds: 500),
                                                             curve: Curves.easeIn
@@ -359,7 +363,7 @@ class _HomePageState extends State<HomePage>{
                                                   height: height * 0.05,
                                                   child: ElevatedButton(
                                                       onPressed: (){
-                                                        //print("Artists");
+                                                        //debugPrint("Artists");
                                                         _pageController.animateToPage(1,
                                                             duration: const Duration(milliseconds: 500),
                                                             curve: Curves.easeIn
@@ -386,7 +390,7 @@ class _HomePageState extends State<HomePage>{
                                                   height: height * 0.05,
                                                   child: ElevatedButton(
                                                       onPressed: (){
-                                                        //print("Artists");
+                                                        //debugPrint("Artists");
                                                         _pageController.animateToPage(2,
                                                             duration: const Duration(milliseconds: 500),
                                                             curve: Curves.easeIn
@@ -413,7 +417,7 @@ class _HomePageState extends State<HomePage>{
                                                   height: height * 0.05,
                                                   child: ElevatedButton(
                                                       onPressed: (){
-                                                        //print("Artists");
+                                                        //debugPrint("Artists");
                                                         _pageController.animateToPage(3,
                                                             duration: const Duration(milliseconds: 500),
                                                             curve: Curves.easeIn
@@ -440,7 +444,7 @@ class _HomePageState extends State<HomePage>{
                                                   height: height * 0.05,
                                                   child: ElevatedButton(
                                                       onPressed: (){
-                                                        //print("Artists");
+                                                        //debugPrint("Artists");
                                                         _pageController.animateToPage(4,
                                                             duration: const Duration(milliseconds: 500),
                                                             curve: Curves.easeIn

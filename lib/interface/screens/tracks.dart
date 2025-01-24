@@ -15,7 +15,7 @@ class Tracks extends StatefulWidget{
   const Tracks({super.key});
 
   @override
-  _TracksState createState() => _TracksState();
+  State<Tracks> createState() => _TracksState();
 }
 
 
@@ -160,13 +160,13 @@ class _TracksState extends State<Tracks>{
                         cursor: SystemMouseCursors.click,
                         child: GestureDetector(
                           onTap: () async {
-                            //print("Playing ${widget.controller.indexNotifier.value}");
+                            //debugPrint("Playing ${widget.controller.indexNotifier.value}");
                             try {
                               if (SettingsController.currentSongPath != song.path) {
-                                //print("path match");
+                                //debugPrint("path match");
                                 var songPaths = snapshot.data!.map((e) => e.path).toList();
                                 if (SettingsController.queue.equals(songPaths) == false) {
-                                  print("Updating playing songs");
+                                  debugPrint("Updating playing songs");
                                   dc.updatePlaying(songPaths, index);
                                 }
                                 SettingsController.index = SettingsController.currentQueue.indexOf(song.path);
@@ -182,11 +182,11 @@ class _TracksState extends State<Tracks>{
                               }
                             }
                             catch (e) {
-                              print(e);
+                              debugPrint(e.toString());
                               var songPaths = snapshot.data!.map((e) => e.path).toList();
                               dc.updatePlaying(songPaths, index);
                               SettingsController.index = index;
-                             await AppAudioHandler.play();
+                              await AppAudioHandler.play();
                             }
                           },
                           child: Column(
@@ -204,7 +204,7 @@ class _TracksState extends State<Tracks>{
                                         width: width * 0.035,
                                         child: IconButton(
                                           onPressed: (){
-                                            print("Add $index");
+                                            debugPrint("Add $index");
                                             Navigator.push(
                                                 context,
                                                 MaterialPageRoute(

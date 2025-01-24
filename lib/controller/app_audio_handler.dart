@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:audio_service/audio_service.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:smtc_windows/smtc_windows.dart';
 
 import 'audio_player_controller.dart';
@@ -24,8 +25,7 @@ class AppAudioHandler{
       );
     }
     else if (Platform.isWindows) {
-      final apc = AudioPlayerController();
-      await apc.init();
+      AudioPlayerController();
       audioHandler = SMTCWindows(
         metadata: const MusicMetadata(
           title: 'Title',
@@ -60,15 +60,15 @@ class AppAudioHandler{
               await pause();
               break;
             case PressedButton.next:
-              print('Next');
+              debugPrint('Next');
               await skipToNext();
               break;
             case PressedButton.previous:
-              print('Previous');
+              debugPrint('Previous');
               await skipToPrevious();
               break;
             case PressedButton.stop:
-              print('Stop');
+              debugPrint('Stop');
               await stop();
               break;
             default:
@@ -76,7 +76,7 @@ class AppAudioHandler{
           }
         });
       } catch (e) {
-        print("Error: $e");
+        debugPrint("Error: $e");
       }
     }
   }

@@ -1,5 +1,7 @@
 import 'dart:io';
 
+import 'package:flutter/cupertino.dart';
+import 'package:musicplayer/controller/app_manager.dart';
 import 'package:musicplayer/controller/audio_player_controller.dart';
 import 'package:musicplayer/controller/settings_controller.dart';
 import 'package:musicplayer/controller/worker_controller.dart';
@@ -61,7 +63,7 @@ class DataController {
         return songDuration;
       }
     } catch (e) {
-      print(e);
+      debugPrint(e.toString());
       // return Duration.zero;
       return await AudioPlayerController.audioPlayer.getDuration() ?? Duration.zero;
     }
@@ -77,7 +79,7 @@ class DataController {
           // return await searchLyrics(path);
           return ["No lyrics found", "No lyrics found"];
         } catch (e) {
-          print(e);
+          debugPrint(e.toString());
           return ["No lyrics found", "No lyrics found"];
         }
       } else {
@@ -86,9 +88,14 @@ class DataController {
     }
   }
 
+  static Future<PlaylistType> getPlaylist(String name) async {
+    return playlistBox.query(PlaylistType_.name.equals(name)).build().findFirst();
+  }
+
   static Future<List<PlaylistType>> getPlaylists(String searchValue) async {
     return ObjectBox.store.box<PlaylistType>()
         .query(PlaylistType_.name.contains(searchValue, caseSensitive: false))
+        .order(PlaylistType_.indestructible, flags: Order.descending)
         .order(PlaylistType_.name)
         .build()
         .find();
@@ -110,7 +117,7 @@ class DataController {
   static Future<SongType> getSong(String path) async {
     var song = ObjectBox.store.box<SongType>().query(SongType_.path.equals(path)).build().findFirst();
     if (song != null) {
-      print(song.duration);
+      debugPrint(song.duration.toString());
 
     } else {
       song = await WorkerController.retrieveSong(path);
@@ -138,6 +145,21 @@ class DataController {
           continue;
         }
         playlist.paths.add(song.path);
+        playlist.duration += song.duration;
+        bool found = false;
+        for (var artistCountStr in playlist.artistCount){
+          if (artistCountStr.contains(song.artists)){
+            int count = int.parse(artistCountStr.split(" - ")[1]);
+            count += 1;
+            playlist.artistCount.remove(artistCountStr);
+            playlist.artistCount.add("${song.artists} - $count");
+            found = true;
+            break;
+          }
+        }
+        if (!found){
+          playlist.artistCount.add("${song.artists} - 1");
+        }
       }
       playlistBox.put(playlist);
     } else {
@@ -146,29 +168,44 @@ class DataController {
           continue;
         }
         playlist.paths.insert(0, songs[i].path);
+        playlist.duration += songs[i].duration;
+        bool found = false;
+        for (var artistCountStr in playlist.artistCount){
+          if (artistCountStr.contains(songs[i].artists)){
+            int count = int.parse(artistCountStr.split(" - ")[1]);
+            count += 1;
+            playlist.artistCount.remove(artistCountStr);
+            playlist.artistCount.add("${songs[i].artists} - $count");
+            found = true;
+            break;
+          }
+        }
+        if (!found){
+          playlist.artistCount.add("${songs[i].artists} - 1");
+        }
       }
       playlistBox.put(playlist);
     }
     exportPlaylist(playlist);
   }
 
+  Future<void> removeFromPlaylist(PlaylistType playlist, String song) async {
+    try {
+      playlist.paths.remove(song);
+      playlist.duration -= (await getDuration(await getSong(song))).inSeconds;
+      playlistBox.put(playlist);
+      exportPlaylist(playlist);
+    } catch (e) {
+      debugPrint(e.toString());
+    }
+  }
+
   Future<void> addToQueue(List<String> songs) async {
-    print("Adding to queue ${songs.length} songs.");
+    debugPrint("Adding to queue ${songs.length} songs.");
     if (SettingsController.queueAdd == 'last') {
-      final updatedQueue = List<String>.from(SettingsController.queue)..addAll(songs);
-      final updatedControllerQueue = List<String>.from(SettingsController.shuffledQueue)..addAll(songs);
-      SettingsController.queue = updatedQueue;
-      SettingsController.shuffledQueue = updatedControllerQueue;
+      SettingsController.queue = List<String>.from(SettingsController.queue)..addAll(songs);
     } else if (SettingsController.queueAdd == 'next') {
-      final updatedQueue = List<String>.from(SettingsController.queue)..insertAll(SettingsController.index + 1, songs);
-      final updatedControllerQueue = List<String>.from(SettingsController.shuffledQueue)..insertAll(SettingsController.index + 1, songs);
-      SettingsController.queue = updatedQueue;
-      SettingsController.shuffledQueue = updatedControllerQueue;
-    } else if (SettingsController.queueAdd == 'first') {
-      final updatedQueue = List<String>.from(SettingsController.queue)..insertAll(0, songs)..insertAll(0, songs);
-      final updatedControllerQueue = List<String>.from(SettingsController.shuffledQueue)..insertAll(0, songs)..insertAll(0, songs);
-      SettingsController.queue = updatedQueue;
-      SettingsController.shuffledQueue = updatedControllerQueue;
+      SettingsController.queue = List<String>.from(SettingsController.queue)..insertAll(SettingsController.index + 1, songs);
     }
   }
 
@@ -183,7 +220,7 @@ class DataController {
       var file = File("${SettingsController.directory}/${playlist.name}.m3u");
       file.delete();
     } catch (e) {
-      print(e);
+      debugPrint(e.toString());
     }
   }
 
@@ -197,18 +234,17 @@ class DataController {
 
   Future<void> removeFromQueue(String song) async {
     if (SettingsController.shuffledQueue.length == 1) {
-      print("The queue cannot be empty");
+      debugPrint("The queue cannot be empty");
+      final am = AppManager();
+      am.showNotification("The queue cannot be empty", 3000);
       return;
     }
-
-    final List<String> updatedQueue = List<String>.from(SettingsController.queue)..remove(song);
-    final List<String> updatedControllerQueue = List<String>.from(SettingsController.shuffledQueue)..remove(song);
-    SettingsController.queue = updatedQueue;
-    SettingsController.shuffledQueue = updatedControllerQueue;
-    if (!SettingsController.queue.contains(SettingsController.currentSongPath)) {
+    String currentSong = SettingsController.currentSongPath;
+    SettingsController.queue = List<String>.from(SettingsController.queue)..remove(song);
+    if (!SettingsController.queue.contains(currentSong)) {
       SettingsController.index = 0;
     } else {
-      SettingsController.index = SettingsController.queue.indexOf(SettingsController.currentSongPath);
+      SettingsController.index = SettingsController.currentQueue.indexOf(currentSong);
     }
   }
 
@@ -225,6 +261,94 @@ class DataController {
     } else if (oldIndex > SettingsController.index && newIndex <= SettingsController.index) {
       SettingsController.index += 1;
     }
+  }
+
+  Future<void> updateLiked(SongType song) async {
+    song.liked = !song.liked;
+    if (song.liked) {
+      PlaylistType favs = await DataController.getPlaylist("Favorites");
+      await addToPlaylist(favs, [song]);
+    } else {
+      PlaylistType favs = await DataController.getPlaylist("Favorites");
+      await removeFromPlaylist(favs, song.path);
+    }
+    songBox.put(song);
+  }
+
+  static Future<void> updateIndestructible() async {
+    await updateMostPlayed();
+    await updateRecentlyPlayed();
+  }
+
+  static Future<void> updatePlayed(SongType song) async {
+    song.playCount += 1;
+    songBox.put(song);
+  }
+
+  static Future<void> updateMostPlayed() async {
+    PlaylistType mostPlayed = await DataController.getPlaylist("Most Played");
+    var query = songBox.query(SongType_.playCount.greaterThan(0)).order(SongType_.playCount, flags: Order.descending).build();
+    query.limit = 100;
+    var songs = query.find();
+    mostPlayed.artistCount = [];
+    mostPlayed.paths = [];
+    mostPlayed.duration = 0;
+    for (var song in songs) {
+      mostPlayed.paths.add(song.path);
+      int duration = song.duration + mostPlayed.duration;
+      mostPlayed.duration = duration;
+      bool found = false;
+      for (var artistCountStr in mostPlayed.artistCount){
+        if (artistCountStr.contains(song.artists)){
+          int count = int.parse(artistCountStr.split(" - ")[1]);
+          count += 1;
+          mostPlayed.artistCount.remove(artistCountStr);
+          mostPlayed.artistCount.add("${song.artists} - $count");
+          found = true;
+          break;
+        }
+      }
+      if (!found){
+        mostPlayed.artistCount.add("${song.artists} - 1");
+      }
+    }
+
+    playlistBox.put(mostPlayed);
+  }
+
+  static Future<void> updateLastPlayed(SongType song) async {
+    song.lastPlayed = DateTime.now();
+    songBox.put(song);
+  }
+
+  static Future<void> updateRecentlyPlayed() async {
+    PlaylistType recentlyPlayed = await DataController.getPlaylist("Recently Played");
+    var query = songBox.query(SongType_.lastPlayed.notNull()).order(SongType_.lastPlayed, flags: Order.descending).build();
+    query.limit = 100;
+    var songs = query.find();
+    recentlyPlayed.artistCount = [];
+    recentlyPlayed.paths = [];
+    recentlyPlayed.duration = 0;
+    for (var song in songs) {
+      recentlyPlayed.paths.add(song.path);
+      int duration = song.duration + recentlyPlayed.duration;
+      recentlyPlayed.duration = duration;
+      bool found = false;
+      for (var artistCountStr in recentlyPlayed.artistCount){
+        if (artistCountStr.contains(song.artists)){
+          int count = int.parse(artistCountStr.split(" - ")[1]);
+          count += 1;
+          recentlyPlayed.artistCount.remove(artistCountStr);
+          recentlyPlayed.artistCount.add("${song.artists} - $count");
+          found = true;
+          break;
+        }
+      }
+      if (!found){
+        recentlyPlayed.artistCount.add("${song.artists} - 1");
+      }
+    }
+    playlistBox.put(recentlyPlayed);
   }
 
   Future<void> updatePlaying(List<String> songs, int newIndex) async {

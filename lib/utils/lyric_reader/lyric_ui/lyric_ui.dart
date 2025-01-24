@@ -41,7 +41,7 @@ abstract class LyricUI {
   LyricBaseLine getBiasBaseLine() => LyricBaseLine.CENTER;
 
   ///单行铺满后的居中方式
-  TextAlign getLyricTextAligin() {
+  TextAlign getLyricTextAlign() {
     switch (getLyricHorizontalAlign()) {
       case LyricAlign.LEFT:
         return TextAlign.left;
@@ -62,7 +62,7 @@ abstract class LyricUI {
 
   HighlightDirection getHighlightDirection() => HighlightDirection.LTR;
 
-  Color getLyricHightlightColor() => Colors.amber;
+  Color getLyricHighlightColor() => Colors.amber;
 
   @override
   String toString() {
@@ -75,7 +75,7 @@ abstract class LyricUI {
         '${getInlineSpace()}'
         '${getPlayingLineBias()}'
         '${getLyricHorizontalAlign()}'
-        '${getLyricTextAligin()}'
+        '${getLyricTextAlign()}'
         '${getBiasBaseLine()}';
   }
 }

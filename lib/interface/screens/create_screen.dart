@@ -15,7 +15,7 @@ class CreateScreen extends StatefulWidget {
   const CreateScreen({super.key, this.paths, required this.name});
 
   @override
-  _CreateScreenState createState() => _CreateScreenState();
+  State<CreateScreen> createState() => _CreateScreenState();
 }
 
 class _CreateScreenState extends State<CreateScreen> {
@@ -31,11 +31,11 @@ class _CreateScreenState extends State<CreateScreen> {
     playlistName = widget.name;
     if (widget.paths != null && widget.paths!.isNotEmpty) {
       for (var path in widget.paths!) {
-        print(path);
+        debugPrint(path);
         try {
           selected.add(DataController.songBox.query(SongType_.path.contains(path)).build().findFirst());
         } catch (e) {
-          print(e);
+          debugPrint(e.toString());
         }
       }
     }
@@ -73,7 +73,7 @@ class _CreateScreenState extends State<CreateScreen> {
               children: [
                 IconButton(
                   onPressed: (){
-                    print("Back");
+                    debugPrint("Back");
                     Navigator.pop(context);
                   },
                   icon: Icon(
@@ -101,11 +101,29 @@ class _CreateScreenState extends State<CreateScreen> {
                         am.showNotification("No songs selected", 3500);
                         return;
                       }
-                      print("Create new playlist");
+                      debugPrint("Create new playlist");
                       PlaylistType newPlaylist = PlaylistType();
                       newPlaylist.name = playlistName;
-                      newPlaylist.paths = selected.map((e) => e.path).toList();
                       newPlaylist.nextAdded = playlistAdd;
+                      for (var song in selected) {
+                        newPlaylist.paths.add(song.path);
+                        int duration = song.duration + newPlaylist.duration;
+                        newPlaylist.duration = duration;
+                        bool found = false;
+                        for (var artistCountStr in newPlaylist.artistCount){
+                          if (artistCountStr.contains(song.artists)){
+                            int count = int.parse(artistCountStr.split(" - ")[1]);
+                            count += 1;
+                            newPlaylist.artistCount.remove(artistCountStr);
+                            newPlaylist.artistCount.add("${song.artists} - $count");
+                            found = true;
+                            break;
+                          }
+                        }
+                        if (!found){
+                          newPlaylist.artistCount.add("${song.artists} - 1");
+                        }
+                      }
                       dc.createPlaylist(newPlaylist);
                       Navigator.pop(context);
                     },
@@ -258,7 +276,7 @@ class _CreateScreenState extends State<CreateScreen> {
                                     child: GestureDetector(
                                       behavior: HitTestBehavior.translucent,
                                       onTap: (){
-                                        print("Tapped on $index");
+                                        debugPrint("Tapped on $index");
                                         setState(() {
                                           selected.contains(song) ? selected.remove(song) : selected.add(song);
                                         });
@@ -301,7 +319,7 @@ class _CreateScreenState extends State<CreateScreen> {
                                                                   child: IconButton(
                                                                     icon: Icon(selected.contains(song) ? FluentIcons.subtract : FluentIcons.add, color: Colors.white, size: height * 0.03,),
                                                                     onPressed: () {
-                                                                      print("Add");
+                                                                      debugPrint("Add");
                                                                       setState(() {
                                                                         selected.contains(song) ? selected.remove(song) : selected.add(song);
                                                                       });

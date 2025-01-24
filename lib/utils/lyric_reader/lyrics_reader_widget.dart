@@ -35,6 +35,7 @@ class LyricsReader extends StatefulWidget {
   State<StatefulWidget> createState() => LyricReaderState();
 
   LyricsReader({
+    super.key,
     this.position = 0,
     this.model,
     this.padding,
@@ -99,6 +100,7 @@ class LyricReaderState extends State<LyricsReader>
       lyricPaint.model = widget.model;
       lyricPaint.lyricUI = widget.ui;
       handleSize();
+      // debugPrint("Current Line:${widget.model?.getCurrentLine(widget.position) ?? 0}");
       selectLine(widget.model?.getCurrentLine(widget.position) ?? 0);
       scrollToPlayLine();
       handleHighlight();
@@ -120,6 +122,7 @@ class LyricReaderState extends State<LyricsReader>
   }
 
   void selectLineAndScrollToPlayLine([bool animation = true]) {
+    // debugPrint("Current Line:${widget.model?.getCurrentLine(widget.position) ?? 0}");
     selectLine(widget.model?.getCurrentLine(widget.position) ?? 0);
     if (cacheLine != lyricPaint.playingIndex) {
       lyricPaint.highlightWidth = 0;
@@ -133,8 +136,7 @@ class LyricReaderState extends State<LyricsReader>
   void scrollToPlayLine([bool animation = true]) {
     safeLyricOffset(
         widget.model?.computeScroll(
-                lyricPaint.playingIndex, lyricPaint.playingIndex, widget.ui) ??
-            0,
+                lyricPaint.playingIndex, lyricPaint.playingIndex, widget.ui) ?? 0,
         animation);
   }
 
@@ -161,7 +163,7 @@ class LyricReaderState extends State<LyricsReader>
   void animationOffset(double offset) {
     disposeLine();
     _lineController = AnimationController(
-      duration: Duration(milliseconds: 300),
+      duration: const Duration(milliseconds: 250),
       vsync: this,
     );
     var animate = Tween<double>(
@@ -174,7 +176,7 @@ class LyricReaderState extends State<LyricsReader>
         }
       });
     animate
-      ..addListener(() {
+      .addListener(() {
         var value = animate.value;
         lyricPaint.lyricOffset = value.clamp(lyricPaint.maxOffset, 0);
       });
@@ -214,13 +216,11 @@ class LyricReaderState extends State<LyricsReader>
   /// 获取文本高度
   TextPainter getTextPaint(String? text, TextStyle style,
       {Size? size, TextPainter? linePaint}) {
-    if (text == null) text = "";
-    if (linePaint == null) {
-      linePaint = TextPainter(
+    text ??= "";
+    linePaint ??= TextPainter(
         textDirection: TextDirection.ltr,
       );
-    }
-    linePaint.textAlign = lyricPaint.lyricUI.getLyricTextAligin();
+    linePaint.textAlign = lyricPaint.lyricUI.getLyricTextAlign();
     linePaint
       ..text = TextSpan(text: text, style: style)
       ..layout(maxWidth: (size ?? mSize).width);
@@ -233,10 +233,10 @@ class LyricReaderState extends State<LyricsReader>
     var targetLineHeight = 0.0;
     var start = 0;
     List<LyricInlineDrawInfo> lineList = [];
-    metrics.forEach((element) {
+    for (var element in metrics) {
       //起始偏移量X
       var startOffsetX = 0.0;
-      switch (ui.getLyricTextAligin()) {
+      switch (ui.getLyricTextAlign()) {
         case TextAlign.right:
           startOffsetX = linePaint.width - element.width;
           break;
@@ -247,7 +247,7 @@ class LyricReaderState extends State<LyricsReader>
           break;
       }
       var offsetX = element.width;
-      switch (ui.getLyricTextAligin()) {
+      switch (ui.getLyricTextAlign()) {
         case TextAlign.right:
           offsetX = linePaint.width;
           break;
@@ -270,7 +270,7 @@ class LyricReaderState extends State<LyricsReader>
         ..offset = Offset(startOffsetX, targetLineHeight));
       start = end;
       targetLineHeight += element.height;
-    });
+    }
     drawInfo.inlineDrawList = lineList;
   }
 
@@ -297,7 +297,10 @@ class LyricReaderState extends State<LyricsReader>
 
   Positioned buildSelectLineWidget() {
     return Positioned(
-      child: Container(
+      top: (widget.padding?.top ?? 0),
+      left: 0,
+      right: 0,
+      child: SizedBox(
         height: lyricPaint.centerY * 2,
         child: Center(
           child: StreamBuilder<int>(
@@ -316,9 +319,6 @@ class LyricReaderState extends State<LyricsReader>
               }),
         ),
       ),
-      top: (widget.padding?.top ?? 0),
-      left: 0,
-      right: 0,
     );
   }
 
@@ -405,7 +405,7 @@ class LyricReaderState extends State<LyricsReader>
     isWait = true;
     var waitSecond = 0;
     waitTimer?.cancel();
-    waitTimer = new Timer.periodic(Duration(milliseconds: 100), (timer) {
+    waitTimer = Timer.periodic(const Duration(milliseconds: 100), (timer) {
       waitSecond += 100;
       if (waitSecond == 400) {
         realUpdateOffset(widget.model?.computeScroll(
@@ -456,7 +456,7 @@ class LyricReaderState extends State<LyricsReader>
   ///计算span宽度
   void setTextSpanDrawInfo(
       LyricUI ui, List<LyricSpanInfo> spanList, TextPainter painter) {
-    painter.textAlign = lyricPaint.lyricUI.getLyricTextAligin();
+    painter.textAlign = lyricPaint.lyricUI.getLyricTextAlign();
     spanList.forEach((element) {
       painter
         ..text =

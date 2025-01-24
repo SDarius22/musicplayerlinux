@@ -9,7 +9,7 @@ import 'package:collection/collection.dart';
 /// support Simple format、Enhanced format
 class LyricsModelBuilder {
   ///if line time is null,then use MAX_VALUE replace
-  static final defaultLineDuration = 5000;
+  static const defaultLineDuration = 5000;
 
   var _lyricModel = LyricsReaderModel();
 

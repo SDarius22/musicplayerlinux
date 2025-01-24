@@ -7,4 +7,6 @@ class AlbumType{
   int id = 0;
   String name = "Unknown album";
   final songs = ToMany<SongType>();
+
+  int duration = 0; // in seconds
 }

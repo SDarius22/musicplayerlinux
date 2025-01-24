@@ -16,7 +16,7 @@ class Albums extends StatefulWidget{
   const Albums({super.key});
 
   @override
-  _AlbumsState createState() => _AlbumsState();
+  State<Albums> createState() => _AlbumsState();
 }
 
 
@@ -179,7 +179,7 @@ class _AlbumsState extends State<Albums>{
                                         width: width * 0.035,
                                         child: IconButton(
                                           onPressed: (){
-                                            print("Add $index");
+                                            debugPrint("Add $index");
                                             Navigator.push(
                                                 context,
                                                 MaterialPageRoute(

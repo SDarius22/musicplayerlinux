@@ -68,7 +68,7 @@ class WorkerController {
               .length - 1).split(", ");
           image = Uint8List.fromList(imageBytes.map(int.parse).toList());
         } else if (path.endsWith(".mp3")) {
-          //print(path);
+          //debugPrint(path);
           var parser = ID3TagReader.path(path);
           var tags = parser.readTagSync();
           List<String> imageBytes = tags.pictures.isEmpty
@@ -87,7 +87,7 @@ class WorkerController {
       }
     }
     catch (e) {
-      print(e);
+      debugPrint(e.toString());
     }
     return image;
   }
@@ -114,16 +114,16 @@ class WorkerController {
       metadataVariable.discNumber = metadataVar.discNumber ?? 0;
     }
     catch(e){
-      print(e);
+      debugPrint(e.toString());
       if (path.endsWith(".flac")) {
         var flac = FlacInfo(File(path));
         var metadatas = await flac.readMetadatas();
         String metadata = metadatas[2].toString();
-        //print(metadata);
+        //debugPrint(metadata);
         metadata = metadata.substring(1, metadata.length - 1);
         List<String> metadata2 = metadata.split(', *1234a678::876a4321*,');
 
-        //print(metadata2);
+        //debugPrint(metadata2);
         for (var metadate2 in metadata2) {
           if (metadate2.contains("TITLE=")) {
             metadataVariable.title = metadate2.substring(6);
@@ -149,7 +149,7 @@ class WorkerController {
         }
       }
       else {
-        //print(path);
+        //debugPrint(path);
         var parser = ID3TagReader.path(path);
         var tags = parser.readTagSync();
         metadataVariable.title = tags.title ?? path
@@ -164,9 +164,9 @@ class WorkerController {
       }
     }
     var lyrPath = path.replaceRange(path.lastIndexOf("."), path.length, ".lrc");
-    //print(lyrPath);
+    //debugPrint(lyrPath);
     bool exists = File(lyrPath).existsSync();
-    //print(exists);
+    //debugPrint(exists);
     if (!exists) {
       metadataVariable.lyricsPath = "";
     } else {
@@ -183,11 +183,12 @@ class WorkerController {
 
     List<String> toRemove = [];
     for (String path in paths) {
-      if (!await File(path).exists()) {
+      if (!await File(path).exists() && path.isNotEmpty) {
         toRemove.add(path);
       }
     }
     for (String path in toRemove) {
+      debugPrint("Removing $path");
       var query = songBox.query(SongType_.path.equals(path)).build();
       var result = query.findFirst(); // Use findFirst() for safety
       if (result != null) {
@@ -196,7 +197,6 @@ class WorkerController {
           if (SettingsController.currentSongPath == path) {
             SettingsController.index = 0;
           }
-          SettingsController.shuffledQueue = SettingsController.shuffledQueue..remove(path);
           SettingsController.queue = SettingsController.queue..remove(path);
         }
       }
@@ -219,9 +219,9 @@ class WorkerController {
               path.endsWith(".m4a")) {
             if (!paths.contains(path)) {
               paths.add(path);
-              // print("Adding $path");
+              // debugPrint("Adding $path");
               var song = await retrieveSong(path);
-              // print("Added song: ${song.title}");
+              // debugPrint("Added song: ${song.title}");
               songBox.put(song);
               await makeAlbumArtist(song);
             }
@@ -242,9 +242,11 @@ class WorkerController {
       album = AlbumType();
       album.name = metadataVariable.album;
       album.songs.add(metadataVariable);
+      album.duration = metadataVariable.duration;
       albumBox.put(album);
     } else {
       album.songs.add(metadataVariable);
+      album.duration += metadataVariable.duration;
       albumBox.put(album);
     }
     List<String> songArtists = metadataVariable.artists.split("; ");
@@ -254,10 +256,6 @@ class WorkerController {
       if (artistType == null) {
         artistType = ArtistType();
         artistType.name = artist;
-        artistType.songs.add(metadataVariable);
-        artistBox.put(artistType);
-      } else {
-        artistType.songs.add(metadataVariable);
         artistBox.put(artistType);
       }
     }

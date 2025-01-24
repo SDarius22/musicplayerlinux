@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:bitsdojo_window/bitsdojo_window.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:musicplayer/controller/app_audio_handler.dart';
 import 'package:musicplayer/controller/settings_controller.dart';
@@ -74,7 +74,7 @@ class AppManager{
       await _menuMain.buildFrom(
         [
           MenuItemLabel(
-            label: 'Music Player',
+            label: 'Music Player ${kDebugMode ? 'Debug' : ''}',
             // image: 'bg.png',
             enabled: false,
           ),
@@ -132,7 +132,7 @@ class AppManager{
               onClicked: (menuItem){
                 if (Platform.isWindows) {
                   var size = appWindow.size;
-                  // print(size);
+                  // debugPrint(size);
                   size = Size(size.width - 10, size.height - 10);
                   WidgetsBinding.instance.scheduleFrameCallback((timeStamp) {
                     appWindow.size = size;
@@ -144,7 +144,11 @@ class AppManager{
           MenuItemLabel(
               label: 'Exit',
               //image: getImagePath('darts_icon'),
-              onClicked: (menuItem) => appWindow.close()),
+              onClicked: (menuItem) {
+                debugPrint("Current Index: ${SettingsController.index}");
+                debugPrint("Current Queue: ${SettingsController.shuffledQueue}");
+                appWindow.close();
+              }),
         ],
       );
       _systemTray.setContextMenu(_menuMain);

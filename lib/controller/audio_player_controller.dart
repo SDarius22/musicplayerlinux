@@ -4,21 +4,28 @@ import 'dart:typed_data';
 
 import 'package:audio_service/audio_service.dart';
 import 'package:audioplayers/audioplayers.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:musicplayer/controller/app_audio_handler.dart';
 import 'package:musicplayer/controller/app_manager.dart';
 import 'package:musicplayer/controller/settings_controller.dart';
+import 'package:musicplayer/controller/worker_controller.dart';
 import 'package:musicplayer/domain/song_type.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:smtc_windows/smtc_windows.dart';
+
+import 'data_controller.dart';
 
 
 class AudioPlayerController extends BaseAudioHandler {
   static final AudioPlayerController _instance = AudioPlayerController._internal();
   String _filePath = "SomeNonExistentPath";
+
   factory AudioPlayerController() => _instance;
 
-  AudioPlayerController._internal();
+  AudioPlayerController._internal() {
+    init();
+  }
 
   static AudioPlayer audioPlayer = AudioPlayer();
 
@@ -32,15 +39,24 @@ class AudioPlayerController extends BaseAudioHandler {
       SettingsController.playing = state == PlayerState.playing;
       if (state == PlayerState.completed) {
         if (SettingsController.repeat) {
-          print("repeat");
+          debugPrint("repeat");
           SettingsController.slider = 0;
           play();
         } else {
-          print("next");
+          debugPrint("next");
           skipToNext();
         }
       }
     });
+  }
+
+  Future<void> updateCurrentSong(String songPath) async {
+    var song = await DataController.getSong(songPath);
+    var image = await WorkerController.getImage(songPath);
+    await addSong(song, image);
+    await DataController.updateLastPlayed(song);
+    await DataController.updatePlayed(song);
+    await DataController.updateIndestructible();
   }
 
 
@@ -80,13 +96,13 @@ class AudioPlayerController extends BaseAudioHandler {
       _filePath = path;
     }
     catch(e){
-      print(e);
+      debugPrint(e.toString());
     }
   }
 
   @override
   Future<void> play() async {
-      print("play");
+    debugPrint("play");
       playbackState.add(playbackState.value.copyWith(
         playing: true,
         controls: [MediaControl.pause],
@@ -102,7 +118,7 @@ class AudioPlayerController extends BaseAudioHandler {
 
   @override
   Future<void> pause() async{
-    print("pause");
+    debugPrint("pause");
     playbackState.add(playbackState.value.copyWith(
       playing: false,
       controls: [MediaControl.play],
@@ -145,7 +161,6 @@ class AudioPlayerController extends BaseAudioHandler {
     final am = AppManager();
     switch (time) {
       case '1 minute':
-        print("1 minute");
         SettingsController.sleepTimer = 1 * 60 * 1000;
         startTimer();
         am.showNotification("Sleep timer set to 1 minute", 3500);

@@ -12,7 +12,7 @@ class ExportScreen extends StatefulWidget {
   const ExportScreen({super.key});
 
   @override
-  _ExportScreenState createState() => _ExportScreenState();
+  State<ExportScreen> createState() => _ExportScreenState();
 }
 
 class _ExportScreenState extends State<ExportScreen> {
@@ -46,7 +46,7 @@ class _ExportScreenState extends State<ExportScreen> {
               children: [
                 IconButton(
                   onPressed: (){
-                    print("Back");
+                    debugPrint("Back");
                     Navigator.pop(context);
                   },
                   icon: Icon(
@@ -66,7 +66,7 @@ class _ExportScreenState extends State<ExportScreen> {
                 const Spacer(),
                 ElevatedButton(
                     onPressed: (){
-                      print("Export");
+                      debugPrint("Export");
                       for(int i in selected){
                         if(i == 0){
                           PlaylistType queuePlaylist = PlaylistType();
@@ -112,7 +112,7 @@ class _ExportScreenState extends State<ExportScreen> {
                     cursor: SystemMouseCursors.click,
                     child: GestureDetector(
                       onTap: () {
-                        print("Tapped on $index");
+                        debugPrint("Tapped on $index");
                         setState(() {
                           selected.contains(index) ? selected.remove(index) : selected.add(index);
                         });

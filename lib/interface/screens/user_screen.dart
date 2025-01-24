@@ -12,7 +12,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 class UserScreen extends StatefulWidget {
   const UserScreen({super.key});
   @override
-  _UserScreenState createState() => _UserScreenState();
+  State<UserScreen> createState() => _UserScreenState();
 }
 
 class _UserScreenState extends State<UserScreen> {
@@ -53,7 +53,7 @@ class _UserScreenState extends State<UserScreen> {
             children: [
               IconButton(
                 onPressed: (){
-                  print("Back");
+                  debugPrint("Back");
                   Navigator.pop(context);
                 },
                 icon: Icon(
@@ -100,7 +100,7 @@ class _UserScreenState extends State<UserScreen> {
                             height: height * 0.075,
                             child: ElevatedButton(
                               onPressed: (){
-                                print("Logout");
+                                debugPrint("Logout");
                                 SettingsController.email = '';
                                 SettingsController.password = '';
                                 oc.loggedInNotifier.value = false;
@@ -136,7 +136,7 @@ class _UserScreenState extends State<UserScreen> {
                             height: height * 0.075,
                             child: ElevatedButton(
                               onPressed: (){
-                                print("Login with Google");
+                                debugPrint("Login with Google");
                               },
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
@@ -306,7 +306,7 @@ class _UserScreenState extends State<UserScreen> {
                             height: height * 0.075,
                             child: ElevatedButton(
                               onPressed: (){
-                                print("Register with Google");
+                                debugPrint("Register with Google");
                               },
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
@@ -482,8 +482,8 @@ class _UserScreenState extends State<UserScreen> {
         'password': password,
       });
     var response = await request.send();
-    print(response.statusCode);
-    print(await response.stream.bytesToString());
+    debugPrint(response.statusCode.toString());
+    debugPrint(await response.stream.bytesToString());
     return response.statusCode;
   }
 

@@ -5,9 +5,10 @@ import 'lyric_ui.dart';
 ///should be extends LyricUI implementation your own UI.
 ///this property only for change UI,if not demand just only overwrite methods.
 class UINetease extends LyricUI {
-  double defaultSize;
-  double defaultExtSize;
-  double otherMainSize;
+  TextStyle defaultTextStyle;
+  TextStyle defaultExtTextStyle;
+  TextStyle otherMainTextStyle;
+
   double bias;
   double lineGap;
   double inlineGap;
@@ -18,9 +19,9 @@ class UINetease extends LyricUI {
   Color highlightColor;
 
   UINetease(
-      {this.defaultSize = 18,
-      this.defaultExtSize = 14,
-      this.otherMainSize = 16,
+      {this.defaultTextStyle = const TextStyle(color: Colors.white, fontSize: 20),
+      this.defaultExtTextStyle = const TextStyle(color: Colors.grey, fontSize: 16),
+      this.otherMainTextStyle = const TextStyle(color: Colors.grey, fontSize: 20),
       this.bias = 0.5,
       this.lineGap = 25,
       this.inlineGap = 25,
@@ -32,9 +33,9 @@ class UINetease extends LyricUI {
 
   UINetease.clone(UINetease uiNetease)
       : this(
-          defaultSize: uiNetease.defaultSize,
-          defaultExtSize: uiNetease.defaultExtSize,
-          otherMainSize: uiNetease.otherMainSize,
+          defaultTextStyle: uiNetease.defaultTextStyle,
+          defaultExtTextStyle: uiNetease.defaultExtTextStyle,
+          otherMainTextStyle: uiNetease.otherMainTextStyle,
           bias: uiNetease.bias,
           lineGap: uiNetease.lineGap,
           inlineGap: uiNetease.inlineGap,
@@ -46,26 +47,16 @@ class UINetease extends LyricUI {
         );
 
   @override
-  TextStyle getPlayingExtTextStyle() =>
-      TextStyle(color: Colors.grey[300], fontSize: defaultExtSize);
+  TextStyle getPlayingExtTextStyle() => defaultExtTextStyle;
 
   @override
-  TextStyle getOtherExtTextStyle() => TextStyle(
-        color: Colors.grey[300],
-        fontSize: defaultExtSize,
-        fontFamily: 'Bahnschrift',
-      );
+  TextStyle getOtherExtTextStyle() => defaultExtTextStyle;
 
   @override
-  TextStyle getOtherMainTextStyle() =>
-      TextStyle(color: Colors.grey[200], fontSize: otherMainSize, fontFamily: 'Bahnschrift');
+  TextStyle getOtherMainTextStyle() => otherMainTextStyle;
 
   @override
-  TextStyle getPlayingMainTextStyle() => TextStyle(
-        color: highlightColor,
-        fontSize: defaultSize,
-        fontFamily: 'Bahnschrift',
-      );
+  TextStyle getPlayingMainTextStyle() => defaultTextStyle;
 
   @override
   double getInlineSpace() => inlineGap;

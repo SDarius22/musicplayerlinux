@@ -13,7 +13,7 @@ class AddScreen extends StatefulWidget {
   const AddScreen({super.key, required this.songs});
 
   @override
-  _AddScreenState createState() => _AddScreenState();
+  State<AddScreen> createState() => _AddScreenState();
 }
 
 class _AddScreenState extends State<AddScreen> {
@@ -21,7 +21,7 @@ class _AddScreenState extends State<AddScreen> {
   @override
   Widget build(BuildContext context) {
     final dc = DataController();
-    //print(widget.songs.length);
+    //debugPrint(widget.songs.length);
     var width = MediaQuery.of(context).size.width;
     var height = MediaQuery.of(context).size.height;
     //var boldSize = height * 0.025;
@@ -48,7 +48,7 @@ class _AddScreenState extends State<AddScreen> {
               children: [
                 IconButton(
                   onPressed: (){
-                    print("Back");
+                    debugPrint("Back");
                     Navigator.pop(context);
                   },
                   icon: Icon(
@@ -71,11 +71,11 @@ class _AddScreenState extends State<AddScreen> {
                 const Spacer(),
                 ElevatedButton(
                     onPressed: (){
-                      //print("Add to new playlist");
+                      //debugPrint("Add to new playlist");
                       for(int i = 0; i < selected.length; i++){
                         if(selected[i] == 0){
                           List<String> paths = widget.songs.map((e) => e.path).toList();
-                          //print(paths);
+                          //debugPrint(paths);
                           dc.addToQueue(paths);
                         }
                         else{
@@ -121,7 +121,7 @@ class _AddScreenState extends State<AddScreen> {
                     cursor: SystemMouseCursors.click,
                     child: GestureDetector(
                       onTap: () {
-                        print("Tapped on $index");
+                        debugPrint("Tapped on $index");
                         setState(() {
                           selected.contains(index) ? selected.remove(index) : selected.add(index);
                         });

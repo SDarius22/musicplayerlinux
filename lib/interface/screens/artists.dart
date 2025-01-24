@@ -15,7 +15,7 @@ class Artists extends StatefulWidget{
   const Artists({super.key});
 
   @override
-  _ArtistsState createState() => _ArtistsState();
+  State<Artists> createState() => _ArtistsState();
 }
 
 
@@ -156,7 +156,7 @@ class _ArtistsState extends State<Artists>{
                         cursor: SystemMouseCursors.click,
                         child: GestureDetector(
                           onTap: () {
-                            //print(artist.name);
+                            //debugPrint(artist.name);
                             Navigator.push(context, MaterialPageRoute(builder: (context) => ArtistScreen(artist: artist)));
                           },
                           child: Column(
@@ -174,7 +174,7 @@ class _ArtistsState extends State<Artists>{
                                         width: width * 0.035,
                                         child: IconButton(
                                           onPressed: (){
-                                            print("Add $index");
+                                            debugPrint("Add $index");
                                             Navigator.push(
                                                 context,
                                                 MaterialPageRoute(

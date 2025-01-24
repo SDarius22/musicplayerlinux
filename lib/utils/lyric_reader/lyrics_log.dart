@@ -1,8 +1,8 @@
 import 'dart:developer';
 
-///print log control
+///debugPrint log control
 class LyricsLog {
-  ///print switch
+  ///debugPrint switch
   static var lyricEnableLog = false;
 
   static final _defaultTag = "LyricReader->";

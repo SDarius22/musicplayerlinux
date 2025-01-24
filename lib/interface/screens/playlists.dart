@@ -19,7 +19,7 @@ class Playlists extends StatefulWidget{
   const Playlists({super.key});
 
   @override
-  _PlaylistsState createState() => _PlaylistsState();
+  State<Playlists> createState() => _PlaylistsState();
 }
 
 
@@ -225,7 +225,7 @@ class _PlaylistsState extends State<Playlists>{
                         cursor: SystemMouseCursors.click,
                         child: GestureDetector(
                           onTap: () {
-                            //print(playlist.name);
+                            //debugPrint(playlist.name);
                             Navigator.push(context, MaterialPageRoute(builder: (context) => PlaylistScreen(playlist: playlist)));
                           },
                           child: Column(
@@ -233,7 +233,7 @@ class _PlaylistsState extends State<Playlists>{
                               ClipRRect(
                                 borderRadius: BorderRadius.circular(width * 0.01),
                                 child: ImageWidget(
-                                  path: playlist.paths.first,
+                                  path: playlist.paths.isNotEmpty ? playlist.paths.first : '',
                                   heroTag: playlist.name,
                                   buttons: Row(
                                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -243,7 +243,7 @@ class _PlaylistsState extends State<Playlists>{
                                         width: width * 0.035,
                                         child: IconButton(
                                           onPressed: (){
-                                            print("Add $index");
+                                            debugPrint("Add $index");
                                             List<SongType> songs = [];
                                             for (var path in playlist.paths){
                                               songs.add(DataController.songBox.query(SongType_.path.equals(path)).build().findFirst());

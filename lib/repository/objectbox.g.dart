@@ -26,7 +26,7 @@ final _entities = <obx_int.ModelEntity>[
   obx_int.ModelEntity(
       id: const obx_int.IdUid(1, 1815619076807623967),
       name: 'AlbumType',
-      lastPropertyId: const obx_int.IdUid(2, 1345298650327502809),
+      lastPropertyId: const obx_int.IdUid(4, 3700143381519926938),
       flags: 0,
       properties: <obx_int.ModelProperty>[
         obx_int.ModelProperty(
@@ -38,6 +38,11 @@ final _entities = <obx_int.ModelEntity>[
             id: const obx_int.IdUid(2, 1345298650327502809),
             name: 'name',
             type: 9,
+            flags: 0),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(3, 8512936839929207505),
+            name: 'duration',
+            type: 6,
             flags: 0)
       ],
       relations: <obx_int.ModelRelation>[
@@ -74,7 +79,7 @@ final _entities = <obx_int.ModelEntity>[
   obx_int.ModelEntity(
       id: const obx_int.IdUid(3, 7335752985882107118),
       name: 'PlaylistType',
-      lastPropertyId: const obx_int.IdUid(4, 4890538008718222274),
+      lastPropertyId: const obx_int.IdUid(7, 1081497872397675260),
       flags: 0,
       properties: <obx_int.ModelProperty>[
         obx_int.ModelProperty(
@@ -96,6 +101,21 @@ final _entities = <obx_int.ModelEntity>[
             id: const obx_int.IdUid(4, 4890538008718222274),
             name: 'paths',
             type: 30,
+            flags: 0),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(5, 6851290111821521417),
+            name: 'duration',
+            type: 6,
+            flags: 0),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(6, 7192996012449545044),
+            name: 'artistCount',
+            type: 30,
+            flags: 0),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(7, 1081497872397675260),
+            name: 'indestructible',
+            type: 1,
             flags: 0)
       ],
       relations: <obx_int.ModelRelation>[],
@@ -247,7 +267,7 @@ final _entities = <obx_int.ModelEntity>[
   obx_int.ModelEntity(
       id: const obx_int.IdUid(5, 7894316662941293306),
       name: 'SongType',
-      lastPropertyId: const obx_int.IdUid(11, 3807358697915249101),
+      lastPropertyId: const obx_int.IdUid(14, 3238798048305584967),
       flags: 0,
       properties: <obx_int.ModelProperty>[
         obx_int.ModelProperty(
@@ -298,6 +318,21 @@ final _entities = <obx_int.ModelEntity>[
         obx_int.ModelProperty(
             id: const obx_int.IdUid(10, 3811047316129861105),
             name: 'discNumber',
+            type: 6,
+            flags: 0),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(12, 5871174133202682144),
+            name: 'liked',
+            type: 1,
+            flags: 0),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(13, 1713442380679213921),
+            name: 'lastPlayed',
+            type: 10,
+            flags: 0),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(14, 3238798048305584967),
+            name: 'playCount',
             type: 6,
             flags: 0)
       ],
@@ -351,7 +386,8 @@ obx_int.ModelDefinition getObjectBoxModel() {
         3605978690295634239,
         149915083280863291,
         1171492870719301957,
-        3807358697915249101
+        3807358697915249101,
+        3700143381519926938
       ],
       retiredRelationUids: const [3440552932794375637],
       modelVersion: 5,
@@ -370,9 +406,10 @@ obx_int.ModelDefinition getObjectBoxModel() {
         },
         objectToFB: (AlbumType object, fb.Builder fbb) {
           final nameOffset = fbb.writeString(object.name);
-          fbb.startTable(3);
+          fbb.startTable(5);
           fbb.addInt64(0, object.id);
           fbb.addOffset(1, nameOffset);
+          fbb.addInt64(2, object.duration);
           fbb.finish(fbb.endTable());
           return object.id;
         },
@@ -383,7 +420,9 @@ obx_int.ModelDefinition getObjectBoxModel() {
           final object = AlbumType()
             ..id = const fb.Int64Reader().vTableGet(buffer, rootOffset, 4, 0)
             ..name = const fb.StringReader(asciiOptimization: true)
-                .vTableGet(buffer, rootOffset, 6, '');
+                .vTableGet(buffer, rootOffset, 6, '')
+            ..duration =
+                const fb.Int64Reader().vTableGet(buffer, rootOffset, 8, 0);
           obx_int.InternalToManyAccess.setRelInfo<AlbumType>(object.songs,
               store, obx_int.RelInfo<AlbumType>.toMany(1, object.id));
           return object;
@@ -430,11 +469,16 @@ obx_int.ModelDefinition getObjectBoxModel() {
           final nextAddedOffset = fbb.writeString(object.nextAdded);
           final pathsOffset = fbb.writeList(
               object.paths.map(fbb.writeString).toList(growable: false));
-          fbb.startTable(5);
+          final artistCountOffset = fbb.writeList(
+              object.artistCount.map(fbb.writeString).toList(growable: false));
+          fbb.startTable(8);
           fbb.addInt64(0, object.id);
           fbb.addOffset(1, nameOffset);
           fbb.addOffset(2, nextAddedOffset);
           fbb.addOffset(3, pathsOffset);
+          fbb.addInt64(4, object.duration);
+          fbb.addOffset(5, artistCountOffset);
+          fbb.addBool(6, object.indestructible);
           fbb.finish(fbb.endTable());
           return object.id;
         },
@@ -451,7 +495,15 @@ obx_int.ModelDefinition getObjectBoxModel() {
             ..paths = const fb.ListReader<String>(
                     fb.StringReader(asciiOptimization: true),
                     lazy: false)
-                .vTableGet(buffer, rootOffset, 10, []);
+                .vTableGet(buffer, rootOffset, 10, [])
+            ..duration =
+                const fb.Int64Reader().vTableGet(buffer, rootOffset, 12, 0)
+            ..artistCount = const fb.ListReader<String>(
+                    fb.StringReader(asciiOptimization: true),
+                    lazy: false)
+                .vTableGet(buffer, rootOffset, 14, [])
+            ..indestructible =
+                const fb.BoolReader().vTableGet(buffer, rootOffset, 16, false);
 
           return object;
         }),
@@ -596,7 +648,7 @@ obx_int.ModelDefinition getObjectBoxModel() {
           final albumArtistOffset = fbb.writeString(object.albumArtist);
           final pathOffset = fbb.writeString(object.path);
           final lyricsPathOffset = fbb.writeString(object.lyricsPath);
-          fbb.startTable(12);
+          fbb.startTable(15);
           fbb.addInt64(0, object.id);
           fbb.addOffset(1, titleOffset);
           fbb.addOffset(2, artistsOffset);
@@ -607,13 +659,17 @@ obx_int.ModelDefinition getObjectBoxModel() {
           fbb.addOffset(7, lyricsPathOffset);
           fbb.addInt64(8, object.trackNumber);
           fbb.addInt64(9, object.discNumber);
+          fbb.addBool(11, object.liked);
+          fbb.addInt64(12, object.lastPlayed?.millisecondsSinceEpoch);
+          fbb.addInt64(13, object.playCount);
           fbb.finish(fbb.endTable());
           return object.id;
         },
         objectFromFB: (obx.Store store, ByteData fbData) {
           final buffer = fb.BufferContext(fbData);
           final rootOffset = buffer.derefObject(0);
-
+          final lastPlayedValue =
+              const fb.Int64Reader().vTableGetNullable(buffer, rootOffset, 28);
           final object = SongType()
             ..id = const fb.Int64Reader().vTableGet(buffer, rootOffset, 4, 0)
             ..title = const fb.StringReader(asciiOptimization: true)
@@ -633,7 +689,14 @@ obx_int.ModelDefinition getObjectBoxModel() {
             ..trackNumber =
                 const fb.Int64Reader().vTableGet(buffer, rootOffset, 20, 0)
             ..discNumber =
-                const fb.Int64Reader().vTableGet(buffer, rootOffset, 22, 0);
+                const fb.Int64Reader().vTableGet(buffer, rootOffset, 22, 0)
+            ..liked =
+                const fb.BoolReader().vTableGet(buffer, rootOffset, 26, false)
+            ..lastPlayed = lastPlayedValue == null
+                ? null
+                : DateTime.fromMillisecondsSinceEpoch(lastPlayedValue)
+            ..playCount =
+                const fb.Int64Reader().vTableGet(buffer, rootOffset, 30, 0);
 
           return object;
         })
@@ -651,6 +714,10 @@ class AlbumType_ {
   /// See [AlbumType.name].
   static final name =
       obx.QueryStringProperty<AlbumType>(_entities[0].properties[1]);
+
+  /// See [AlbumType.duration].
+  static final duration =
+      obx.QueryIntegerProperty<AlbumType>(_entities[0].properties[2]);
 
   /// see [AlbumType.songs]
   static final songs =
@@ -689,6 +756,18 @@ class PlaylistType_ {
   /// See [PlaylistType.paths].
   static final paths =
       obx.QueryStringVectorProperty<PlaylistType>(_entities[2].properties[3]);
+
+  /// See [PlaylistType.duration].
+  static final duration =
+      obx.QueryIntegerProperty<PlaylistType>(_entities[2].properties[4]);
+
+  /// See [PlaylistType.artistCount].
+  static final artistCount =
+      obx.QueryStringVectorProperty<PlaylistType>(_entities[2].properties[5]);
+
+  /// See [PlaylistType.indestructible].
+  static final indestructible =
+      obx.QueryBooleanProperty<PlaylistType>(_entities[2].properties[6]);
 }
 
 /// [Settings] entity fields to define ObjectBox queries.
@@ -843,4 +922,16 @@ class SongType_ {
   /// See [SongType.discNumber].
   static final discNumber =
       obx.QueryIntegerProperty<SongType>(_entities[4].properties[9]);
+
+  /// See [SongType.liked].
+  static final liked =
+      obx.QueryBooleanProperty<SongType>(_entities[4].properties[10]);
+
+  /// See [SongType.lastPlayed].
+  static final lastPlayed =
+      obx.QueryDateProperty<SongType>(_entities[4].properties[11]);
+
+  /// See [SongType.playCount].
+  static final playCount =
+      obx.QueryIntegerProperty<SongType>(_entities[4].properties[12]);
 }

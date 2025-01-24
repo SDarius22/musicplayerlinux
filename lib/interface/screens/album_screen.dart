@@ -16,7 +16,7 @@ class AlbumScreen extends StatefulWidget {
   const AlbumScreen({super.key, required this.album});
 
   @override
-  _AlbumScreenState createState() => _AlbumScreenState();
+  State<AlbumScreen> createState() => _AlbumScreenState();
 }
 
 class _AlbumScreenState extends State<AlbumScreen> {
@@ -26,10 +26,7 @@ class _AlbumScreenState extends State<AlbumScreen> {
   @override
   void initState() {
     widget.album.songs.sort((a, b) => a.trackNumber.compareTo(b.trackNumber));
-    int totalDuration = 0;
-    for (int i = 0; i < widget.album.songs.length; i++){
-      totalDuration += widget.album.songs[i].duration;
-    }
+    int totalDuration = widget.album.duration;
     duration = " ${totalDuration ~/ 3600} hours, ${(totalDuration % 3600 ~/ 60)} minutes and ${(totalDuration % 60)} seconds";
     duration = duration.replaceAll(" 0 hours,", "");
     duration = duration.replaceAll(" 0 minutes and", "");
@@ -63,7 +60,7 @@ class _AlbumScreenState extends State<AlbumScreen> {
           children: [
             IconButton(
               onPressed: (){
-                print("Back");
+                debugPrint("Back");
                 Navigator.pop(context);
               },
               icon: Icon(
@@ -162,7 +159,7 @@ class _AlbumScreenState extends State<AlbumScreen> {
                           ),
                           IconButton(
                             onPressed: (){
-                              print("Add ${widget.album.name}");
+                              debugPrint("Add ${widget.album.name}");
                               Navigator.push(
                                   context,
                                   MaterialPageRoute(

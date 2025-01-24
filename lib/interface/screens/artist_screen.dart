@@ -14,7 +14,7 @@ class ArtistScreen extends StatefulWidget {
   const ArtistScreen({super.key, required this.artist});
 
   @override
-  _ArtistScreenState createState() => _ArtistScreenState();
+  State<ArtistScreen> createState() => _ArtistScreenState();
 }
 
 class _ArtistScreenState extends State<ArtistScreen> {
@@ -36,7 +36,7 @@ class _ArtistScreenState extends State<ArtistScreen> {
 
   @override
   Widget build(BuildContext context) {
-    print(widget.artist.name);
+    debugPrint(widget.artist.name);
     final dc = DataController();
     var width = MediaQuery.of(context).size.width;
     var height = MediaQuery.of(context).size.height;
@@ -58,7 +58,7 @@ class _ArtistScreenState extends State<ArtistScreen> {
           children: [
             IconButton(
               onPressed: (){
-                print("Back");
+                debugPrint("Back");
                 Navigator.pop(context);
               },
               icon: Icon(

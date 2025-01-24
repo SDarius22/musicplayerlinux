@@ -1,14 +1,16 @@
 import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:musicplayer/domain/playlist_type.dart';
 import 'package:musicplayer/utils/fluenticons/fluenticons.dart';
+import '../../controller/data_controller.dart';
 import '../../controller/settings_controller.dart';
 import 'home.dart';
 
 class WelcomeScreen extends StatefulWidget {
   const WelcomeScreen({super.key});
   @override
-  _WelcomeScreenState createState() => _WelcomeScreenState();
+  State<WelcomeScreen> createState() => _WelcomeScreenState();
 }
 
 class _WelcomeScreenState extends State<WelcomeScreen> {
@@ -156,7 +158,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                           onPressed: () async {
                             String chosen = await FilePicker.platform.getDirectoryPath() ?? "";
                             if(chosen != "") {
-                              //print(chosen);
+                              //debugPrint(chosen);
                               setState(() {
                                 SettingsController.directory = chosen;
                                 directory = chosen;
@@ -243,7 +245,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                             ),
                           ),
                           onPressed: () async {
-                            print("Pressed");
+                            debugPrint("Pressed");
                             if (SettingsController.directory == ""){
                               return;
                             }
@@ -252,7 +254,23 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                             }
                             SettingsController.firstTime = false;
                             // widget.controller.settingsBox.put(widget.controller.settings);
-                            print(SettingsController.firstTime);
+                            debugPrint(SettingsController.firstTime.toString());
+                            final dc = DataController();
+                            PlaylistType favorites = PlaylistType();
+                            favorites.name = "Favorites";
+                            favorites.paths = [];
+                            favorites.indestructible = true;
+                            dc.createPlaylist(favorites);
+                            PlaylistType mostPlayed = PlaylistType();
+                            mostPlayed.name = "Most Played";
+                            mostPlayed.paths = [];
+                            mostPlayed.indestructible = true;
+                            dc.createPlaylist(mostPlayed);
+                            PlaylistType recentlyPlayed = PlaylistType();
+                            recentlyPlayed.name = "Recently Played";
+                            recentlyPlayed.paths = [];
+                            recentlyPlayed.indestructible = true;
+                            dc.createPlaylist(recentlyPlayed);
                             Navigator.pushReplacement(context, MaterialPageRoute(builder: (BuildContext context){
                               return const HomePage();
                             }));

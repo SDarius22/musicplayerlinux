@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 
 import '../domain/settings_type.dart';
 import '../repository/objectBox.dart';
+import 'audio_player_controller.dart';
 
 
 class SettingsController {
@@ -146,12 +147,14 @@ class SettingsController {
   static int get index => settings.index;
 
   static set index(int newIndex) {
-    print("Index set to $newIndex");
+    debugPrint("Index set to $newIndex");
     slider = 0;
     playing = false;
     _instance._updateSettings((settings) => settings.index = newIndex);
     indexNotifier.value = -1;
     indexNotifier.value = newIndex;
+    final apc = AudioPlayerController();
+    apc.updateCurrentSong(currentSongPath);
   }
 
   static ValueNotifier<int> sliderNotifier = ValueNotifier<int>(settings.slider);
@@ -228,14 +231,14 @@ class SettingsController {
   static List<String> get queue => settings.queue;
 
   static set queue(List<String> queue) {
-    shuffledQueue = List<String>.from(queue)..shuffle();
-    _instance._updateSettings((settings) => settings.queue = queue);
+    // debugPrint("Queue set to $queue");
+    _instance._updateSettings((settings){
+      settings.queue = queue;
+      settings.shuffledQueue = List<String>.from(queue)..shuffle();
+    });
   }
 
   static List<String> get shuffledQueue => settings.shuffledQueue;
-
-  static set shuffledQueue(List<String> shuffledQueue) =>
-      _instance._updateSettings((settings) => settings.shuffledQueue = shuffledQueue);
 
   static ValueNotifier<Color> lightColorNotifier = ValueNotifier<Color>(Color(settings.lightColor));
 
@@ -261,11 +264,11 @@ class SettingsController {
     }
     // Stream<Query> query = ObjectBox.store.box<Settings>().query().watch(triggerImmediately: true);
     // query.listen((event) async {
-    //   // print("Settings updated");
+    //   // debugPrint("Settings updated");
     //   var newSettings = event.find().last;
     //   if (newSettings.index == -100){
-    //     print("New instance detected");
-    //     print("Queue: ${newSettings.queue}");
+    //     debugPrint("New instance detected");
+    //     debugPrint("Queue: ${newSettings.queue}");
     //     for(var song in queue){
     //       await DataController.getSong(song);
     //     }

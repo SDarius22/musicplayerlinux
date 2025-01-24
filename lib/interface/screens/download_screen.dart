@@ -15,7 +15,7 @@ class Download extends StatefulWidget{
   const Download({super.key});
 
   @override
-  _DownloadState createState() => _DownloadState();
+  State<Download> createState() => _DownloadState();
 }
 
 
@@ -160,11 +160,11 @@ class _DownloadState extends State<Download>{
                         cursor: SystemMouseCursors.click,
                         child: GestureDetector(
                           onTap: () async {
-                            print("Downloading ${song['id']}, arl: ${SettingsController.settings.deezerARL}");
+                            debugPrint("Downloading ${song['id']}, arl: ${SettingsController.settings.deezerARL}");
                             try {
                               final stream = await OnlineController.instance.getSong(song['id'].toString(),
                                 onProgress: (received, total) {
-                                  //print("received: $received, total: $total");
+                                  //debugPrint("received: $received, total: $total");
                                   progress.value = received / total;
                                 },
                               );
@@ -199,7 +199,7 @@ class _DownloadState extends State<Download>{
                               );
                             }
                             catch(e){
-                              print(e);
+                              debugPrint(e.toString());
                               if(SettingsController.deezerARL.isEmpty){
                                 am.showNotification("Cannot download song without a working Deezer ARL. Please add one in settings.", 3500);
                               }

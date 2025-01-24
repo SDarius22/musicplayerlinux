@@ -14,6 +14,10 @@ class SongType{
   int trackNumber = 0;
   int discNumber = 0;
 
+  bool liked = false;
+  DateTime? lastPlayed;
+  int playCount = 0;
+
   @override
   bool operator ==(Object other) =>
     other is SongType && other.runtimeType == runtimeType && other.path == path;
