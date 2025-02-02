@@ -58,7 +58,6 @@ class _HomePageState extends State<HomePage>{
     });
   }
 
-
   @override
   Widget build(BuildContext context) {
     final dc = DataController();
@@ -67,7 +66,7 @@ class _HomePageState extends State<HomePage>{
 
     var width = MediaQuery.of(context).size.width;
     var height = MediaQuery.of(context).size.height;
-    var boldSize = height * 0.025;
+    // var boldSize = height * 0.025;
     var normalSize = height * 0.02;
     var smallSize = height * 0.0175;
 
@@ -320,164 +319,169 @@ class _HomePageState extends State<HomePage>{
                         key: am.navigatorKey,
                         onGenerateRoute: (settings) {
                           return MaterialPageRoute(
-                            builder: (context) => FutureBuilder(
-                                future: _init,
-                                builder: (context, snapshot){
-                                  return snapshot.connectionState == ConnectionState.done ?
-                                  Column(
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    children: [
-                                      // artists, albums, playlists, tracks
-                                      Row(
-                                        mainAxisAlignment: MainAxisAlignment.center,
-                                        children: [
-                                          Expanded(
-                                              child: SizedBox(
-                                                  height: height * 0.05,
-                                                  child: ElevatedButton(
-                                                      onPressed: (){
-                                                        //debugPrint("Artists");
-                                                        _pageController.animateToPage(0,
-                                                            duration: const Duration(milliseconds: 500),
-                                                            curve: Curves.easeIn
-                                                        );
-                                                      },
-                                                      style: ElevatedButton.styleFrom(
-                                                        backgroundColor: currentPage != 0 ? const Color(0xFF0E0E0E) : const Color(0xFF1b1b1b),
-                                                        shape: RoundedRectangleBorder(
-                                                          borderRadius: BorderRadius.circular(0),
-                                                        ),
-                                                      ),
-                                                      child: Text(
-                                                        "Artists",
-                                                        style: TextStyle(
-                                                          color: Colors.white,
-                                                          fontSize: currentPage != 0 ? normalSize : boldSize,
-                                                        ),
-                                                      )
-                                                  )
-                                              )
-                                          ),
-                                          Expanded(
-                                              child: SizedBox(
-                                                  height: height * 0.05,
-                                                  child: ElevatedButton(
-                                                      onPressed: (){
-                                                        //debugPrint("Artists");
-                                                        _pageController.animateToPage(1,
-                                                            duration: const Duration(milliseconds: 500),
-                                                            curve: Curves.easeIn
-                                                        );
-                                                      },
-                                                      style: ElevatedButton.styleFrom(
-                                                        backgroundColor: currentPage != 1 ? const Color(0xFF0E0E0E) : const Color(0xFF1b1b1b),
-                                                        shape: RoundedRectangleBorder(
-                                                          borderRadius: BorderRadius.circular(0),
-                                                        ),
-                                                      ),
-                                                      child: Text(
-                                                        "Albums",
-                                                        style: TextStyle(
-                                                          color: Colors.white,
-                                                          fontSize: currentPage != 1 ? normalSize : boldSize,
-                                                        ),
-                                                      )
-                                                  )
-                                              )
-                                          ),
-                                          Expanded(
-                                              child: SizedBox(
-                                                  height: height * 0.05,
-                                                  child: ElevatedButton(
-                                                      onPressed: (){
-                                                        //debugPrint("Artists");
-                                                        _pageController.animateToPage(2,
-                                                            duration: const Duration(milliseconds: 500),
-                                                            curve: Curves.easeIn
-                                                        );
-                                                      },
-                                                      style: ElevatedButton.styleFrom(
-                                                        backgroundColor: currentPage != 2 ? const Color(0xFF0E0E0E) : const Color(0xFF1b1b1b),
-                                                        shape: RoundedRectangleBorder(
-                                                          borderRadius: BorderRadius.circular(0),
-                                                        ),
-                                                      ),
-                                                      child: Text(
-                                                        "Download",
-                                                        style: TextStyle(
-                                                          color: Colors.white,
-                                                          fontSize: currentPage != 2 ? normalSize : boldSize,
-                                                        ),
-                                                      )
-                                                  )
-                                              )
-                                          ),
-                                          Expanded(
-                                              child: SizedBox(
-                                                  height: height * 0.05,
-                                                  child: ElevatedButton(
-                                                      onPressed: (){
-                                                        //debugPrint("Artists");
-                                                        _pageController.animateToPage(3,
-                                                            duration: const Duration(milliseconds: 500),
-                                                            curve: Curves.easeIn
-                                                        );
-                                                      },
-                                                      style: ElevatedButton.styleFrom(
-                                                        backgroundColor: currentPage != 3 ? const Color(0xFF0E0E0E) : const Color(0xFF1b1b1b),
-                                                        shape: RoundedRectangleBorder(
-                                                          borderRadius: BorderRadius.circular(0),
-                                                        ),
-                                                      ),
-                                                      child: Text(
-                                                        "Playlists",
-                                                        style: TextStyle(
-                                                          color: Colors.white,
-                                                          fontSize: currentPage != 3 ? normalSize : boldSize,
-                                                        ),
-                                                      )
-                                                  )
-                                              )
-                                          ),
-                                          Expanded(
-                                              child: SizedBox(
-                                                  height: height * 0.05,
-                                                  child: ElevatedButton(
-                                                      onPressed: (){
-                                                        //debugPrint("Artists");
-                                                        _pageController.animateToPage(4,
-                                                            duration: const Duration(milliseconds: 500),
-                                                            curve: Curves.easeIn
-                                                        );
-                                                      },
-                                                      style: ElevatedButton.styleFrom(
-                                                        backgroundColor: currentPage != 4 ? const Color(0xFF0E0E0E) : const Color(0xFF1b1b1b),
-                                                        shape: RoundedRectangleBorder(
-                                                          borderRadius: BorderRadius.circular(0),
-                                                        ),
-                                                      ),
-                                                      child: Text(
-                                                        "Tracks",
-                                                        style: TextStyle(
-                                                          color: Colors.white,
-                                                          fontSize: currentPage != 4 ? normalSize : boldSize,
-                                                        ),
-                                                      )
-                                                  )
-                                              )
-                                          ),
-                                        ],
-                                      ),
-                                      // current page
-                                      Expanded(
-                                        child: Container(
-                                          padding: EdgeInsets.only(
-                                              top: height * 0.02,
-                                              left: width * 0.01,
-                                              right: width * 0.01,
-                                              bottom: height * 0.02
-                                          ),
-                                          child: PageView(
+                            builder: (context) => Column(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              children: [
+                                // artists, albums, playlists, tracks
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Expanded(
+                                        child: SizedBox(
+                                            height: MediaQuery.of(context).size.height * 0.045,
+                                            child: ElevatedButton(
+                                                onPressed: (){
+                                                  //debugPrint("Artists");
+                                                  _pageController.animateToPage(0,
+                                                      duration: const Duration(milliseconds: 500),
+                                                      curve: Curves.easeIn
+                                                  );
+                                                },
+                                                style: ElevatedButton.styleFrom(
+                                                  backgroundColor: currentPage != 0 ? const Color(0xFF0E0E0E) : const Color(0xFF1b1b1b),
+                                                  shape: RoundedRectangleBorder(
+                                                    borderRadius: BorderRadius.circular(0),
+                                                  ),
+                                                ),
+                                                child: Text(
+                                                  "Artists",
+                                                  style: TextStyle(
+                                                    color: Colors.white,
+                                                    fontSize: currentPage != 0 ?
+                                                    MediaQuery.of(context).size.height * 0.02 : MediaQuery.of(context).size.height * 0.025,
+                                                  ),
+                                                )
+                                            )
+                                        )
+                                    ),
+                                    Expanded(
+                                        child: SizedBox(
+                                            height: MediaQuery.of(context).size.height * 0.045,
+                                            child: ElevatedButton(
+                                                onPressed: (){
+                                                  //debugPrint("Artists");
+                                                  _pageController.animateToPage(1,
+                                                      duration: const Duration(milliseconds: 500),
+                                                      curve: Curves.easeIn
+                                                  );
+                                                },
+                                                style: ElevatedButton.styleFrom(
+                                                  backgroundColor: currentPage != 1 ? const Color(0xFF0E0E0E) : const Color(0xFF1b1b1b),
+                                                  shape: RoundedRectangleBorder(
+                                                    borderRadius: BorderRadius.circular(0),
+                                                  ),
+                                                ),
+                                                child: Text(
+                                                  "Albums",
+                                                  style: TextStyle(
+                                                    color: Colors.white,
+                                                    fontSize: currentPage != 1 ?
+                                                    MediaQuery.of(context).size.height * 0.02 : MediaQuery.of(context).size.height * 0.025,
+                                                  ),
+                                                )
+                                            )
+                                        )
+                                    ),
+                                    Expanded(
+                                        child: SizedBox(
+                                            height: MediaQuery.of(context).size.height * 0.045,
+                                            child: ElevatedButton(
+                                                onPressed: (){
+                                                  //debugPrint("Artists");
+                                                  _pageController.animateToPage(2,
+                                                      duration: const Duration(milliseconds: 500),
+                                                      curve: Curves.easeIn
+                                                  );
+                                                },
+                                                style: ElevatedButton.styleFrom(
+                                                  backgroundColor: currentPage != 2 ? const Color(0xFF0E0E0E) : const Color(0xFF1b1b1b),
+                                                  shape: RoundedRectangleBorder(
+                                                    borderRadius: BorderRadius.circular(0),
+                                                  ),
+                                                ),
+                                                child: Text(
+                                                  "Download",
+                                                  style: TextStyle(
+                                                    color: Colors.white,
+                                                    fontSize: currentPage != 2 ?
+                                                    MediaQuery.of(context).size.height * 0.02 : MediaQuery.of(context).size.height * 0.025,
+                                                  ),
+                                                )
+                                            )
+                                        )
+                                    ),
+                                    Expanded(
+                                        child: SizedBox(
+                                            height: MediaQuery.of(context).size.height * 0.045,
+                                            child: ElevatedButton(
+                                                onPressed: (){
+                                                  //debugPrint("Artists");
+                                                  _pageController.animateToPage(3,
+                                                      duration: const Duration(milliseconds: 500),
+                                                      curve: Curves.easeIn
+                                                  );
+                                                },
+                                                style: ElevatedButton.styleFrom(
+                                                  backgroundColor: currentPage != 3 ? const Color(0xFF0E0E0E) : const Color(0xFF1b1b1b),
+                                                  shape: RoundedRectangleBorder(
+                                                    borderRadius: BorderRadius.circular(0),
+                                                  ),
+                                                ),
+                                                child: Text(
+                                                  "Playlists",
+                                                  style: TextStyle(
+                                                    color: Colors.white,
+                                                    fontSize: currentPage != 3 ?
+                                                    MediaQuery.of(context).size.height * 0.02 : MediaQuery.of(context).size.height * 0.025,
+                                                  ),
+                                                )
+                                            )
+                                        )
+                                    ),
+                                    Expanded(
+                                        child: SizedBox(
+                                            height: MediaQuery.of(context).size.height * 0.045,
+                                            child: ElevatedButton(
+                                                onPressed: (){
+                                                  //debugPrint("Artists");
+                                                  _pageController.animateToPage(4,
+                                                      duration: const Duration(milliseconds: 500),
+                                                      curve: Curves.easeIn
+                                                  );
+                                                },
+                                                style: ElevatedButton.styleFrom(
+                                                  backgroundColor: currentPage != 4 ? const Color(0xFF0E0E0E) : const Color(0xFF1b1b1b),
+                                                  shape: RoundedRectangleBorder(
+                                                    borderRadius: BorderRadius.circular(0),
+                                                  ),
+                                                ),
+                                                child: Text(
+                                                  "Tracks",
+                                                  style: TextStyle(
+                                                    color: Colors.white,
+                                                    fontSize: currentPage != 4 ?
+                                                    MediaQuery.of(context).size.height * 0.02 : MediaQuery.of(context).size.height * 0.025,
+                                                  ),
+                                                )
+                                            )
+                                        )
+                                    ),
+                                  ],
+                                ),
+                                // current page
+                                Expanded(
+                                  child: Container(
+                                    padding: EdgeInsets.only(
+                                        top: height * 0.02,
+                                        left: width * 0.01,
+                                        right: width * 0.01,
+                                        bottom: height * 0.02
+                                    ),
+                                    child: FutureBuilder(
+                                      future: _init,
+                                      builder: (context, snapshot) {
+                                        if (snapshot.connectionState == ConnectionState.done) {
+                                          return PageView(
                                             onPageChanged: (int index){
                                               setState(() {
                                                 currentPage = index;
@@ -500,16 +504,17 @@ class _HomePageState extends State<HomePage>{
                                               Tracks(),
                                             ],
 
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ) :
-                                  const Center(
-                                    child: CircularProgressIndicator(),
-                                  );
-                                },
-                            )
+                                          );
+                                        }
+                                        return const Center(
+                                          child: CircularProgressIndicator(),
+                                        );
+                                      },
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
                           );
                         },
                       ),

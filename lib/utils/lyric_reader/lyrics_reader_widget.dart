@@ -457,14 +457,14 @@ class LyricReaderState extends State<LyricsReader>
   void setTextSpanDrawInfo(
       LyricUI ui, List<LyricSpanInfo> spanList, TextPainter painter) {
     painter.textAlign = lyricPaint.lyricUI.getLyricTextAlign();
-    spanList.forEach((element) {
+    for (var element in spanList) {
       painter
         ..text =
             TextSpan(text: element.raw, style: ui.getPlayingMainTextStyle())
         ..layout();
       element.drawHeight = painter.height;
       element.drawWidth = painter.width;
-    });
+    }
   }
 
   /// enable highlight animation

@@ -27,7 +27,7 @@ class _AddScreenState extends State<AddScreen> {
     //var boldSize = height * 0.025;
     var normalSize = height * 0.02;
     var smallSize = height * 0.015;
-    var query = DataController.playlistBox.query().order(PlaylistType_.name).build();
+    var query = DataController.playlistBox.query(PlaylistType_.indestructible.equals(false)).order(PlaylistType_.name).build();
     return Scaffold(
       body: Container(
         width: width,

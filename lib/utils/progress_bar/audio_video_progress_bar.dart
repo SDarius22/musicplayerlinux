@@ -74,7 +74,7 @@ class ProgressBar extends LeafRenderObjectWidget {
   /// When a user drags the thumb to a new location you can be notified
   /// by the [onSeek] callback so that you can update your audio/video player.
   const ProgressBar({
-    Key? key,
+    super.key,
     required this.progress,
     required this.total,
     this.buffered,
@@ -96,7 +96,7 @@ class ProgressBar extends LeafRenderObjectWidget {
     this.timeLabelType,
     this.timeLabelTextStyle,
     this.timeLabelPadding = 0.0,
-  }) : super(key: key);
+  });
 
   /// The elapsed playing time of the media.
   ///

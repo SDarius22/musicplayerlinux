@@ -249,13 +249,17 @@ class WorkerController {
       album.duration += metadataVariable.duration;
       albumBox.put(album);
     }
-    List<String> songArtists = metadataVariable.artists.split("; ");
+    List<String> songArtists = metadataVariable.artists.split(";");
     for (String artist in songArtists) {
       Query<ArtistType> artistQuery = artistBox.query(ArtistType_.name.equals(artist)).build();
       ArtistType? artistType = artistQuery.findFirst();
       if (artistType == null) {
         artistType = ArtistType();
         artistType.name = artist;
+        artistType.songs.add(metadataVariable);
+        artistBox.put(artistType);
+      } else {
+        artistType.songs.add(metadataVariable);
         artistBox.put(artistType);
       }
     }

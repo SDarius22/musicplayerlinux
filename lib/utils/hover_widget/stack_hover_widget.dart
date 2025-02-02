@@ -7,7 +7,7 @@ class StackHoverWidget extends StatefulWidget {
       {super.key, required this.topWidget, required this.bottomWidget});
 
   @override
-  _StackHoverWidgetState createState() => _StackHoverWidgetState();
+  State<StackHoverWidget> createState() => _StackHoverWidgetState();
 }
 
 class _StackHoverWidgetState extends State<StackHoverWidget> {

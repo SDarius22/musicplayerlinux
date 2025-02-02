@@ -1,9 +1,8 @@
 import 'dart:io';
 import 'dart:math';
-import 'dart:typed_data';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:image/image.dart' as imageLib;
+import 'package:image/image.dart' as image_lib;
 
 class DominantColors {
   final Uint8List bytes;
@@ -78,7 +77,7 @@ class DominantColors {
   List<Color> _getPixelsColorsFromHalfImage() {
     List<Color> colors = [];
 
-    imageLib.Image? image = imageLib.decodeImage(bytes.buffer.asUint8List());
+    image_lib.Image? image = image_lib.decodeImage(bytes.buffer.asUint8List());
 
     if (image != null) {
       int sampling =

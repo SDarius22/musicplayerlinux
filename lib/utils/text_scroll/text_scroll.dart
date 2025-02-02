@@ -283,10 +283,8 @@ class _TextScrollState extends State<TextScroll> {
   void initState() {
     super.initState();
 
-    final WidgetsBinding? binding = WidgetsBinding.instance;
-    if (binding != null) {
-      binding.addPostFrameCallback(_initScroller);
-    }
+    final WidgetsBinding binding = WidgetsBinding.instance;
+    binding.addPostFrameCallback(_initScroller);
   }
 
   @override
@@ -323,7 +321,7 @@ class _TextScrollState extends State<TextScroll> {
       textDirection: widget.textDirection,
       child: SingleChildScrollView(
         controller: _scrollController,
-        physics: NeverScrollableScrollPhysics(),
+        physics: const NeverScrollableScrollPhysics(),
         scrollDirection: Axis.horizontal,
         child: widget.selectable
             ? SelectableText(

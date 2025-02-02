@@ -152,6 +152,7 @@ class _ArtistsState extends State<Artists>{
                     ),
                     itemBuilder: (BuildContext context, int index) {
                       ArtistType artist = snapshot.data![index];
+                      print(artist.name);
                       return MouseRegion(
                         cursor: SystemMouseCursors.click,
                         child: GestureDetector(

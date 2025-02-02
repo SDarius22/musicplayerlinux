@@ -40,7 +40,7 @@ class HoverContainer extends StatefulWidget {
             : constraints;
 
   @override
-  _HoverContainerState createState() => _HoverContainerState();
+  State<HoverContainer> createState() => _HoverContainerState();
 }
 
 class _HoverContainerState extends State<HoverContainer> {

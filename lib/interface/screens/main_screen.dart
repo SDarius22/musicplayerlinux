@@ -1,4 +1,3 @@
-import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:flutter/material.dart';
 
 import '../../controller/app_audio_handler.dart';
@@ -13,15 +12,14 @@ import 'home.dart';
 import 'welcome_screen.dart';
 
 class MyApp extends StatefulWidget {
-  final List<String> args;
-  const MyApp({super.key, required this.args});
+  const MyApp({super.key});
   @override
   State<MyApp> createState() => _MyAppState();
 }
 
 class _MyAppState extends State<MyApp> {
 
-  late Future<Widget> _timerFuture;
+  late Future _timerFuture;
 
   @override
   void initState() {
@@ -34,27 +32,8 @@ class _MyAppState extends State<MyApp> {
       AppManager.init();
       OnlineController.init();
 
-      if (widget.args.isNotEmpty){
-        debugPrint("App is already running, should add to queue!");
-        SettingsController.queue = widget.args;
-        SettingsController.index = 0;
-      }
-
       final apc = AudioPlayerController();
       apc.updateCurrentSong(SettingsController.currentSongPath);
-      doWhenWindowReady(() {
-        final win = appWindow;
-        win.minSize = const Size(800, 600);
-        win.alignment = Alignment.center;
-        win.title = 'Music Player';
-        win.maximize();
-        win.show();
-      });
-      if (SettingsController.firstTime) {
-        return const WelcomeScreen();
-      } else {
-        return const HomePage();
-      }
     });
     super.initState();
   }
@@ -66,7 +45,11 @@ class _MyAppState extends State<MyApp> {
       future: _timerFuture,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.done) {
-          return snapshot.data!;
+          if (SettingsController.firstTime) {
+            return const WelcomeScreen();
+          } else {
+            return const HomePage();
+          }
         }
         return const Scaffold(
           body: Center(

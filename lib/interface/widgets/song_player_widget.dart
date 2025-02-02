@@ -367,9 +367,9 @@ class _SongPlayerWidgetState extends State<SongPlayerWidget> {
                                                           path: "",
                                                           buttons: IconButton(
                                                             onPressed: () async {
-                                                              // debugPrint("Delete song from queue");
-                                                              // await dc.removeFromQueue(SettingsController.queue[index]);
-                                                              // setState(() {});
+                                                              debugPrint("Delete song from queue");
+                                                              await dc.removeFromQueue(SettingsController.queue[index]);
+                                                              setState(() {});
                                                             },
                                                             icon: Icon(
                                                               FluentIcons.trash,
@@ -744,116 +744,116 @@ class _SongPlayerWidgetState extends State<SongPlayerWidget> {
                             // Lyrics
                             if(!values[0])
                               FutureBuilder(
-                                  future: lyricFuture,
-                                  builder: (context, snapshot){
-                                    if(snapshot.hasData){
-                                      String plainLyric = snapshot.data![0];
-                                      var lyricModel = LyricsModelBuilder.create().bindLyricToMain(snapshot.data![1]).getModel();
-                                      return MultiValueListenableBuilder(
-                                          valueListenables: [SettingsController.sliderNotifier, SettingsController.playingNotifier],
-                                          builder: (context, value, child){
-                                            return AnimatedContainer(
-                                              duration: const Duration(milliseconds: 500),
-                                              height: width * 0.275,
-                                              width: width * 0.275,
-                                              padding: EdgeInsets.symmetric(
-                                                horizontal: width * 0.01,
-                                                vertical: height * 0.01,
+                                future: lyricFuture,
+                                builder: (context, snapshot){
+                                  if(snapshot.hasData){
+                                    String plainLyric = snapshot.data![0];
+                                    var lyricModel = LyricsModelBuilder.create().bindLyricToMain(snapshot.data![1]).getModel();
+                                    return MultiValueListenableBuilder(
+                                        valueListenables: [SettingsController.sliderNotifier, SettingsController.playingNotifier],
+                                        builder: (context, value, child){
+                                          return AnimatedContainer(
+                                            duration: const Duration(milliseconds: 500),
+                                            height: width * 0.275,
+                                            width: width * 0.275,
+                                            padding: EdgeInsets.symmetric(
+                                              horizontal: width * 0.01,
+                                              vertical: height * 0.01,
+                                            ),
+                                            child: LyricsReader(
+                                              model: lyricModel,
+                                              position: value[0],
+                                              lyricUi: lyricUI,
+                                              playing: SettingsController.playing,
+                                              size: Size.infinite,
+                                              padding: EdgeInsets.only(
+                                                right: width * 0.02,
+                                                left: width * 0.02,
                                               ),
-                                              child: LyricsReader(
-                                                model: lyricModel,
-                                                position: value[0],
-                                                lyricUi: lyricUI,
-                                                playing: SettingsController.playing,
-                                                size: Size.infinite,
-                                                padding: EdgeInsets.only(
-                                                  right: width * 0.02,
-                                                  left: width * 0.02,
-                                                ),
-                                                selectLineBuilder: (progress, confirm) {
-                                                  return Row(
-                                                    children: [
-                                                      Icon(FluentIcons.play, color: SettingsController.lightColorNotifier.value),
-                                                      Expanded(
-                                                        child: MouseRegion(
-                                                          cursor: SystemMouseCursors.click,
-                                                          child: GestureDetector(
-                                                            onTap: () {
-                                                              confirm.call();
-                                                              setState(() {
-                                                                AudioPlayerController.audioPlayer.seek(Duration(milliseconds: progress));
-                                                              });
-                                                            },
-                                                          ),
+                                              selectLineBuilder: (progress, confirm) {
+                                                return Row(
+                                                  children: [
+                                                    Icon(FluentIcons.play, color: SettingsController.lightColorNotifier.value),
+                                                    Expanded(
+                                                      child: MouseRegion(
+                                                        cursor: SystemMouseCursors.click,
+                                                        child: GestureDetector(
+                                                          onTap: () {
+                                                            confirm.call();
+                                                            setState(() {
+                                                              AudioPlayerController.audioPlayer.seek(Duration(milliseconds: progress));
+                                                            });
+                                                          },
                                                         ),
                                                       ),
-                                                      Text(
-                                                        //progress.toString(),
-                                                        "${progress ~/ 1000 ~/ 60}:${(progress ~/ 1000 % 60).toString().padLeft(2, '0')}",
-                                                        style: TextStyle(color: SettingsController.lightColorNotifier.value),
-                                                      )
-                                                    ],
-                                                  );
-                                                },
-                                                emptyBuilder: () => plainLyric.contains("No lyrics") || plainLyric.contains("Searching")?
-                                                Center(
-                                                    child: Text(
-                                                      plainLyric,
-                                                      style: TextStyle(
-                                                        color: Colors.white,
-                                                        fontSize: normalSize,
-                                                        fontFamily: 'Bahnschrift',
-                                                        fontWeight: FontWeight.normal,
-                                                      ),
-                                                    )
-                                                ):
-                                                ScrollConfiguration(
-                                                  behavior: ScrollConfiguration.of(context).copyWith(
-                                                    dragDevices: {
-                                                      PointerDeviceKind.touch,
-                                                      PointerDeviceKind.mouse,
-                                                    },
-                                                  ),
-                                                  child: SingleChildScrollView(
-                                                    scrollDirection: Axis.vertical,
-                                                    physics: const BouncingScrollPhysics(),
-                                                    child: SingleChildScrollView(
-                                                        scrollDirection: Axis.horizontal,
-                                                        child: Text(
-                                                          plainLyric,
-                                                          style: TextStyle(
-                                                            color: Colors.white,
-                                                            fontSize: normalSize,
-                                                            fontFamily: 'Bahnschrift',
-                                                            fontWeight: FontWeight.normal,
-                                                          ),
-                                                        )
                                                     ),
+                                                    Text(
+                                                      //progress.toString(),
+                                                      "${progress ~/ 1000 ~/ 60}:${(progress ~/ 1000 % 60).toString().padLeft(2, '0')}",
+                                                      style: TextStyle(color: SettingsController.lightColorNotifier.value),
+                                                    )
+                                                  ],
+                                                );
+                                              },
+                                              emptyBuilder: () => plainLyric.contains("No lyrics") || plainLyric.contains("Searching")?
+                                              Center(
+                                                  child: Text(
+                                                    plainLyric,
+                                                    style: TextStyle(
+                                                      color: Colors.white,
+                                                      fontSize: normalSize,
+                                                      fontFamily: 'Bahnschrift',
+                                                      fontWeight: FontWeight.normal,
+                                                    ),
+                                                  )
+                                              ):
+                                              ScrollConfiguration(
+                                                behavior: ScrollConfiguration.of(context).copyWith(
+                                                  dragDevices: {
+                                                    PointerDeviceKind.touch,
+                                                    PointerDeviceKind.mouse,
+                                                  },
+                                                ),
+                                                child: SingleChildScrollView(
+                                                  scrollDirection: Axis.vertical,
+                                                  physics: const BouncingScrollPhysics(),
+                                                  child: SingleChildScrollView(
+                                                      scrollDirection: Axis.horizontal,
+                                                      child: Text(
+                                                        plainLyric,
+                                                        style: TextStyle(
+                                                          color: Colors.white,
+                                                          fontSize: normalSize,
+                                                          fontFamily: 'Bahnschrift',
+                                                          fontWeight: FontWeight.normal,
+                                                        ),
+                                                      )
                                                   ),
                                                 ),
-
                                               ),
-                                            );
-                                          }
-                                      );
-                                    }
-                                    else if(snapshot.hasError){
-                                      return _errorWidget(snapshot.error.toString());
-                                    }
-                                    else {
-                                      return Center(
-                                          child: Text(
-                                            "Searching for lyrics...",
-                                            style: TextStyle(
-                                              color: Colors.white,
-                                              fontSize: normalSize,
-                                              fontFamily: 'Bahnschrift',
-                                              fontWeight: FontWeight.normal,
+
                                             ),
-                                          )
-                                      );
-                                    }
+                                          );
+                                        }
+                                    );
                                   }
+                                  else if(snapshot.hasError){
+                                    return _errorWidget(snapshot.error.toString());
+                                  }
+                                  else {
+                                    return Center(
+                                        child: Text(
+                                          "Searching for lyrics...",
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: normalSize,
+                                            fontFamily: 'Bahnschrift',
+                                            fontWeight: FontWeight.normal,
+                                          ),
+                                        )
+                                    );
+                                  }
+                                }
                               ),
 
                             Column(
