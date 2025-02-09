@@ -6,7 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:flutter_single_instance/flutter_single_instance.dart';
-import 'interface/screens/main_screen.dart';
+import 'interface/screens/my_app.dart';
 
 Future<void> main(List<String> args) async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -32,15 +32,15 @@ Future<void> main(List<String> args) async {
     };
 
     runApp(
-        MaterialApp(
-          theme: ThemeData(
-            brightness: Brightness.dark,
-            scaffoldBackgroundColor: const Color(0xFF0E0E0E),
-          ),
-          debugShowCheckedModeBanner: false,
-          //showPerformanceOverlay: true,
-          home: const MyApp(),
+      MaterialApp(
+        theme: ThemeData(
+          brightness: Brightness.dark,
+          scaffoldBackgroundColor: const Color(0xFF0E0E0E),
         ),
+        debugShowCheckedModeBanner: false,
+        //showPerformanceOverlay: true,
+        home: const MyApp(),
+      ),
     );
 
   } else {

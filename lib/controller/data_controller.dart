@@ -25,6 +25,10 @@ class DataController {
   static get playlistBox => ObjectBox.store.box<PlaylistType>();
   static get songBox => ObjectBox.store.box<SongType>();
 
+  static ValueNotifier<List<String>> selectedPaths = ValueNotifier([]);
+  static List<String> get selected => selectedPaths.value;
+  static set selected(List<String> value) => selectedPaths.value = value;
+
   static void init() {
     // initialize the data controller
   }
@@ -207,6 +211,11 @@ class DataController {
     } else if (SettingsController.queueAdd == 'next') {
       SettingsController.queue = List<String>.from(SettingsController.queue)..insertAll(SettingsController.index + 1, songs);
     }
+  }
+
+  Future<void> addNextToQueue(List<String> songs) async {
+    debugPrint("Adding to queue ${songs.length} songs.");
+    SettingsController.queue = List<String>.from(SettingsController.queue)..insertAll(SettingsController.index + 1, songs);
   }
 
   Future<void> createPlaylist(PlaylistType playlist) async {

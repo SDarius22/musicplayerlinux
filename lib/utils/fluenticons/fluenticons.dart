@@ -4,6 +4,8 @@ class FluentIcons{
   FluentIcons._();
 
   static const IconData add = IconData(0xE00C, fontFamily: 'FluentIcons-Resizable');
+  static const IconData addSingle = IconData(0xE010, fontFamily: 'FluentIcons-Resizable');
+  static const IconData addMultiple = IconData(0xE012, fontFamily: 'FluentIcons-Resizable');
   static const IconData subtract = IconData(0xF030, fontFamily: 'FluentIcons-Resizable');
 
   static const IconData album = IconData(0xE01C, fontFamily: 'FluentIcons-Resizable');
@@ -39,6 +41,8 @@ class FluentIcons{
   static const IconData listOn = IconData(0xEA87, fontFamily: 'FluentIcons-Resizable');
 
   static const IconData check = IconData(0xE405, fontFamily: 'FluentIcons-Resizable');
+  static const IconData checkCircleOn = IconData(0xE407, fontFamily: 'FluentIcons-Resizable');
+  static const IconData checkCircleOff = IconData(0xE408, fontFamily: 'FluentIcons-Resizable');
 
   static const IconData volumeOn = IconData(0xEFA0, fontFamily: 'FluentIcons-Resizable');
   static const IconData volumeOff = IconData(0xEFAA, fontFamily: 'FluentIcons-Resizable');
@@ -48,6 +52,9 @@ class FluentIcons{
 
   static const IconData play = IconData(0xED68, fontFamily: 'FluentIcons-Resizable');
   static const IconData pause = IconData(0xEC48, fontFamily: 'FluentIcons-Resizable');
+
+  static const IconData playNext1 = IconData(0xEB89, fontFamily: 'FluentIcons-Resizable');
+  static const IconData playNext2 = IconData(0xEB95, fontFamily: 'FluentIcons-Resizable');
 
   static const IconData previous = IconData(0xEDB0, fontFamily: 'FluentIcons-Resizable');
   static const IconData next = IconData(0xEB9F, fontFamily: 'FluentIcons-Resizable');

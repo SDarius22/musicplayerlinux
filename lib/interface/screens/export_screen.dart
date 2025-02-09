@@ -25,7 +25,7 @@ class _ExportScreenState extends State<ExportScreen> {
     //var boldSize = height * 0.025;
     var normalSize = height * 0.02;
     var smallSize = height * 0.015;
-    var query = DataController.playlistBox.query().order(PlaylistType_.name).build();
+    var query = DataController.playlistBox.query(PlaylistType_.indestructible.equals(false)).order(PlaylistType_.name).build();
     return Scaffold(
       body: Container(
         width: width,
@@ -151,6 +151,7 @@ class _ExportScreenState extends State<ExportScreen> {
                                 else
                                   ImageWidget(
                                     path: playlist.paths.first,
+                                    heroTag: "${playlist.paths.first} $index",
                                   ),
                                 if(selected.contains(index))
                                   BackdropFilter(

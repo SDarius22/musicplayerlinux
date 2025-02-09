@@ -81,7 +81,7 @@ class _UserScreenState extends State<UserScreen> {
                           ),
                         );
                       }
-                      return oc.loggedInNotifier.value ?
+                      return OnlineController.loggedInNotifier.value ?
                       Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
@@ -103,7 +103,7 @@ class _UserScreenState extends State<UserScreen> {
                                 debugPrint("Logout");
                                 SettingsController.email = '';
                                 SettingsController.password = '';
-                                oc.loggedInNotifier.value = false;
+                                OnlineController.loggedInNotifier.value = false;
                                 SettingsController.mongoID = '';
                                 // oc.settingsBox.put(oc.settings);
                                 login = true;

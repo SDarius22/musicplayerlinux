@@ -10,9 +10,8 @@ import '../../repository/objectbox.g.dart';
 import '../../utils/hover_widget/hover_widget.dart';
 
 class CreateScreen extends StatefulWidget {
-  final List<String>? paths;
-  final String name;
-  const CreateScreen({super.key, this.paths, required this.name});
+  final List<String> args;
+  const CreateScreen({super.key, required this.args});
 
   @override
   State<CreateScreen> createState() => _CreateScreenState();
@@ -28,9 +27,11 @@ class _CreateScreenState extends State<CreateScreen> {
 
   @override
   void initState() {
-    playlistName = widget.name;
-    if (widget.paths != null && widget.paths!.isNotEmpty) {
-      for (var path in widget.paths!) {
+    var name = widget.args[0];
+    var paths = widget.args.sublist(1);
+    playlistName = name;
+    if (paths.isNotEmpty) {
+      for (var path in paths) {
         debugPrint(path);
         try {
           selected.add(DataController.songBox.query(SongType_.path.contains(path)).build().findFirst());
@@ -128,7 +129,7 @@ class _CreateScreenState extends State<CreateScreen> {
                       Navigator.pop(context);
                     },
                     child: Text(
-                      widget.name.isEmpty ? "Create" : "Import",
+                      widget.args[0].isEmpty ? "Create" : "Import",
                       style: TextStyle(
                           color: Colors.white,
                           fontSize: normalSize
@@ -257,11 +258,11 @@ class _CreateScreenState extends State<CreateScreen> {
                   SizedBox(
                     height: height * 0.5,
                     child: FutureBuilder(
-                      future: DataController.getSongs(search, 25),
-                      builder: (context, snapshot) {
-                        if(snapshot.hasData){
-                          List<SongType> songs = snapshot.data ?? [];
-                          return songs.isNotEmpty ?
+                        future: DataController.getSongs(search, 25),
+                        builder: (context, snapshot) {
+                          if(snapshot.hasData){
+                            List<SongType> songs = snapshot.data ?? [];
+                            return songs.isNotEmpty ?
                             ListView.builder(
                               itemCount: songs.length,
                               itemBuilder: (context, int index) {
@@ -507,26 +508,26 @@ class _CreateScreenState extends State<CreateScreen> {
                                   fontSize: normalSize
                               ),
                             );
-                        }
-                        else if(snapshot.hasError){
-                          return Center(
-                            child: Text(
-                              "Error occured. Try again later.",
-                              style: TextStyle(
-                                fontWeight: FontWeight.normal,
-                                fontSize: normalSize,
+                          }
+                          else if(snapshot.hasError){
+                            return Center(
+                              child: Text(
+                                "Error occured. Try again later.",
+                                style: TextStyle(
+                                  fontWeight: FontWeight.normal,
+                                  fontSize: normalSize,
+                                ),
                               ),
-                            ),
-                          );
+                            );
+                          }
+                          else{
+                            return const Center(
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                              ),
+                            );
+                          }
                         }
-                        else{
-                          return const Center(
-                            child: CircularProgressIndicator(
-                              color: Colors.white,
-                            ),
-                          );
-                        }
-                      }
                     ),
                   ),
                 ],

@@ -12,11 +12,8 @@ import 'package:system_tray/system_tray.dart';
 
 class AppManager{
   static final AppManager _instance = AppManager._internal();
-
   factory AppManager() => _instance;
-
   AppManager._internal();
-
 
   static final Menu _menuMain = Menu();
   static final SystemTray _systemTray = SystemTray();

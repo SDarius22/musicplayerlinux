@@ -24,8 +24,11 @@ class _NotificationWidgetState extends State<NotificationWidget> {
           duration: const Duration(milliseconds: 500),
           curve: Curves.easeInOut,
           height: value == "" ? 0 : height * 0.07,
+          width: width * 0.85,
           padding: EdgeInsets.symmetric(horizontal: width * 0.01),
+          margin: EdgeInsets.only(top: value == "" ? 0 : height * 0.15),
           color: const Color(0xFF0E0E0E),
+          alignment: Alignment.center,
           child: Row(
             children: [
               Text(

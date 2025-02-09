@@ -91,7 +91,8 @@ final _entities = <obx_int.ModelEntity>[
             id: const obx_int.IdUid(2, 6153441952504667348),
             name: 'name',
             type: 9,
-            flags: 0),
+            flags: 2080,
+            indexId: const obx_int.IdUid(1, 7367164430817532663)),
         obx_int.ModelProperty(
             id: const obx_int.IdUid(3, 5415571419012464132),
             name: 'nextAdded',
@@ -376,7 +377,7 @@ obx_int.ModelDefinition getObjectBoxModel() {
   final model = obx_int.ModelInfo(
       entities: _entities,
       lastEntityId: const obx_int.IdUid(5, 7894316662941293306),
-      lastIndexId: const obx_int.IdUid(0, 0),
+      lastIndexId: const obx_int.IdUid(1, 7367164430817532663),
       lastRelationId: const obx_int.IdUid(3, 3440552932794375637),
       lastSequenceId: const obx_int.IdUid(0, 0),
       retiredEntityUids: const [],

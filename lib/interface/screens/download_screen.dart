@@ -214,7 +214,8 @@ class _DownloadState extends State<Download>{
                                 borderRadius: BorderRadius.circular(width * 0.01),
                                 child: ImageWidget(
                                   url: song['album']['cover_medium'],
-                                  buttons: ValueListenableBuilder(
+                                  heroTag: song['album']['cover_medium'],
+                                  hoveredChild: ValueListenableBuilder(
                                       valueListenable: progress,
                                       builder: (context, value, child){
                                         return value == 0.0 ?

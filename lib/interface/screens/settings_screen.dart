@@ -3,12 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:musicplayer/utils/fluenticons/fluenticons.dart';
 import 'package:musicplayer/controller/data_controller.dart';
-import 'package:musicplayer/interface/screens/create_screen.dart';
-import 'package:musicplayer/interface/screens/export_screen.dart';
 import 'package:musicplayer/controller/settings_controller.dart';
-import 'package:musicplayer/interface/screens/home.dart';
 
-import '../../controller/app_manager.dart';
 import '../../controller/audio_player_controller.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -22,14 +18,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final am = AppManager();
     var width = MediaQuery.of(context).size.width;
     var height = MediaQuery.of(context).size.height;
     //var boldSize = height * 0.025;
     var normalSize = height * 0.02;
     var smallSize = height * 0.015;
-    return Scaffold(
-      body: Container(
+    return Container(
         width: width,
         height: height,
         padding: EdgeInsets.only(
@@ -136,12 +130,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           String directory = await FilePicker.platform.getDirectoryPath() ?? "";
                           if(directory != "") {
                             setState(() {
-                             SettingsController.directory = directory;
+                              SettingsController.directory = directory;
                             });
                             SettingsController.queue = [];
                             SettingsController.index = 0;
                             DataController.reset();
-                            am.navigatorKey.currentState!.pop(MaterialPageRoute(builder: (context) => const HomePage()));
+                            if(mounted) {
+                              Navigator.pushReplacementNamed(context, '/');
+                            }
+                            // am.navigatorKey.currentState!.pop(MaterialPageRoute(builder: (context) => const HomeScreen()));
                             // SettingsController.settingsBox.put(SettingsController.settings);
                             // SettingsController.reset();
                           }
@@ -227,7 +224,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           ],
                           onChanged: (String? newValue){
                             setState(() {
-                             SettingsController.queueAdd = newValue ?? "last";
+                              SettingsController.queueAdd = newValue ?? "last";
                             });
                             // SettingsController.settingsBox.put(SettingsController.settings);
                           }
@@ -306,7 +303,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           ],
                           onChanged: (String? newValue){
                             setState(() {
-                             SettingsController.queuePlay = newValue ?? "all";
+                              SettingsController.queuePlay = newValue ?? "all";
                             });
                             // SettingsController.settingsBox.put(SettingsController.settings);
                           }
@@ -881,7 +878,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               for (int i = 0; i < lines.length; i++) {
                                 lines[i] = lines[i].split("/").last;
                               }
-                              am.navigatorKey.currentState!.push(MaterialPageRoute(builder: (context) => CreateScreen(name: playlistName, paths: lines,)));
+                              Navigator.pushNamed(context, '/create', arguments: [playlistName] + lines);
                             }
 
                           },
@@ -921,7 +918,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       const Spacer(),
                       IconButton(
                           onPressed: (){
-                            am.navigatorKey.currentState!.push(MaterialPageRoute(builder: (context) => const ExportScreen()));
+                            Navigator.pushNamed(context, '/export');
                           },
                           icon: Icon(FluentIcons.open, color: Colors.white, size: height * 0.03,)
                       ),
@@ -996,7 +993,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
           ],
         )
-      ),
     );
   }
 }

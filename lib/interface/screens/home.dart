@@ -1,41 +1,26 @@
 import 'dart:ui';
-import 'package:bitsdojo_window/bitsdojo_window.dart';
-import 'package:desktop_drop/desktop_drop.dart';
-import 'package:musicplayer/utils/fluenticons/fluenticons.dart';
 import 'package:flutter/material.dart';
 import 'package:musicplayer/controller/worker_controller.dart';
-import 'package:musicplayer/interface/screens/settings_screen.dart';
-import 'package:musicplayer/interface/widgets/song_player_widget.dart';
-import 'package:musicplayer/interface/screens/user_screen.dart';
-import '../../controller/app_audio_handler.dart';
-import '../../controller/app_manager.dart';
-import '../../controller/audio_player_controller.dart';
 import '../../controller/data_controller.dart';
-import '../../controller/online_controller.dart';
 import '../../controller/settings_controller.dart';
 import 'albums.dart';
 import 'artists.dart';
 import 'download_screen.dart';
-import '../widgets/notification_widget.dart';
+
 import 'tracks.dart';
 import 'playlists.dart';
 
 
-class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+class HomeScreen extends StatefulWidget {
+  const HomeScreen({super.key});
   @override
-  State<HomePage> createState() => _HomePageState();
+  State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomePageState extends State<HomePage>{
-  bool volume = true;
-
+class _HomeScreenState extends State<HomeScreen>{
   int currentPage = 3;
   String userMessage = "No message";
   final PageController _pageController = PageController(initialPage: 5);
-
-  final ValueNotifier<bool> _dragging = ValueNotifier(false);
-  final ValueNotifier<bool> _visible = ValueNotifier(false);
 
   late Future<void> _init;
 
@@ -60,540 +45,211 @@ class _HomePageState extends State<HomePage>{
 
   @override
   Widget build(BuildContext context) {
-    final dc = DataController();
-    final am = AppManager();
-    final oc = OnlineController();
-
     var width = MediaQuery.of(context).size.width;
     var height = MediaQuery.of(context).size.height;
     // var boldSize = height * 0.025;
-    var normalSize = height * 0.02;
-    var smallSize = height * 0.0175;
+    // var normalSize = height * 0.02;
+    // var smallSize = height * 0.0175;
 
-    return Scaffold(
-      body: SizedBox(
-          width: width,
-          height: height,
-          child: Column(
+    return SizedBox(
+      width: width,
+      height: height,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: [
+          // artists, albums, playlists, tracks
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              WindowTitleBarBox(
-                child: ValueListenableBuilder(
-                  valueListenable: SettingsController.darkColorNotifier,
-                  builder: (context, value, child){
-                    return AnimatedContainer(
-                      duration: const Duration(milliseconds: 500),
-                      color: SettingsController.darkColorNotifier.value,
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          Expanded(
-                              child: MoveWindow(
-                                child: Container(
-                                  padding: EdgeInsets.only(
-                                      left: width * 0.01
-                                  ),
-                                  alignment: Alignment.centerLeft,
-                                  child: Text(
-                                    'Music Player',
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: normalSize,
-                                    ),
-                                  ),
-                                ),
-                              )
-                          ),
-                          ValueListenableBuilder(
-                            valueListenable: _visible,
-                            builder: (context, value, child) =>
-                                Row(
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  mainAxisAlignment: MainAxisAlignment.end,
-                                  children: [
-                                    Visibility(
-                                      visible: _visible.value,
-                                      child: SizedBox(
-                                        height: height * 0.05,
-                                        width: width * 0.1,
-                                        child:
-                                        MouseRegion(
-                                          onEnter: (event) {
-                                            _visible.value = true;
-                                          },
-                                          onExit: (event) {
-                                            _visible.value = false;
-                                          },
-                                          child: ValueListenableBuilder(
-                                              valueListenable: SettingsController.volumeNotifier,
-                                              builder: (context, value, child){
-                                                return SliderTheme(
-                                                  data: SliderThemeData(
-                                                    trackHeight: 2,
-                                                    thumbShape: RoundSliderThumbShape(enabledThumbRadius: height * 0.0075),
-                                                  ),
-                                                  child: Slider(
-                                                    min: 0.0,
-                                                    max: 1.0,
-                                                    mouseCursor: SystemMouseCursors.click,
-                                                    value: value,
-                                                    activeColor: SettingsController.lightColorNotifier.value,
-                                                    thumbColor: Colors.white,
-                                                    inactiveColor: Colors.white,
-                                                    onChanged: (double value) {
-                                                      SettingsController.volume = value;
-                                                      AudioPlayerController.audioPlayer.setVolume(value);
-                                                    },
-                                                  ),
-                                                );
-                                              }
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                    MouseRegion(
-                                      onEnter: (event) {
-                                        _visible.value = true;
-                                      },
-                                      onExit: (event) {
-                                        _visible.value = false;
-                                      },
-                                      child: ValueListenableBuilder(
-                                          valueListenable: SettingsController.volumeNotifier,
-                                          builder: (context, value, child) {
-                                            return IconButton(
-                                              icon: volume ? Icon(
-                                                FluentIcons.volumeOn,
-                                                size: height * 0.02,
-                                                color: Colors.white,
-                                              ) :
-                                              Icon(
-                                                FluentIcons.volumeOff,
-                                                size: height * 0.02,
-                                                color: Colors.white,
-                                              ),
-                                              onPressed: () {
-                                                if(volume) {
-                                                  SettingsController.volume = 0;
-                                                }
-                                                else {
-                                                  SettingsController.volume = 0.1;
-                                                }
-                                                volume = !volume;
-                                                AudioPlayerController.audioPlayer.setVolume(SettingsController.volume);
-                                              },
-                                            );
-                                          }
-                                      ),
-                                    ),
-                                    IconButton(
-                                        onPressed: (){
-                                          debugPrint("Tapped settings");
-                                          am.minimizedNotifier.value = true;
-                                          am.navigatorKey.currentState!.push(MaterialPageRoute(builder: (BuildContext context){
-                                            return const SettingsScreen();
-                                          })).then((value) {
-                                            setState(() {
-                                              _init = Future(() async {
-                                                await WorkerController.retrieveAllSongs();
-                                                if (SettingsController.queue.isEmpty) {
-                                                  debugPrint("Queue is empty");
-                                                  var songs = await DataController.getSongs('');
-                                                  SettingsController.queue =
-                                                      songs.map((e) => e.path).toList();
-                                                  SettingsController.index = 0;
-                                                }
-                                              });
-                                            });
-                                          });
-                                        },
-                                        icon: Icon(
-                                          FluentIcons.settings,
-                                          size: height * 0.02,
-                                          color: Colors.white,
-                                        )
-                                    ),
-                                    ValueListenableBuilder(
-                                      valueListenable: oc.loggedInNotifier,
-                                      builder: (context, value, child) =>
-                                          ElevatedButton.icon(
-                                            onPressed: () async {
-                                              debugPrint("Tapped user");
-                                              am.minimizedNotifier.value = true;
-                                                am.navigatorKey.currentState!.push(
-                                                    MaterialPageRoute(
-                                                        builder: (BuildContext context) {
-                                                          return const UserScreen();
-                                                        }));
-                                            },
-                                            iconAlignment: IconAlignment.end,
-                                            label: Text(
-                                              value ? SettingsController.email : "Log in",
-                                              style: TextStyle(
-                                                color: Colors.white,
-                                                fontSize: smallSize,
-                                              ),
-                                            ),
-                                            icon: Icon(
-                                              value ? FluentIcons.circlePersonFilled : FluentIcons.circlePerson,
-                                              size: height * 0.02,
-                                              color: Colors.white,
-                                            ),
-                                            style: ButtonStyle(
-                                              backgroundColor: WidgetStateProperty.all<Color>(Colors.transparent),
-                                              elevation: WidgetStateProperty.all<double>(0),
-                                              padding: WidgetStateProperty.all<EdgeInsetsGeometry>(EdgeInsets.symmetric(horizontal: width * 0.01)),
-                                            ),
-                                          ),
-                                    ),
-
-
-                                  ],
-                                ),
-                          ),
-                          Icon(
-                            FluentIcons.divider,
-                            size: height * 0.02,
-                            color: Colors.white,
-                          ),
-                          MinimizeWindowButton(
-                            animate: true,
-                            colors: WindowButtonColors(
-                              normal: Colors.transparent,
-                              iconNormal: Colors.white,
-                              iconMouseOver: Colors.white,
-                              mouseOver: Colors.grey,
-                              mouseDown: Colors.grey,
+              Expanded(
+                  child: SizedBox(
+                      height: MediaQuery.of(context).size.height * 0.045,
+                      child: ElevatedButton(
+                          onPressed: (){
+                            //debugPrint("Artists");
+                            _pageController.animateToPage(0,
+                                duration: const Duration(milliseconds: 500),
+                                curve: Curves.easeIn
+                            );
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: currentPage != 0 ? const Color(0xFF0E0E0E) : const Color(0xFF1b1b1b),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(0),
                             ),
                           ),
-                          appWindow.isMaximized ?
-                          RestoreWindowButton(
-                            animate: true,
-                            colors: WindowButtonColors(
-                              normal: Colors.transparent,
-                              iconNormal: Colors.white,
-                              iconMouseOver: Colors.white,
-                              mouseOver: Colors.grey,
-                              mouseDown: Colors.grey,
+                          child: Text(
+                            "Artists",
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: currentPage != 0 ?
+                              MediaQuery.of(context).size.height * 0.02 : MediaQuery.of(context).size.height * 0.025,
                             ),
-                          ) :
-                          MaximizeWindowButton(
-                            animate: true,
-                            colors: WindowButtonColors(
-                              normal: Colors.transparent,
-                              iconNormal: Colors.white,
-                              iconMouseOver: Colors.white,
-                              mouseOver: Colors.grey,
-                              mouseDown: Colors.grey,
-                            ),
-                          ),
-                          CloseWindowButton(
-                            animate: true,
-                            onPressed: (){
-                              if(SettingsController.fullClose){
-                                appWindow.close();
-                              }
-                              else{
-                                appWindow.hide();
-                              }
-                            },
-                            colors: WindowButtonColors(
-                              normal: Colors.transparent,
-                              iconNormal: Colors.white,
-                              iconMouseOver: Colors.white,
-                              mouseOver: Colors.grey,
-                              mouseDown: Colors.grey,
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                ),
+                          )
+                      )
+                  )
               ),
               Expanded(
-                child: Stack(
-                  children: [
-                    HeroControllerScope(
-                      controller: MaterialApp.createMaterialHeroController(),
-                      child: Navigator(
-                        key: am.navigatorKey,
-                        onGenerateRoute: (settings) {
-                          return MaterialPageRoute(
-                            builder: (context) => Column(
-                              mainAxisAlignment: MainAxisAlignment.start,
-                              children: [
-                                // artists, albums, playlists, tracks
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Expanded(
-                                        child: SizedBox(
-                                            height: MediaQuery.of(context).size.height * 0.045,
-                                            child: ElevatedButton(
-                                                onPressed: (){
-                                                  //debugPrint("Artists");
-                                                  _pageController.animateToPage(0,
-                                                      duration: const Duration(milliseconds: 500),
-                                                      curve: Curves.easeIn
-                                                  );
-                                                },
-                                                style: ElevatedButton.styleFrom(
-                                                  backgroundColor: currentPage != 0 ? const Color(0xFF0E0E0E) : const Color(0xFF1b1b1b),
-                                                  shape: RoundedRectangleBorder(
-                                                    borderRadius: BorderRadius.circular(0),
-                                                  ),
-                                                ),
-                                                child: Text(
-                                                  "Artists",
-                                                  style: TextStyle(
-                                                    color: Colors.white,
-                                                    fontSize: currentPage != 0 ?
-                                                    MediaQuery.of(context).size.height * 0.02 : MediaQuery.of(context).size.height * 0.025,
-                                                  ),
-                                                )
-                                            )
-                                        )
-                                    ),
-                                    Expanded(
-                                        child: SizedBox(
-                                            height: MediaQuery.of(context).size.height * 0.045,
-                                            child: ElevatedButton(
-                                                onPressed: (){
-                                                  //debugPrint("Artists");
-                                                  _pageController.animateToPage(1,
-                                                      duration: const Duration(milliseconds: 500),
-                                                      curve: Curves.easeIn
-                                                  );
-                                                },
-                                                style: ElevatedButton.styleFrom(
-                                                  backgroundColor: currentPage != 1 ? const Color(0xFF0E0E0E) : const Color(0xFF1b1b1b),
-                                                  shape: RoundedRectangleBorder(
-                                                    borderRadius: BorderRadius.circular(0),
-                                                  ),
-                                                ),
-                                                child: Text(
-                                                  "Albums",
-                                                  style: TextStyle(
-                                                    color: Colors.white,
-                                                    fontSize: currentPage != 1 ?
-                                                    MediaQuery.of(context).size.height * 0.02 : MediaQuery.of(context).size.height * 0.025,
-                                                  ),
-                                                )
-                                            )
-                                        )
-                                    ),
-                                    Expanded(
-                                        child: SizedBox(
-                                            height: MediaQuery.of(context).size.height * 0.045,
-                                            child: ElevatedButton(
-                                                onPressed: (){
-                                                  //debugPrint("Artists");
-                                                  _pageController.animateToPage(2,
-                                                      duration: const Duration(milliseconds: 500),
-                                                      curve: Curves.easeIn
-                                                  );
-                                                },
-                                                style: ElevatedButton.styleFrom(
-                                                  backgroundColor: currentPage != 2 ? const Color(0xFF0E0E0E) : const Color(0xFF1b1b1b),
-                                                  shape: RoundedRectangleBorder(
-                                                    borderRadius: BorderRadius.circular(0),
-                                                  ),
-                                                ),
-                                                child: Text(
-                                                  "Download",
-                                                  style: TextStyle(
-                                                    color: Colors.white,
-                                                    fontSize: currentPage != 2 ?
-                                                    MediaQuery.of(context).size.height * 0.02 : MediaQuery.of(context).size.height * 0.025,
-                                                  ),
-                                                )
-                                            )
-                                        )
-                                    ),
-                                    Expanded(
-                                        child: SizedBox(
-                                            height: MediaQuery.of(context).size.height * 0.045,
-                                            child: ElevatedButton(
-                                                onPressed: (){
-                                                  //debugPrint("Artists");
-                                                  _pageController.animateToPage(3,
-                                                      duration: const Duration(milliseconds: 500),
-                                                      curve: Curves.easeIn
-                                                  );
-                                                },
-                                                style: ElevatedButton.styleFrom(
-                                                  backgroundColor: currentPage != 3 ? const Color(0xFF0E0E0E) : const Color(0xFF1b1b1b),
-                                                  shape: RoundedRectangleBorder(
-                                                    borderRadius: BorderRadius.circular(0),
-                                                  ),
-                                                ),
-                                                child: Text(
-                                                  "Playlists",
-                                                  style: TextStyle(
-                                                    color: Colors.white,
-                                                    fontSize: currentPage != 3 ?
-                                                    MediaQuery.of(context).size.height * 0.02 : MediaQuery.of(context).size.height * 0.025,
-                                                  ),
-                                                )
-                                            )
-                                        )
-                                    ),
-                                    Expanded(
-                                        child: SizedBox(
-                                            height: MediaQuery.of(context).size.height * 0.045,
-                                            child: ElevatedButton(
-                                                onPressed: (){
-                                                  //debugPrint("Artists");
-                                                  _pageController.animateToPage(4,
-                                                      duration: const Duration(milliseconds: 500),
-                                                      curve: Curves.easeIn
-                                                  );
-                                                },
-                                                style: ElevatedButton.styleFrom(
-                                                  backgroundColor: currentPage != 4 ? const Color(0xFF0E0E0E) : const Color(0xFF1b1b1b),
-                                                  shape: RoundedRectangleBorder(
-                                                    borderRadius: BorderRadius.circular(0),
-                                                  ),
-                                                ),
-                                                child: Text(
-                                                  "Tracks",
-                                                  style: TextStyle(
-                                                    color: Colors.white,
-                                                    fontSize: currentPage != 4 ?
-                                                    MediaQuery.of(context).size.height * 0.02 : MediaQuery.of(context).size.height * 0.025,
-                                                  ),
-                                                )
-                                            )
-                                        )
-                                    ),
-                                  ],
-                                ),
-                                // current page
-                                Expanded(
-                                  child: Container(
-                                    padding: EdgeInsets.only(
-                                        top: height * 0.02,
-                                        left: width * 0.01,
-                                        right: width * 0.01,
-                                        bottom: height * 0.02
-                                    ),
-                                    child: FutureBuilder(
-                                      future: _init,
-                                      builder: (context, snapshot) {
-                                        if (snapshot.connectionState == ConnectionState.done) {
-                                          return PageView(
-                                            onPageChanged: (int index){
-                                              setState(() {
-                                                currentPage = index;
-                                              });
-                                            },
-                                            controller: _pageController,
-                                            scrollDirection: Axis.horizontal,
-                                            scrollBehavior: ScrollConfiguration.of(context).copyWith(
-                                              dragDevices: {
-                                                PointerDeviceKind.touch,
-                                                PointerDeviceKind.mouse,
-                                              },
-                                            ),
-                                            physics: const AlwaysScrollableScrollPhysics(),
-                                            children: const [
-                                              Artists(),
-                                              Albums(),
-                                              Download(),
-                                              Playlists(),
-                                              Tracks(),
-                                            ],
-
-                                          );
-                                        }
-                                        return const Center(
-                                          child: CircularProgressIndicator(),
-                                        );
-                                      },
-                                    ),
-                                  ),
-                                ),
-                              ],
+                  child: SizedBox(
+                      height: MediaQuery.of(context).size.height * 0.045,
+                      child: ElevatedButton(
+                          onPressed: (){
+                            //debugPrint("Artists");
+                            _pageController.animateToPage(1,
+                                duration: const Duration(milliseconds: 500),
+                                curve: Curves.easeIn
+                            );
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: currentPage != 1 ? const Color(0xFF0E0E0E) : const Color(0xFF1b1b1b),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(0),
                             ),
-                          );
-                        },
-                      ),
-                    ),
-                    AnimatedContainer(
-                      duration: const Duration(milliseconds: 500),
-                      alignment: Alignment.bottomCenter,
-                      child: const SongPlayerWidget(),
-                    ),
-                    ValueListenableBuilder(
-                      valueListenable: _dragging,
-                      builder: (context, value, child){
-                        return DropTarget(
-                            onDragDone: (detail) async {
-                              List<String> songs = [];
-                              for (final file in detail.files) {
-                                if (file.path.endsWith(".mp3") || file.path.endsWith(".wav") || file.path.endsWith(".flac") || file.path.endsWith(".m4a")) {
-                                  songs.add(file.path);
-                                }
-                              }
-                              if(songs.isNotEmpty) {
-                                // widget.controller.finishedRetrievingNotifier.value = false;
-                                for(var song in songs){
-                                  await DataController.getSong(song);
-                                }
-                                dc.updatePlaying(songs, 0);
-                                SettingsController.index = SettingsController.currentQueue.indexOf(songs[0]);
-                                await AppAudioHandler.play();
-                                // DataController.indexChange(songs[0]);
-                                // await widget.controller.playSong();
-                                //widget.controller.showNotification("Playing ${songs.length} new song${songs.length == 1 ? '' : 's'}. Do you want to add ${songs.length == 1 ? 'it' : 'them'} to your library?", 7500);
-                                am.showNotification("Playing ${songs.length} new song${songs.length == 1 ? '' : 's'} and adding them to your library", 7500);
-                                //widget.controller.finishedRetrievingNotifier.value = true;
-                              }
-                            },
-                            onDragEntered: (detail) {
-                              _dragging.value = true;
-                            },
-                            onDragExited: (detail) {
-                              _dragging.value = false;
-                            },
-                            child: IgnorePointer(
-                              child: Container(
-                                width: width,
-                                height: height,
-                                color: _dragging.value ? Colors.black.withOpacity(0.3) : Colors.transparent,
-                                child: _dragging.value ?
-                                Center(
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Icon(
-                                        FluentIcons.drag,
-                                        size: height * 0.1,
-                                        color: Colors.white,
-                                      ),
-                                      Text(
-                                        "Drop files here",
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: normalSize,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ) :
-                                Container(),
-                              ),
-                            )
-                        );
-                      },
-                    ),
-                  ],
-                ),
+                          ),
+                          child: Text(
+                            "Albums",
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: currentPage != 1 ?
+                              MediaQuery.of(context).size.height * 0.02 : MediaQuery.of(context).size.height * 0.025,
+                            ),
+                          )
+                      )
+                  )
+              ),
+              Expanded(
+                  child: SizedBox(
+                      height: MediaQuery.of(context).size.height * 0.045,
+                      child: ElevatedButton(
+                          onPressed: (){
+                            //debugPrint("Artists");
+                            _pageController.animateToPage(2,
+                                duration: const Duration(milliseconds: 500),
+                                curve: Curves.easeIn
+                            );
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: currentPage != 2 ? const Color(0xFF0E0E0E) : const Color(0xFF1b1b1b),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(0),
+                            ),
+                          ),
+                          child: Text(
+                            "Download",
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: currentPage != 2 ?
+                              MediaQuery.of(context).size.height * 0.02 : MediaQuery.of(context).size.height * 0.025,
+                            ),
+                          )
+                      )
+                  )
+              ),
+              Expanded(
+                  child: SizedBox(
+                      height: MediaQuery.of(context).size.height * 0.045,
+                      child: ElevatedButton(
+                          onPressed: (){
+                            //debugPrint("Artists");
+                            _pageController.animateToPage(3,
+                                duration: const Duration(milliseconds: 500),
+                                curve: Curves.easeIn
+                            );
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: currentPage != 3 ? const Color(0xFF0E0E0E) : const Color(0xFF1b1b1b),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(0),
+                            ),
+                          ),
+                          child: Text(
+                            "Playlists",
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: currentPage != 3 ?
+                              MediaQuery.of(context).size.height * 0.02 : MediaQuery.of(context).size.height * 0.025,
+                            ),
+                          )
+                      )
+                  )
+              ),
+              Expanded(
+                  child: SizedBox(
+                      height: MediaQuery.of(context).size.height * 0.045,
+                      child: ElevatedButton(
+                          onPressed: (){
+                            //debugPrint("Artists");
+                            _pageController.animateToPage(4,
+                                duration: const Duration(milliseconds: 500),
+                                curve: Curves.easeIn
+                            );
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: currentPage != 4 ? const Color(0xFF0E0E0E) : const Color(0xFF1b1b1b),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(0),
+                            ),
+                          ),
+                          child: Text(
+                            "Tracks",
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: currentPage != 4 ?
+                              MediaQuery.of(context).size.height * 0.02 : MediaQuery.of(context).size.height * 0.025,
+                            ),
+                          )
+                      )
+                  )
               ),
             ],
-          )
+          ),
+          // current page
+          Expanded(
+            child: Container(
+              padding: EdgeInsets.only(
+                  top: height * 0.02,
+                  left: width * 0.01,
+                  right: width * 0.01,
+                  bottom: height * 0.02
+              ),
+              child: FutureBuilder(
+                future: _init,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.done) {
+                    return PageView(
+                      onPageChanged: (int index){
+                        setState(() {
+                          currentPage = index;
+                        });
+                      },
+                      controller: _pageController,
+                      scrollDirection: Axis.horizontal,
+                      scrollBehavior: ScrollConfiguration.of(context).copyWith(
+                        dragDevices: {
+                          PointerDeviceKind.touch,
+                          PointerDeviceKind.mouse,
+                        },
+                      ),
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      children: const [
+                        Artists(),
+                        Albums(),
+                        Download(),
+                        Playlists(),
+                        Tracks(),
+                      ],
+
+                    );
+                  }
+                  return const Center(
+                    child: CircularProgressIndicator(),
+                  );
+                },
+              ),
+            ),
+          ),
+        ],
       ),
-      bottomNavigationBar: const NotificationWidget(),
     );
   }
 }

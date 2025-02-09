@@ -17,8 +17,8 @@ class OnlineController{
   final secretKey = encrypt.Key.fromUtf8("eP9CLbcaUxKfvhhFLWcusXWo3ZS2nR1P");
   final iv = encrypt.IV.fromUtf8("1234567890123456");
   static late Deezer instance;
-  ValueNotifier<bool> loggedInNotifier = ValueNotifier<bool>(false);
-  ValueNotifier<bool> downloadNotifier = ValueNotifier<bool>(false);
+  static ValueNotifier<bool> loggedInNotifier = ValueNotifier<bool>(false);
+  static ValueNotifier<bool> downloadNotifier = ValueNotifier<bool>(false);
 
   static void init(){
     initDeezer();

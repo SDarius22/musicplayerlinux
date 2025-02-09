@@ -5,9 +5,9 @@ import 'package:musicplayer/utils/hover_widget/hover_container.dart';
 import '../../controller/app_audio_handler.dart';
 import '../../controller/data_controller.dart';
 import '../../controller/settings_controller.dart';
+import '../../controller/worker_controller.dart';
 import '../../domain/song_type.dart';
 import 'package:musicplayer/domain/playlist_type.dart';
-import 'add_screen.dart';
 import '../widgets/image_widget.dart';
 
 class PlaylistScreen extends StatefulWidget {
@@ -134,8 +134,32 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
                                     //color: Colors.red,
                                     child: ClipRRect(
                                       borderRadius: BorderRadius.circular(width * 0.025),
-                                      child: ImageWidget(
-                                        path: widget.playlist.paths.isNotEmpty ? widget.playlist.paths.first : "",
+                                      child: FutureBuilder(
+                                        future: WorkerController.getImage(widget.playlist.paths.first),
+                                        builder: (context, snapshot) {
+                                          return AspectRatio(
+                                            aspectRatio: 1.0,
+                                            child: snapshot.hasData?
+                                            Container(
+                                              decoration: BoxDecoration(
+                                                color: Colors.black,
+                                                image: DecorationImage(
+                                                  fit: BoxFit.cover,
+                                                  image: Image.memory(snapshot.data!).image,
+                                                ),
+                                              ),
+                                            ) :
+                                            Container(
+                                              decoration: BoxDecoration(
+                                                  color: Colors.black,
+                                                  image: DecorationImage(
+                                                    fit: BoxFit.cover,
+                                                    image: Image.asset('assets/bg.png', fit: BoxFit.cover,).image,
+                                                  )
+                                              ),
+                                            ),
+                                          );
+                                        },
                                       ),
                                     ),
 
@@ -250,12 +274,7 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
                                 IconButton(
                                   onPressed: (){
                                     debugPrint("Add ${widget.playlist.name}");
-                                    Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                            builder: (context) => AddScreen(songs: songs)
-                                        )
-                                    );
+                                    Navigator.pushNamed(context, '/add', arguments: songs);
                                   },
                                   icon: Icon(
                                     FluentIcons.add,
@@ -340,6 +359,7 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
                                               borderRadius: BorderRadius.circular(width * 0.01),
                                               child: ImageWidget(
                                                 path: song.path,
+                                                heroTag: song.path,
                                               ),
                                             ),
                                             SizedBox(
@@ -418,7 +438,8 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
                                                 borderRadius: BorderRadius.circular(width * 0.01),
                                                 child: ImageWidget(
                                                   path: song.path,
-                                                  buttons: IconButton(
+                                                  heroTag: song.path,
+                                                  hoveredChild: IconButton(
                                                     onPressed: (){
                                                       widget.playlist.paths.removeAt(index);
                                                       orderChanged.value = !orderChanged.value;

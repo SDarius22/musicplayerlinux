@@ -7,8 +7,7 @@ import 'package:musicplayer/controller/settings_controller.dart';
 import '../../controller/app_audio_handler.dart';
 import '../../domain/artist_type.dart';
 import '../../utils/fluenticons/fluenticons.dart';
-import 'add_screen.dart';
-import 'artist_screen.dart';
+import '../../utils/text_scroll/text_scroll.dart';
 import '../widgets/image_widget.dart';
 
 class Artists extends StatefulWidget{
@@ -145,64 +144,81 @@ class _ArtistsState extends State<Artists>{
                     ),
                     itemCount: snapshot.data!.length,
                     gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
-                      childAspectRatio: 0.825,
                       maxCrossAxisExtent: width * 0.125,
                       crossAxisSpacing: width * 0.0125,
-                      //mainAxisSpacing: width * 0.0125,
+                      mainAxisSpacing: width * 0.0125,
                     ),
                     itemBuilder: (BuildContext context, int index) {
                       ArtistType artist = snapshot.data![index];
-                      print(artist.name);
+                      // print(artist.name);
                       return MouseRegion(
                         cursor: SystemMouseCursors.click,
                         child: GestureDetector(
                           onTap: () {
                             //debugPrint(artist.name);
-                            Navigator.push(context, MaterialPageRoute(builder: (context) => ArtistScreen(artist: artist)));
+                            Navigator.pushNamed(context, '/artist', arguments: artist);
                           },
-                          child: Column(
-                            children: [
-                              ClipRRect(
-                                borderRadius: BorderRadius.circular(width * 0.01),
-                                child: ImageWidget(
-                                  path: artist.songs.first.path,
-                                  heroTag: artist.name,
-                                  buttons: Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                                    crossAxisAlignment: CrossAxisAlignment.center,
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(width * 0.01),
+                            child: ImageWidget(
+                              path: artist.songs.first.path,
+                              heroTag: artist.name,
+                              hoveredChild: Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
                                       SizedBox(
                                         width: width * 0.035,
+                                        height: width * 0.035,
                                         child: IconButton(
                                           onPressed: (){
                                             debugPrint("Add $index");
-                                            Navigator.push(
-                                                context,
-                                                MaterialPageRoute(
-                                                    builder: (context) => AddScreen(songs: artist.songs)
-                                                )
-                                            );
+                                            Navigator.pushNamed(context, '/add', arguments: artist.songs);
                                           },
                                           padding: const EdgeInsets.all(0),
                                           icon: Icon(
-                                            FluentIcons.add,
+                                            FluentIcons.addSingle,
                                             color: Colors.white,
                                             size: height * 0.035,
                                           ),
                                         ),
                                       ),
-                                      Expanded(
-                                        child: FittedBox(
-                                          fit: BoxFit.fill,
-                                          child: Icon(
-                                            FluentIcons.open,
-                                            size: height * 0.1,
+                                      SizedBox(
+                                        width: width * 0.035,
+                                        height: width * 0.035,
+                                        child: IconButton(
+                                          onPressed: (){
+                                            debugPrint("Play Next: $index");
+                                            dc.addNextToQueue(artist.songs.map((e) => e.path).toList());
+                                          },
+                                          padding: const EdgeInsets.all(0),
+                                          icon: Icon(
+                                            FluentIcons.playNext2,
                                             color: Colors.white,
+                                            size: height * 0.03,
                                           ),
                                         ),
                                       ),
+                                    ],
+                                  ),
+                                  const Expanded(
+                                    child: FittedBox(
+                                      fit: BoxFit.fill,
+                                      child: Icon(
+                                        FluentIcons.open,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ),
+                                  Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
                                       SizedBox(
                                         width: width * 0.035,
+                                        height: width * 0.035,
                                         child: IconButton(
                                           onPressed: () async {
                                             var songPaths = artist.songs.map((e) => e.path).toList();
@@ -210,7 +226,7 @@ class _ArtistsState extends State<Artists>{
                                               dc.updatePlaying(songPaths, 0);
                                             }
                                             SettingsController.index = SettingsController.currentQueue.indexOf(artist.songs.first.path);
-                                           await AppAudioHandler.play();
+                                            await AppAudioHandler.play();
                                           },
                                           padding: const EdgeInsets.all(0),
                                           icon: Icon(
@@ -220,26 +236,74 @@ class _ArtistsState extends State<Artists>{
                                           ),
                                         ),
                                       ),
+                                      ValueListenableBuilder(
+                                        valueListenable: DataController.selectedPaths,
+                                        builder: (context, value, child){
+                                          bool isSelected = true;
+                                          for (var path in artist.songs.map((e) => e.path)){
+                                            if (!DataController.selected.contains(path)){
+                                              isSelected = false;
+                                              break;
+                                            }
+                                          }
+                                          return SizedBox(
+                                            width: width * 0.035,
+                                            height: width * 0.035,
+                                            child: IconButton(
+                                              onPressed: (){
+                                                debugPrint("Select $index");
+                                                if (isSelected){
+                                                  DataController.selected = List.from(DataController.selected)..removeWhere((element) => artist.songs.map((e) => e.path).contains(element));
+                                                  return;
+                                                }
+                                                DataController.selected = List.from(DataController.selected)..addAll(artist.songs.map((e) => e.path));
+                                              },
+                                              padding: const EdgeInsets.all(0),
+                                              icon: Icon(
+                                                isSelected ? FluentIcons.checkCircleOn : FluentIcons.checkCircleOff,
+                                                color: Colors.white,
+                                                size: height * 0.03,
+                                              ),
+                                            ),
+                                          );
+                                        },
+                                      ),
                                     ],
+                                  )
+                                ],
+                              ),
+                              child: Container(
+                                alignment: Alignment.bottomCenter,
+                                padding: EdgeInsets.only(
+                                  bottom: height * 0.005,
+                                ),
+                                decoration: BoxDecoration(
+                                    gradient: LinearGradient(
+                                        begin: FractionalOffset.center,
+                                        end: FractionalOffset.bottomCenter,
+                                        colors: [
+                                          Colors.black.withOpacity(0.0),
+                                          Colors.black.withOpacity(0.5),
+                                          Colors.black,
+                                        ],
+                                        stops: const [0.0, 0.5, 1.0]
+                                    )
+                                ),
+                                child: TextScroll(
+                                  artist.name,
+                                  mode: TextScrollMode.bouncing,
+                                  velocity: const Velocity(pixelsPerSecond: Offset(20, 0)),
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: normalSize,
+                                    fontWeight: FontWeight.bold,
                                   ),
+                                  pauseOnBounce: const Duration(seconds: 2),
+                                  delayBefore: const Duration(seconds: 2),
+                                  pauseBetween: const Duration(seconds: 2),
                                 ),
                               ),
-                              SizedBox(
-                                height: width * 0.005,
-                              ),
-                              Text(
-                                artist.name,
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  height: 1,
-                                  color: Colors.white,
-                                  fontSize: smallSize,
-                                  fontWeight: FontWeight.normal,
-                                ),
-                              ),
-                            ],
+                            ),
                           ),
                         ),
 

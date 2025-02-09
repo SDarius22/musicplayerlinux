@@ -5,8 +5,8 @@ import 'package:musicplayer/utils/hover_widget/hover_container.dart';
 import 'package:musicplayer/domain/artist_type.dart';
 import '../../controller/app_audio_handler.dart';
 import '../../controller/data_controller.dart';
+import '../../controller/worker_controller.dart';
 import '../../utils/fluenticons/fluenticons.dart';
-import 'add_screen.dart';
 import '../widgets/image_widget.dart';
 
 class ArtistScreen extends StatefulWidget {
@@ -90,11 +90,34 @@ class _ArtistScreenState extends State<ArtistScreen> {
                         //color: Colors.red,
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(width * 0.025),
-                          child: ImageWidget(
-                            path: widget.artist.songs.first.path,
+                          child: FutureBuilder(
+                            future: WorkerController.getImage(widget.artist.songs.first.path),
+                            builder: (context, snapshot) {
+                              return AspectRatio(
+                                aspectRatio: 1.0,
+                                child: snapshot.hasData?
+                                Container(
+                                  decoration: BoxDecoration(
+                                    color: Colors.black,
+                                    image: DecorationImage(
+                                      fit: BoxFit.cover,
+                                      image: Image.memory(snapshot.data!).image,
+                                    ),
+                                  ),
+                                ) :
+                                Container(
+                                  decoration: BoxDecoration(
+                                      color: Colors.black,
+                                      image: DecorationImage(
+                                        fit: BoxFit.cover,
+                                        image: Image.asset('assets/bg.png', fit: BoxFit.cover,).image,
+                                      )
+                                  ),
+                                ),
+                              );
+                            },
                           ),
                         ),
-
                       ),
                     ),
                     Text(
@@ -144,12 +167,7 @@ class _ArtistScreenState extends State<ArtistScreen> {
                           ),
                           IconButton(
                             onPressed: (){
-                              Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (context) => AddScreen(songs: widget.artist.songs)
-                                  )
-                              );
+                              Navigator.pushNamed(context, '/add', arguments: widget.artist.songs);
                             },
                             icon: Icon(
                               FluentIcons.add,
@@ -210,6 +228,7 @@ class _ArtistScreenState extends State<ArtistScreen> {
                                   borderRadius: BorderRadius.circular(width * 0.01),
                                   child: ImageWidget(
                                     path: widget.artist.songs[index].path,
+                                    heroTag: widget.artist.songs[index].path,
                                   ),
                                 ),
                                 SizedBox(

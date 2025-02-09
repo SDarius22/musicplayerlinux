@@ -5,9 +5,11 @@ import 'package:musicplayer/controller/worker_controller.dart';
 class ImageWidget extends StatefulWidget {
   final String? path;
   final String? url;
-  final String? heroTag;
-  final Widget? buttons;
-  const ImageWidget({super.key, this.path, this.buttons, this.heroTag, this.url})
+  final String heroTag;
+  final Widget? hoveredChild;
+  final Widget? child;
+
+  const ImageWidget({super.key, this.path, this.hoveredChild, required this.heroTag, this.url, this.child})
       : assert(path == null || url == null, "Cannot provide both a path and a url!")
   ;
 
@@ -20,141 +22,64 @@ class _ImageWidgetState extends State<ImageWidget> {
 
   @override
   Widget build(BuildContext context) {
-    if(widget.path != null){
-      return FutureBuilder(
-        future: WorkerController.getImage(widget.path ?? ""),
-        builder: (context, snapshot) {
-          return AspectRatio(
-            aspectRatio: 1.0,
-            child: snapshot.hasData?
-            MouseRegion(
-              onEnter: (event) {
-                isHovered.value = true;
-              },
-              onExit: (event) {
-                isHovered.value = false;
-              },
-              child: widget.heroTag != null?
-                Hero(
-                  tag: widget.heroTag.toString(),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: Colors.black,
-                      image: DecorationImage(
-                        fit: BoxFit.cover,
-                        image: Image.memory(snapshot.data!).image,
-                      ),
-                    ),
-                    child: widget.buttons != null?
-                    ValueListenableBuilder(
-                      valueListenable: isHovered,
-                      builder: (context, value, child) {
-                        return value ?
-                        ClipRect(
-                          child: BackdropFilter(
-                            filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                            child: Container(
-                              color: Colors.black.withOpacity(0.3),
-                              alignment: Alignment.center,
-                              child: widget.buttons,
-                            ),
-                          ),
-                        ) :
-                        Container();
-                      }
-                    ) :
-                    Container(),
+    return FutureBuilder(
+      future: WorkerController.getImage(widget.path ?? ""),
+      builder: (context, snapshot) {
+        return AspectRatio(
+          aspectRatio: 1.0,
+          child: snapshot.hasData?
+          MouseRegion(
+            onEnter: (event) {
+              isHovered.value = true;
+            },
+            onExit: (event) {
+              isHovered.value = false;
+            },
+            child: Hero(
+              tag: widget.heroTag.toString(),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.black,
+                  image: DecorationImage(
+                    fit: BoxFit.cover,
+                    image: Image.memory(snapshot.data!).image,
                   ),
-                ) :
-                Container(
-                  decoration: BoxDecoration(
-                      color: Colors.black,
-                      image: DecorationImage(
-                        fit: BoxFit.cover,
-                        image: Image.memory(snapshot.data!).image,
-                      )
-                  ),
-                  child: widget.buttons != null?
-                  ValueListenableBuilder(
-                      valueListenable: isHovered,
-                      builder: (context, value, child) {
-                        return value ?
-                        BackdropFilter(
+                ),
+                child: widget.hoveredChild != null?
+                ValueListenableBuilder(
+                    valueListenable: isHovered,
+                    builder: (context, value, child) {
+                      return value ?
+                      ClipRect(
+                        child: BackdropFilter(
                           filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
                           child: Container(
-                            color: Colors.black.withOpacity(0.3),
+                            color: Colors.black.withOpacity(0.4),
                             alignment: Alignment.center,
-                            child: widget.buttons,
+                            child: widget.hoveredChild,
                           ),
-                        ) :
-                        Container();
-                      }
-                  ) :
-                  Container(),
-                ),
-            ) :
-            snapshot.hasError?
-            Center(
-              child: Text(
-                '${snapshot.error} occurred',
-                style: const TextStyle(fontSize: 18),
-              ),
-            ) :
-            Container(
-              decoration: BoxDecoration(
-                  color: Colors.black,
-                  image: DecorationImage(
-                    fit: BoxFit.cover,
-                    image: Image.asset('assets/bg.png', fit: BoxFit.cover,).image,
-                  )
+                        ),
+                      ) :
+                      widget.child != null ?
+                      widget.child! :
+                      Container();
+                    }
+                ) :
+                widget.child,
               ),
             ),
-          );
-        },
-      );
-    }
-    return AspectRatio(
-      aspectRatio: 1.0,
-      child: MouseRegion(
-        onEnter: (event) {
-          isHovered.value = true;
-        },
-        onExit: (event) {
-          isHovered.value = false;
-        },
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            Container(
-              decoration: BoxDecoration(
-                  color: Colors.black,
-                  image: DecorationImage(
-                    fit: BoxFit.cover,
-                    image: Image.network(widget.url ?? "").image,
-                  )
-              ),
+          ) :
+          Container(
+            decoration: BoxDecoration(
+                color: Colors.black,
+                image: DecorationImage(
+                  fit: BoxFit.cover,
+                  image: Image.asset('assets/bg.png', fit: BoxFit.cover,).image,
+                )
             ),
-            if(widget.buttons != null)
-              ValueListenableBuilder(
-                valueListenable: isHovered,
-                builder: (context, value, child) {
-                  return value?
-                  ClipRRect(
-                    child: BackdropFilter(
-                      filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                      child: Container(
-                        color: Colors.black.withOpacity(0.3),
-                        alignment: Alignment.center,
-                        child: widget.buttons,
-                      ),
-                    ),
-                  ) :
-                  Container();
-                },
-              ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
 
   }

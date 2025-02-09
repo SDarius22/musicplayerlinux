@@ -160,6 +160,7 @@ class _AddScreenState extends State<AddScreen> {
                                 else
                                   ImageWidget(
                                     path: playlist.paths.first,
+                                    heroTag: "${playlist.name} ${playlist.paths.first}",
                                   ),
                                 if(selected.contains(index))
                                   BackdropFilter(
