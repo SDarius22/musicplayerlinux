@@ -20,7 +20,9 @@ class AppManager{
   final navigatorKey = GlobalKey<NavigatorState>();
   ValueNotifier<bool> minimizedNotifier = ValueNotifier<bool>(true);
   ValueNotifier<String> notificationMessage = ValueNotifier<String>('');
-  Widget actions = const SizedBox();
+  ValueNotifier<List<String>> appActions = ValueNotifier<List<String>>([]);
+  Widget notificationActions = const SizedBox();
+
 
   static void init(){
     initSystemTray();
@@ -40,12 +42,12 @@ class AppManager{
       return;
     }
     notificationMessage.value = message;
-    actions = newActions;
+    notificationActions = newActions;
     Timer.periodic(
       Duration(milliseconds: duration),
           (timer) {
         notificationMessage.value = '';
-        actions = const SizedBox();
+        notificationActions = const SizedBox();
         timer.cancel();
       },
     );

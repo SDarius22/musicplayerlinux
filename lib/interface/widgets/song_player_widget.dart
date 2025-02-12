@@ -3,7 +3,6 @@ import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:flutter/material.dart';
 import 'package:musicplayer/controller/audio_player_controller.dart';
 import 'package:musicplayer/controller/data_controller.dart';
-import 'package:musicplayer/utils/hover_widget/hover_container.dart';
 import '../../controller/app_audio_handler.dart';
 import '../../controller/app_manager.dart';
 import '../../controller/settings_controller.dart';
@@ -85,8 +84,10 @@ class _SongPlayerWidgetState extends State<SongPlayerWidget> {
                   width: width,
                   alignment: values[0] ? Alignment.centerLeft : Alignment.center,
                   padding: EdgeInsets.only(
-                    left: values[0] ? width * 0.001 : width * 0.05,
-                    right: values[0] ? width * 0.001 : width * 0.05,
+                    top: values[0] ? 0 : height * 0.02,
+                    bottom: values[0] ? 0 : height * 0.02,
+                    left: values[0] ? width * 0.001 : width * 0.01,
+                    right: values[0] ? width * 0.001 : width * 0.01,
                   ),
                   margin: values[0] ? EdgeInsets.only(
                     bottom: height * 0.025,
@@ -101,421 +102,213 @@ class _SongPlayerWidgetState extends State<SongPlayerWidget> {
                     alignment: WrapAlignment.center,
                     crossAxisAlignment: values[0] ? WrapCrossAlignment.center : WrapCrossAlignment.start,
                     children: [
-
                       // Queue
                       if (!values[0])
                         AnimatedContainer(
                           duration: const Duration(milliseconds: 500),
                           curve: Curves.easeInOut,
-                          height: width * 0.275,
-                          width: width * 0.275,
+                          height: width * 0.3,
+                          width: width * 0.3,
+                          color: Colors.transparent,
                           child: ListView.builder(
                             controller: itemScrollController,
                             itemCount: SettingsController.queue.length,
                             padding: EdgeInsets.only(
                                 right: width * 0.01
                             ),
-                            itemExtent: height * 0.11,
+                            prototypeItem: ListTile(
+                              dense: true,
+                              visualDensity: const VisualDensity(vertical: 4),
+                              contentPadding: EdgeInsets.symmetric(
+                                horizontal: width * 0.005,
+                                vertical: height * 0.01,
+                              ),
+                              leading: ClipRRect(
+                                borderRadius: BorderRadius.circular(width * 0.005),
+                                child: ImageWidget(
+                                  path: "",
+                                  heroTag: "prototype",
+                                  hoveredChild: IconButton(
+                                    onPressed: () async {
+                                    },
+                                    icon: Icon(
+                                      FluentIcons.trash,
+                                      color: Colors.white,
+                                      size: width * 0.0125,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              title: TextScroll(
+                                "Loading...",
+                                mode: TextScrollMode.bouncing,
+                                velocity: const Velocity(pixelsPerSecond: Offset(20, 0)),
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: normalSize,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                                pauseOnBounce: const Duration(seconds: 2),
+                                delayBefore: const Duration(seconds: 2),
+                                pauseBetween: const Duration(seconds: 2),
+                              ),
+                              subtitle: TextScroll(
+                                "Loading...",
+                                mode: TextScrollMode.bouncing,
+                                velocity: const Velocity(pixelsPerSecond: Offset(20, 0)),
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: normalSize,
+                                  fontWeight: FontWeight.normal,
+                                ),
+                                pauseOnBounce: const Duration(seconds: 2),
+                                delayBefore: const Duration(seconds: 2),
+                                pauseBetween: const Duration(seconds: 2),
+                              ),
+                              trailing: Text(
+                                "??:??",
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: normalSize,
+                                ),
+                              ),
+                            ),
                             itemBuilder: (context, int index) {
-                              return FutureBuilder(
-                                future: Future.delayed(const Duration(milliseconds: 500), () async {
-                                  return await DataController.getSong(SettingsController.queue[index]);
-                                }),
-                                builder: (context, snapshot){
-                                  if (snapshot.hasData) {
-                                    var song = snapshot.data ?? SongType();
-                                    return AnimatedContainer(
-                                      duration: const Duration(milliseconds: 500),
-                                      curve: Curves.easeInOut,
-                                      height: height * 0.11,
-                                      child: MouseRegion(
-                                        cursor: SystemMouseCursors.click,
-                                        child: GestureDetector(
-                                            behavior: HitTestBehavior.translucent,
-                                            onTap: () async {
-                                              //debugPrint(SettingsController.playingSongsUnShuffled[index].title);
-                                              //widget.controller.audioPlayer.stop();
-                                              // DataController.indexChange(SettingsController.queue[index]);
-                                              SettingsController.index = SettingsController.currentQueue.indexOf(SettingsController.queue[index]);
-                                              await AppAudioHandler.play();
-                                            },
-                                            child: ClipRRect(
-                                              borderRadius: BorderRadius.circular(width * 0.005),
-                                              child: HoverContainer(
-                                                hoverColor: const Color(0xFF242424),
-                                                normalColor: const Color(0xFF0E0E0E),
-                                                padding: EdgeInsets.all(width * 0.005),
-                                                child: Row(
-                                                  children: [
-                                                    ClipRRect(
-                                                      borderRadius: BorderRadius.circular(width * 0.005),
-                                                      child: ImageWidget(
-                                                        path: SettingsController.queue[index],
-                                                        heroTag: "${SettingsController.queue[index]} $index",
-                                                        hoveredChild: IconButton(
-                                                          onPressed: () async {
-                                                            debugPrint("Delete song from queue");
-                                                            await dc.removeFromQueue(SettingsController.queue[index]);
-                                                            setState(() {});
-                                                          },
-                                                          icon: Icon(
-                                                            FluentIcons.trash,
-                                                            color: Colors.white,
-                                                            size: width * 0.0125,
-                                                          ),
-                                                        ),
-                                                      ),
-                                                    ),
-                                                    SizedBox(
-                                                      width: width * 0.01,
-                                                    ),
-                                                    Column(
-                                                        mainAxisAlignment: MainAxisAlignment.center,
-                                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                                        children: [
-                                                          SizedBox(
-                                                            width: width * 0.15,
-                                                            child: TextScroll(
-                                                              song.title,
-                                                              mode: TextScrollMode.bouncing,
-                                                              velocity: const Velocity(pixelsPerSecond: Offset(20, 0)),
-                                                              style: TextStyle(
-                                                                color: SettingsController.currentSongPath != song.path ? Colors.white : Colors.blue,
-                                                                fontSize: normalSize,
-                                                                fontWeight: FontWeight.normal,
-                                                              ),
-                                                              pauseOnBounce: const Duration(seconds: 2),
-                                                              delayBefore: const Duration(seconds: 2),
-                                                              pauseBetween: const Duration(seconds: 2),
-                                                            ),
-                                                          ),
-                                                          SizedBox(
-                                                            height: height * 0.005,
-                                                          ),
-                                                          Text(song.artists.toString().length > 60 ? "${song.artists.toString().substring(0, 60)}..." : song.artists.toString(),
-                                                              style: TextStyle(
-                                                                color: SettingsController.currentSongPath != song.path ? Colors.white : Colors.blue,
-                                                                fontSize: smallSize,
-                                                              )
-                                                          ),
-                                                        ]
-                                                    ),
-                                                    const Spacer(),
-                                                    Text(
-                                                        "${song.duration ~/ 60}:${(song.duration % 60).toString().padLeft(2, '0')}",
-                                                        style: TextStyle(
-                                                          color: SettingsController.currentSongPath != song.path ? Colors.white : Colors.blue,
-                                                          fontSize: normalSize,
-                                                        )
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                            )
+                              return Material(
+                                type: MaterialType.transparency,
+                                child: FutureBuilder(
+                                  future: Future.delayed(const Duration(milliseconds: 500), () async {
+                                    return await DataController.getSong(SettingsController.queue[index]);
+                                  }),
+                                  builder: (context, snapshot){
+                                    if (snapshot.hasData) {
+                                      var song = snapshot.data ?? SongType();
+                                      return ListTile(
+                                        dense: true,
+                                        visualDensity: const VisualDensity(vertical: VisualDensity.maximumDensity),
+                                        contentPadding: EdgeInsets.symmetric(
+                                          horizontal: width * 0.005,
+                                          vertical: height * 0.0125,
                                         ),
-                                      ),
-                                    );
-                                  }
-                                  else {
-                                    return AnimatedContainer(
-                                      duration: const Duration(milliseconds: 500),
-                                      curve: Curves.easeInOut,
-                                      height: height * 0.11,
-                                      child: MouseRegion(
-                                        cursor: SystemMouseCursors.click,
-                                        child: ClipRRect(
+                                        onTap: () async {
+                                          //debugPrint(SettingsController.playingSongsUnShuffled[index].title);
+                                          //widget.controller.audioPlayer.stop();
+                                          // DataController.indexChange(SettingsController.queue[index]);
+                                          SettingsController.index = SettingsController.currentQueue.indexOf(SettingsController.queue[index]);
+                                          await AppAudioHandler.play();
+                                        },
+                                        leading: ClipRRect(
                                           borderRadius: BorderRadius.circular(width * 0.005),
-                                          child: HoverContainer(
-                                            hoverColor: const Color(0xFF242424),
-                                            normalColor: const Color(0xFF0E0E0E),
-                                            padding: EdgeInsets.all(width * 0.005),
-                                            child: Row(
-                                              children: [
-                                                ClipRRect(
-                                                  borderRadius: BorderRadius.circular(width * 0.005),
-                                                  child: ImageWidget(
-                                                    path: "",
-                                                    heroTag: "null $index",
-                                                    hoveredChild: IconButton(
-                                                      onPressed: () async {
-                                                        debugPrint("Delete song from queue");
-                                                        await dc.removeFromQueue(SettingsController.queue[index]);
-                                                        setState(() {});
-                                                      },
-                                                      icon: Icon(
-                                                        FluentIcons.trash,
-                                                        color: Colors.white,
-                                                        size: width * 0.0125,
-                                                      ),
-                                                    ),
-                                                  ),
-                                                ),
-                                                SizedBox(
-                                                  width: width * 0.01,
-                                                ),
-                                                Column(
-                                                    mainAxisAlignment: MainAxisAlignment.center,
-                                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                                    children: [
-                                                      SizedBox(
-                                                        width: width * 0.15,
-                                                        child: TextScroll(
-                                                          "Loading...",
-                                                          mode: TextScrollMode.bouncing,
-                                                          velocity: const Velocity(pixelsPerSecond: Offset(20, 0)),
-                                                          style: TextStyle(
-                                                            color: Colors.white,
-                                                            fontSize: normalSize,
-                                                            fontWeight: FontWeight.normal,
-                                                          ),
-                                                          pauseOnBounce: const Duration(seconds: 2),
-                                                          delayBefore: const Duration(seconds: 2),
-                                                          pauseBetween: const Duration(seconds: 2),
-                                                        ),
-                                                      ),
-                                                      SizedBox(
-                                                        height: height * 0.005,
-                                                      ),
-                                                      Text(
-                                                          "Loading...",
-                                                          style: TextStyle(
-                                                            color: Colors.white,
-                                                            fontSize: smallSize,
-                                                          )
-                                                      ),
-                                                    ]
-                                                ),
-                                                const Spacer(),
-                                                Text(
-                                                    "??:??",
-                                                    style: TextStyle(
-                                                      color: Colors.white,
-                                                      fontSize: normalSize,
-                                                    )
-                                                ),
-                                              ],
+                                          child: ImageWidget(
+                                            path: SettingsController.queue[index],
+                                            heroTag: "${SettingsController.queue[index]} $index",
+                                            hoveredChild: IconButton(
+                                              onPressed: () async {
+                                                debugPrint("Delete song from queue");
+                                                await dc.removeFromQueue(SettingsController.queue[index]);
+                                                setState(() {});
+                                              },
+                                              icon: Icon(
+                                                FluentIcons.trash,
+                                                color: Colors.white,
+                                                size: width * 0.0125,
+                                              ),
                                             ),
                                           ),
                                         ),
-                                      ),
-                                    );
-                                  }
-                                },
+                                        title: TextScroll(
+                                          song.title,
+                                          mode: TextScrollMode.bouncing,
+                                          velocity: const Velocity(pixelsPerSecond: Offset(20, 0)),
+                                          style: TextStyle(
+                                            color: SettingsController.currentSongPath != song.path ? Colors.white : Colors.blue,
+                                            fontSize: normalSize,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                          pauseOnBounce: const Duration(seconds: 2),
+                                          delayBefore: const Duration(seconds: 2),
+                                          pauseBetween: const Duration(seconds: 2),
+                                        ),
+                                        subtitle: TextScroll(
+                                          song.trackArtist,
+                                          mode: TextScrollMode.bouncing,
+                                          velocity: const Velocity(pixelsPerSecond: Offset(20, 0)),
+                                          style: TextStyle(
+                                            color: SettingsController.currentSongPath != song.path ? Colors.white : Colors.blue,
+                                            fontSize: smallSize,
+                                            fontWeight: FontWeight.normal,
+                                          ),
+                                          pauseOnBounce: const Duration(seconds: 2),
+                                          delayBefore: const Duration(seconds: 2),
+                                          pauseBetween: const Duration(seconds: 2),
+                                        ),
+                                        trailing: Text(
+                                          "${song.duration ~/ 60}:${(song.duration % 60).toString().padLeft(2, '0')}",
+                                          style: TextStyle(
+                                            color: SettingsController.currentSongPath != song.path ? Colors.white : Colors.blue,
+                                            fontSize: normalSize,
+                                          ),
+                                        ),
+
+
+                                      );
+                                    }
+                                    else {
+                                      return ListTile(
+                                        dense: true,
+                                        visualDensity: const VisualDensity(vertical: 4),
+                                        contentPadding: EdgeInsets.symmetric(
+                                          horizontal: width * 0.005,
+                                          vertical: height * 0.01,
+                                        ),
+                                        onTap: () async {
+                                          //debugPrint(SettingsController.playingSongsUnShuffled[index].title);
+                                          //widget.controller.audioPlayer.stop();
+                                          // DataController.indexChange(SettingsController.queue[index]);
+                                          SettingsController.index = SettingsController.currentQueue.indexOf(SettingsController.queue[index]);
+                                          await AppAudioHandler.play();
+                                        },
+                                        leading: ClipRRect(
+                                          borderRadius: BorderRadius.circular(width * 0.005),
+                                          child: ImageWidget(
+                                            path: "",
+                                            heroTag: "null $index",
+                                            hoveredChild: IconButton(
+                                              onPressed: () async {
+                                                debugPrint("Delete song from queue");
+                                                await dc.removeFromQueue(SettingsController.queue[index]);
+                                                setState(() {});
+                                              },
+                                              icon: Icon(
+                                                FluentIcons.trash,
+                                                color: Colors.white,
+                                                size: width * 0.0125,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                        title: TextScroll(
+                                          "Loading...",
+                                          mode: TextScrollMode.bouncing,
+                                          velocity: const Velocity(pixelsPerSecond: Offset(20, 0)),
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: normalSize,
+                                            fontWeight: FontWeight.normal,
+                                          ),
+                                          pauseOnBounce: const Duration(seconds: 2),
+                                          delayBefore: const Duration(seconds: 2),
+                                          pauseBetween: const Duration(seconds: 2),
+                                        ),
+
+
+                                      );
+                                    }
+                                  },
+                                ),
                               );
-                              // if(index >= 0 && index < SettingsController.queue.length){
-                              //   var song = snapshot.data![index];
-                              //   return AnimatedContainer(
-                              //     duration: const Duration(milliseconds: 500),
-                              //     curve: Curves.easeInOut,
-                              //     height: height * 0.11,
-                              //     child: MouseRegion(
-                              //       cursor: SystemMouseCursors.click,
-                              //       child: GestureDetector(
-                              //           behavior: HitTestBehavior.translucent,
-                              //           onTap: () async {
-                              //             //debugPrint(SettingsController.playingSongsUnShuffled[index].title);
-                              //             //widget.controller.audioPlayer.stop();
-                              //             // DataController.indexChange(SettingsController.queue[index]);
-                              //             SettingsController.index = SettingsController.currentQueue.indexOf(SettingsController.queue[index]);
-                              //             await AppAudioHandler.play();
-                              //           },
-                              //           child: ClipRRect(
-                              //             borderRadius: BorderRadius.circular(width * 0.005),
-                              //             child: HoverContainer(
-                              //               hoverColor: const Color(0xFF242424),
-                              //               normalColor: const Color(0xFF0E0E0E),
-                              //               padding: EdgeInsets.all(width * 0.005),
-                              //               child: Row(
-                              //                 children: [
-                              //                   ClipRRect(
-                              //                     borderRadius: BorderRadius.circular(width * 0.005),
-                              //                     child: ImageWidget(
-                              //                       path: SettingsController.queue[index],
-                              //                       buttons: IconButton(
-                              //                         onPressed: () async {
-                              //                           debugPrint("Delete song from queue");
-                              //                           await dc.removeFromQueue(SettingsController.queue[index]);
-                              //                           setState(() {});
-                              //                         },
-                              //                         icon: Icon(
-                              //                           FluentIcons.trash,
-                              //                           color: Colors.white,
-                              //                           size: width * 0.0125,
-                              //                         ),
-                              //                       ),
-                              //                     ),
-                              //                   ),
-                              //                   SizedBox(
-                              //                     width: width * 0.01,
-                              //                   ),
-                              //                   Column(
-                              //                       mainAxisAlignment: MainAxisAlignment.center,
-                              //                       crossAxisAlignment: CrossAxisAlignment.start,
-                              //                       children: [
-                              //                         SizedBox(
-                              //                           width: width * 0.15,
-                              //                           child: TextScroll(
-                              //                             song.title,
-                              //                             mode: TextScrollMode.bouncing,
-                              //                             velocity: const Velocity(pixelsPerSecond: Offset(20, 0)),
-                              //                             style: TextStyle(
-                              //                               color: SettingsController.currentSongPath != song.path ? Colors.white : Colors.blue,
-                              //                               fontSize: normalSize,
-                              //                               fontWeight: FontWeight.normal,
-                              //                             ),
-                              //                             pauseOnBounce: const Duration(seconds: 2),
-                              //                             delayBefore: const Duration(seconds: 2),
-                              //                             pauseBetween: const Duration(seconds: 2),
-                              //                           ),
-                              //                         ),
-                              //                         SizedBox(
-                              //                           height: height * 0.005,
-                              //                         ),
-                              //                         Text(song.artists.toString().length > 60 ? "${song.artists.toString().substring(0, 60)}..." : song.artists.toString(),
-                              //                             style: TextStyle(
-                              //                               color: SettingsController.currentSongPath != song.path ? Colors.white : Colors.blue,
-                              //                               fontSize: smallSize,
-                              //                             )
-                              //                         ),
-                              //                       ]
-                              //                   ),
-                              //                   const Spacer(),
-                              //                   Text(
-                              //                       "${song.duration ~/ 60}:${(song.duration % 60).toString().padLeft(2, '0')}",
-                              //                       style: TextStyle(
-                              //                         color: SettingsController.currentSongPath != song.path ? Colors.white : Colors.blue,
-                              //                         fontSize: normalSize,
-                              //                       )
-                              //                   ),
-                              //                 ],
-                              //               ),
-                              //             ),
-                              //           )
-                              //       ),
-                              //     ),
-                              //   );
-                              // }
-                              // return null;
                             },
                           ),
-                          // child: FutureBuilder(
-                          //   future: DataController.getQueue(),
-                          //   builder: (context, snapshot){
-                          //     if(snapshot.hasData){
-                          //       return ListView.builder(
-                          //         controller: itemScrollController,
-                          //         itemCount: snapshot.data!.length,
-                          //         padding: EdgeInsets.only(
-                          //             right: width * 0.01
-                          //         ),
-                          //         itemBuilder: (context, int index) {
-                          //           if(index >= 0 && index < SettingsController.queue.length){
-                          //             var song = snapshot.data![index];
-                          //             return AnimatedContainer(
-                          //               duration: const Duration(milliseconds: 500),
-                          //               curve: Curves.easeInOut,
-                          //               height: height * 0.11,
-                          //               child: MouseRegion(
-                          //                 cursor: SystemMouseCursors.click,
-                          //                 child: GestureDetector(
-                          //                     behavior: HitTestBehavior.translucent,
-                          //                     onTap: () async {
-                          //                       //debugPrint(SettingsController.playingSongsUnShuffled[index].title);
-                          //                       //widget.controller.audioPlayer.stop();
-                          //                       // DataController.indexChange(SettingsController.queue[index]);
-                          //                       SettingsController.index = SettingsController.currentQueue.indexOf(SettingsController.queue[index]);
-                          //                       await AppAudioHandler.play();
-                          //                     },
-                          //                     child: ClipRRect(
-                          //                       borderRadius: BorderRadius.circular(width * 0.005),
-                          //                       child: HoverContainer(
-                          //                         hoverColor: const Color(0xFF242424),
-                          //                         normalColor: const Color(0xFF0E0E0E),
-                          //                         padding: EdgeInsets.all(width * 0.005),
-                          //                         child: Row(
-                          //                           children: [
-                          //                             ClipRRect(
-                          //                               borderRadius: BorderRadius.circular(width * 0.005),
-                          //                               child: ImageWidget(
-                          //                                 path: SettingsController.queue[index],
-                          //                                 buttons: IconButton(
-                          //                                   onPressed: () async {
-                          //                                     debugPrint("Delete song from queue");
-                          //                                     await dc.removeFromQueue(SettingsController.queue[index]);
-                          //                                     setState(() {});
-                          //                                   },
-                          //                                   icon: Icon(
-                          //                                     FluentIcons.trash,
-                          //                                     color: Colors.white,
-                          //                                     size: width * 0.0125,
-                          //                                   ),
-                          //                                 ),
-                          //                               ),
-                          //                             ),
-                          //                             SizedBox(
-                          //                               width: width * 0.01,
-                          //                             ),
-                          //                             Column(
-                          //                                 mainAxisAlignment: MainAxisAlignment.center,
-                          //                                 crossAxisAlignment: CrossAxisAlignment.start,
-                          //                                 children: [
-                          //                                   SizedBox(
-                          //                                     width: width * 0.15,
-                          //                                     child: TextScroll(
-                          //                                       song.title,
-                          //                                       mode: TextScrollMode.bouncing,
-                          //                                       velocity: const Velocity(pixelsPerSecond: Offset(20, 0)),
-                          //                                       style: TextStyle(
-                          //                                         color: SettingsController.currentSongPath != song.path ? Colors.white : Colors.blue,
-                          //                                         fontSize: normalSize,
-                          //                                         fontWeight: FontWeight.normal,
-                          //                                       ),
-                          //                                       pauseOnBounce: const Duration(seconds: 2),
-                          //                                       delayBefore: const Duration(seconds: 2),
-                          //                                       pauseBetween: const Duration(seconds: 2),
-                          //                                     ),
-                          //                                   ),
-                          //                                   SizedBox(
-                          //                                     height: height * 0.005,
-                          //                                   ),
-                          //                                   Text(song.artists.toString().length > 60 ? "${song.artists.toString().substring(0, 60)}..." : song.artists.toString(),
-                          //                                       style: TextStyle(
-                          //                                         color: SettingsController.currentSongPath != song.path ? Colors.white : Colors.blue,
-                          //                                         fontSize: smallSize,
-                          //                                       )
-                          //                                   ),
-                          //                                 ]
-                          //                             ),
-                          //                             const Spacer(),
-                          //                             Text(
-                          //                                 "${song.duration ~/ 60}:${(song.duration % 60).toString().padLeft(2, '0')}",
-                          //                                 style: TextStyle(
-                          //                                   color: SettingsController.currentSongPath != song.path ? Colors.white : Colors.blue,
-                          //                                   fontSize: normalSize,
-                          //                                 )
-                          //                             ),
-                          //                           ],
-                          //                         ),
-                          //                       ),
-                          //                     )
-                          //                 ),
-                          //               ),
-                          //             );
-                          //           }
-                          //           return null;
-                          //         },
-                          //       );
-                          //     }
-                          //     else if(snapshot.hasError){
-                          //       return _errorWidget(snapshot.error.toString());
-                          //     }
-                          //     else{
-                          //       return const CircularProgressIndicator(
-                          //         valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                          //       );
-                          //     }
-                          //   },
-                          // ),
                         ),
 
                       // Album Art
@@ -523,8 +316,8 @@ class _SongPlayerWidgetState extends State<SongPlayerWidget> {
                         duration: const Duration(milliseconds: 500),
                         curve: Curves.easeInOut,
                         alignment: Alignment.center,
-                        height: values[0]? height * 0.15 : width * 0.275,
-                        width: values[0] ? height * 0.15 : width * 0.275,
+                        height: values[0]? height * 0.15 : width * 0.3,
+                        width: values[0] ? height * 0.15 : width * 0.3,
                         child: AspectRatio(
                           aspectRatio: 1.0,
                           child: Container(
@@ -598,7 +391,7 @@ class _SongPlayerWidgetState extends State<SongPlayerWidget> {
                                               ),
                                               iconAlignment: IconAlignment.end,
                                               label: TextScroll(
-                                                AudioPlayerController.song.artists,
+                                                AudioPlayerController.song.trackArtist,
                                                 mode: TextScrollMode.bouncing,
                                                 velocity: const Velocity(pixelsPerSecond: Offset(20, 0)),
                                                 style: TextStyle(
@@ -614,7 +407,7 @@ class _SongPlayerWidgetState extends State<SongPlayerWidget> {
                                           )
                                         else
                                           TextScroll(
-                                            AudioPlayerController.song.artists,
+                                            AudioPlayerController.song.trackArtist,
                                             mode: TextScrollMode.bouncing,
                                             velocity: const Velocity(pixelsPerSecond: Offset(20, 0)),
                                             style: TextStyle(
@@ -677,118 +470,117 @@ class _SongPlayerWidgetState extends State<SongPlayerWidget> {
                       // Lyrics
                       if(!values[0])
                         FutureBuilder(
-                            future: Future(() async {
-                              try {
-                                List<String> lyrics = await DataController.getLyrics(SettingsController.currentSongPath);
-                                return lyrics;
-                              } catch (e) {
-                                debugPrint(e.toString());
-                                return ["No lyrics found", "No lyrics found"];
-                              }
-                            }),
-                            builder: (context, snapshot){
-                              if(snapshot.hasData){
-                                String plainLyric = snapshot.data![0];
-                                var lyricModel = LyricsModelBuilder.create().bindLyricToMain(snapshot.data![1]).getModel();
-                                return MultiValueListenableBuilder(
-                                    valueListenables: [SettingsController.sliderNotifier, SettingsController.playingNotifier],
-                                    builder: (context, value, child){
-                                      return AnimatedContainer(
-                                        duration: const Duration(milliseconds: 500),
-                                        height: width * 0.275,
-                                        width: width * 0.275,
-                                        padding: EdgeInsets.symmetric(
-                                          horizontal: width * 0.01,
-                                          vertical: height * 0.01,
+                          future: Future(() async {
+                            try {
+                              List<String> lyrics = await DataController.getLyrics(SettingsController.currentSongPath);
+                              return lyrics;
+                            } catch (e) {
+                              debugPrint(e.toString());
+                              return ["No lyrics found", "No lyrics found"];
+                            }
+                          }),
+                          builder: (context, snapshot){
+                            if(snapshot.hasData){
+                              String plainLyric = snapshot.data![0];
+                              var lyricModel = LyricsModelBuilder.create().bindLyricToMain(snapshot.data![1]).getModel();
+                              return MultiValueListenableBuilder(
+                                  valueListenables: [SettingsController.sliderNotifier, SettingsController.playingNotifier],
+                                  builder: (context, value, child){
+                                    return AnimatedContainer(
+                                      duration: const Duration(milliseconds: 500),
+                                      height: width * 0.3,
+                                      width: width * 0.3,
+                                      padding: EdgeInsets.symmetric(
+                                        vertical: height * 0.01,
+                                      ),
+                                      child: LyricsReader(
+                                        model: lyricModel,
+                                        position: value[0],
+                                        lyricUi: lyricUI,
+                                        playing: SettingsController.playing,
+                                        size: Size.infinite,
+                                        padding: EdgeInsets.only(
+                                          right: width * 0.01,
+                                          left: width * 0.01,
                                         ),
-                                        child: LyricsReader(
-                                          model: lyricModel,
-                                          position: value[0],
-                                          lyricUi: lyricUI,
-                                          playing: SettingsController.playing,
-                                          size: Size.infinite,
-                                          padding: EdgeInsets.only(
-                                            right: width * 0.02,
-                                            left: width * 0.02,
-                                          ),
-                                          selectLineBuilder: (progress, confirm) {
-                                            return Row(
-                                              children: [
-                                                Icon(FluentIcons.play, color: SettingsController.lightColorNotifier.value),
-                                                Expanded(
-                                                  child: MouseRegion(
-                                                    cursor: SystemMouseCursors.click,
-                                                    child: GestureDetector(
-                                                      onTap: () {
-                                                        confirm.call();
-                                                        setState(() {
-                                                          AudioPlayerController.audioPlayer.seek(Duration(milliseconds: progress));
-                                                        });
-                                                      },
-                                                    ),
+                                        selectLineBuilder: (progress, confirm) {
+                                          return Row(
+                                            children: [
+                                              Icon(FluentIcons.play, color: SettingsController.lightColorNotifier.value),
+                                              Expanded(
+                                                child: MouseRegion(
+                                                  cursor: SystemMouseCursors.click,
+                                                  child: GestureDetector(
+                                                    onTap: () {
+                                                      confirm.call();
+                                                      setState(() {
+                                                        AudioPlayerController.audioPlayer.seek(Duration(milliseconds: progress));
+                                                      });
+                                                    },
                                                   ),
                                                 ),
-                                                Text(
-                                                  //progress.toString(),
-                                                  "${progress ~/ 1000 ~/ 60}:${(progress ~/ 1000 % 60).toString().padLeft(2, '0')}",
-                                                  style: TextStyle(color: SettingsController.lightColorNotifier.value),
-                                                )
-                                              ],
-                                            );
-                                          },
-                                          emptyBuilder: () => plainLyric.contains("No lyrics") || plainLyric.contains("Searching")?
-                                          Center(
-                                              child: Text(
-                                                plainLyric,
-                                                style: TextStyle(
-                                                  color: Colors.white,
-                                                  fontSize: normalSize,
-                                                  fontWeight: FontWeight.normal,
-                                                ),
-                                              )
-                                          ):
-                                          ScrollConfiguration(
-                                            behavior: ScrollConfiguration.of(context).copyWith(
-                                              dragDevices: {
-                                                PointerDeviceKind.touch,
-                                                PointerDeviceKind.mouse,
-                                              },
-                                            ),
-                                            child: SingleChildScrollView(
-                                              scrollDirection: Axis.vertical,
-                                              physics: const BouncingScrollPhysics(),
-                                              child: SingleChildScrollView(
-                                                  scrollDirection: Axis.horizontal,
-                                                  child: Text(
-                                                    plainLyric,
-                                                    style: TextStyle(
-                                                      color: Colors.white,
-                                                      fontSize: normalSize,
-                                                      fontWeight: FontWeight.normal,
-                                                    ),
-                                                  )
                                               ),
+                                              Text(
+                                                //progress.toString(),
+                                                "${progress ~/ 1000 ~/ 60}:${(progress ~/ 1000 % 60).toString().padLeft(2, '0')}",
+                                                style: TextStyle(color: SettingsController.lightColorNotifier.value),
+                                              )
+                                            ],
+                                          );
+                                        },
+                                        emptyBuilder: () => plainLyric.contains("No lyrics") || plainLyric.contains("Searching")?
+                                        Center(
+                                            child: Text(
+                                              plainLyric,
+                                              style: TextStyle(
+                                                color: Colors.white,
+                                                fontSize: normalSize,
+                                                fontWeight: FontWeight.normal,
+                                              ),
+                                            )
+                                        ):
+                                        ScrollConfiguration(
+                                          behavior: ScrollConfiguration.of(context).copyWith(
+                                            dragDevices: {
+                                              PointerDeviceKind.touch,
+                                              PointerDeviceKind.mouse,
+                                            },
+                                          ),
+                                          child: SingleChildScrollView(
+                                            scrollDirection: Axis.vertical,
+                                            physics: const BouncingScrollPhysics(),
+                                            child: SingleChildScrollView(
+                                                scrollDirection: Axis.horizontal,
+                                                child: Text(
+                                                  plainLyric,
+                                                  style: TextStyle(
+                                                    color: Colors.white,
+                                                    fontSize: normalSize,
+                                                    fontWeight: FontWeight.normal,
+                                                  ),
+                                                )
                                             ),
                                           ),
-
                                         ),
-                                      );
-                                    }
-                                );
-                              }
-                              else {
-                                return Center(
-                                    child: Text(
-                                      "Searching for lyrics...",
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: normalSize,
-                                        fontWeight: FontWeight.normal,
+
                                       ),
-                                    )
-                                );
-                              }
+                                    );
+                                  }
+                              );
                             }
+                            else {
+                              return Center(
+                                  child: Text(
+                                    "Searching for lyrics...",
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: normalSize,
+                                      fontWeight: FontWeight.normal,
+                                    ),
+                                  )
+                              );
+                            }
+                          }
                         ),
 
                       Column(
@@ -857,7 +649,7 @@ class _SongPlayerWidgetState extends State<SongPlayerWidget> {
 
                           if (!values[0])
                             SizedBox(
-                              height: height * 0.01,
+                              height: height * 0.03,
                               width: width,
                             ),
 
@@ -868,7 +660,7 @@ class _SongPlayerWidgetState extends State<SongPlayerWidget> {
                                 return AnimatedContainer(
                                   duration: const Duration(milliseconds: 500),
                                   curve: Curves.easeInOut,
-                                  width:  am.minimizedNotifier.value ? width * 0.635 : width * 0.8,
+                                  width:  am.minimizedNotifier.value ? width * 0.635 : width * 0.92,
                                   padding: EdgeInsets.symmetric(
                                     horizontal: width * 0.02,
                                     vertical:  am.minimizedNotifier.value ? 0 : height * 0.05,
@@ -911,7 +703,7 @@ class _SongPlayerWidgetState extends State<SongPlayerWidget> {
                           // Player Controls - Previous, Play/Pause, Next
                           AnimatedContainer(
                             duration: const Duration(milliseconds: 500),
-                            width:  am.minimizedNotifier.value ? width * 0.635 : width * 0.8,
+                            width:  am.minimizedNotifier.value ? width * 0.635 : width * 0.9,
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                               children: [
@@ -1064,8 +856,9 @@ class _SongPlayerWidgetState extends State<SongPlayerWidget> {
                             am.minimizedNotifier.value = ! am.minimizedNotifier.value;
                             hiddenNotifier.value = false;
                             Future.delayed(const Duration(milliseconds: 250), (){
+                              final contentSize = itemScrollController.position.viewportDimension + itemScrollController.position.maxScrollExtent;
                               itemScrollController.jumpTo(
-                                height * 0.11 * SettingsController.queue.indexOf(SettingsController.currentSongPath),
+                                contentSize * (SettingsController.index / SettingsController.queue.length),
                               );
                             });
                           },

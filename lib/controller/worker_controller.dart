@@ -112,9 +112,11 @@ class WorkerController {
       metadataVariable.album = metadataVar.album ?? "Unknown Album";
       metadataVariable.duration = metadataVar.duration ?? 0;
       metadataVariable.trackNumber = metadataVar.trackNumber ?? 0;
-      metadataVariable.artists = metadataVar.trackArtist ?? "Unknown Artist";
+      metadataVariable.trackArtist = metadataVar.trackArtist ?? "Unknown Artist";
       metadataVariable.albumArtist = metadataVar.albumArtist ?? "Unknown Album Artist";
       metadataVariable.discNumber = metadataVar.discNumber ?? 0;
+      metadataVariable.year = metadataVar.year ?? 0;
+      metadataVariable.genre = metadataVar.genre ?? "Unknown Genre";
     }
     catch(e){
       debugPrint(e.toString());
@@ -132,7 +134,7 @@ class WorkerController {
             metadataVariable.title = metadate2.substring(6);
           }
           if (metadate2.contains("ARTIST=") && !metadate2.contains("ALBUMARTIST=")) {
-            metadataVariable.artists = metadate2.substring(8);
+            metadataVariable.trackArtist = metadate2.substring(8);
           }
           if (metadate2.contains("ALBUMARTIST=")) {
             metadataVariable.albumArtist = metadate2.substring(12);
@@ -155,11 +157,8 @@ class WorkerController {
         //debugPrint(path);
         var parser = ID3TagReader.path(path);
         var tags = parser.readTagSync();
-        metadataVariable.title = tags.title ?? path
-            .replaceAll("\\", "/")
-            .split("/")
-            .last;
-        metadataVariable.artists = tags.artist ?? "Unknown Artist";
+        metadataVariable.title = tags.title ?? path.replaceAll("\\", "/").split("/").last;
+        metadataVariable.trackArtist = tags.artist ?? "Unknown Artist";
         metadataVariable.album = tags.album ?? 'Unknown Album';
         metadataVariable.discNumber = int.parse(tags.trackNumber ?? "0");
         metadataVariable.trackNumber = int.parse(tags.track ?? "0");
@@ -207,7 +206,9 @@ class WorkerController {
 
     // Use a Queue for efficient directory traversal
     Queue<Directory> dirs = Queue<Directory>();
-    dirs.add(Directory(SettingsController.settings.directory));
+    for (String dir in SettingsController.songPlaces) {
+      dirs.add(Directory(dir));
+    }
 
     //List<MetadataType> newSongs = [];
 
@@ -229,7 +230,7 @@ class WorkerController {
               await makeAlbumArtist(song);
             }
           }
-        } else if (entity is Directory) {
+        } else if (entity is Directory && SettingsController.songPlaceIncludeSubfolders[SettingsController.songPlaces.indexOf(dir.path)] == 1) {
           dirs.add(Directory(entity.path));
         }
       }
@@ -252,7 +253,7 @@ class WorkerController {
       album.duration += metadataVariable.duration;
       albumBox.put(album);
     }
-    List<String> songArtists = metadataVariable.artists.split(";");
+    List<String> songArtists = metadataVariable.trackArtist.split(";");
     for (String artist in songArtists) {
       Query<ArtistType> artistQuery = artistBox.query(ArtistType_.name.equals(artist)).build();
       ArtistType? artistType = artistQuery.findFirst();

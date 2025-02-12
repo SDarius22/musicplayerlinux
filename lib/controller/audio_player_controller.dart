@@ -78,7 +78,7 @@ class AudioPlayerController extends BaseAudioHandler {
         id: song.id.toString(),
         album: song.album,
         title: song.title,
-        artist: song.artists,
+        artist: song.trackArtist,
         duration: Duration(milliseconds: song.duration),
         artUri: file.uri
       );
@@ -90,7 +90,7 @@ class AudioPlayerController extends BaseAudioHandler {
           title: song.title,
           album: song.album,
           albumArtist: song.albumArtist,
-          artist: song.artists,
+          artist: song.trackArtist,
         ),
      );
     }

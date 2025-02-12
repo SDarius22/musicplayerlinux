@@ -112,17 +112,17 @@ class _CreateScreenState extends State<CreateScreen> {
                         newPlaylist.duration = duration;
                         bool found = false;
                         for (var artistCountStr in newPlaylist.artistCount){
-                          if (artistCountStr.contains(song.artists)){
+                          if (artistCountStr.contains(song.trackArtist)){
                             int count = int.parse(artistCountStr.split(" - ")[1]);
                             count += 1;
                             newPlaylist.artistCount.remove(artistCountStr);
-                            newPlaylist.artistCount.add("${song.artists} - $count");
+                            newPlaylist.artistCount.add("${song.trackArtist} - $count");
                             found = true;
                             break;
                           }
                         }
                         if (!found){
-                          newPlaylist.artistCount.add("${song.artists} - 1");
+                          newPlaylist.artistCount.add("${song.trackArtist} - 1");
                         }
                       }
                       dc.createPlaylist(newPlaylist);
@@ -373,7 +373,7 @@ class _CreateScreenState extends State<CreateScreen> {
                                                     SizedBox(
                                                       height: height * 0.001,
                                                     ),
-                                                    Text(song.artists.toString().length > 30 ? "${song.artists.toString().substring(0, 30)}..." : song.artists.toString(),
+                                                    Text(song.trackArtist.toString().length > 30 ? "${song.trackArtist.toString().substring(0, 30)}..." : song.trackArtist.toString(),
                                                         style: TextStyle(
                                                           color: Colors.white,
                                                           fontSize: smallSize,
@@ -476,7 +476,7 @@ class _CreateScreenState extends State<CreateScreen> {
                                                     SizedBox(
                                                       height: height * 0.001,
                                                     ),
-                                                    Text(song.artists.toString().length > 30 ? "${song.artists.toString().substring(0, 30)}..." : song.artists.toString(),
+                                                    Text(song.trackArtist.toString().length > 30 ? "${song.trackArtist.toString().substring(0, 30)}..." : song.trackArtist.toString(),
                                                         style: TextStyle(
                                                           color: Colors.white,
                                                           fontSize: smallSize,

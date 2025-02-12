@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 import 'package:collection/collection.dart';
 import 'package:musicplayer/utils/fluenticons/fluenticons.dart';
 import 'package:flutter/material.dart';
@@ -22,7 +20,8 @@ class Tracks extends StatefulWidget{
 
 class _TracksState extends State<Tracks>{
   FocusNode searchNode = FocusNode();
-
+  String selectedSort = "Name"; // Default sorting option
+  bool isAscending = true; // Toggle for ascending/descending
   Timer? _debounce;
 
   late Future<List<SongType>> songsFuture;
@@ -61,39 +60,124 @@ class _TracksState extends State<Tracks>{
       children: [
         Container(
           height: height * 0.05,
+          width: width,
           margin: EdgeInsets.only(
             left: width * 0.01,
             right: width * 0.01,
             bottom: height * 0.01,
           ),
-          alignment: Alignment.center,
-          child: TextFormField(
-            initialValue: '',
-            focusNode: searchNode,
-            onChanged: _onSearchChanged,
-            cursorColor: Colors.white,
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: normalSize,
-            ),
-            decoration: InputDecoration(
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(width * 0.02),
-                borderSide: const BorderSide(
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              IconButton(
+                style: ButtonStyle(
+                  shape: WidgetStateProperty.all<CircleBorder>(
+                    const CircleBorder(
+                      side: BorderSide(
+                        color: Colors.grey,
+                      ),
+                    ),
+                  ),
+                ),
+                icon: Icon(
+                  SettingsController.gridView ? FluentIcons.gridView : FluentIcons.listView,
                   color: Colors.white,
+                  size: height * 0.03,
+                ),
+                onPressed: (){
+                  setState(() {
+                    SettingsController.gridView = !SettingsController.gridView;
+                  });
+                  debugPrint("Grid view set to ${SettingsController.gridView}");
+                },
+              ),
+              SizedBox(
+                width: width * 0.01,
+              ),
+              Expanded(
+                child: TextFormField(
+                  initialValue: '',
+                  focusNode: searchNode,
+                  onChanged: _onSearchChanged,
+                  cursorColor: Colors.white,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: normalSize,
+                  ),
+                  decoration: InputDecoration(
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(width * 0.02),
+                      borderSide: const BorderSide(
+                        color: Colors.white,
+                      ),
+                    ),
+                    contentPadding: EdgeInsets.only(
+                      left: width * 0.01,
+                      right: width * 0.01,
+                    ),
+                    floatingLabelBehavior: FloatingLabelBehavior.never,
+                    labelStyle: TextStyle(
+                      color: Colors.white,
+                      fontSize: smallSize,
+                    ),
+                    labelText: 'Search', suffixIcon: Icon(FluentIcons.search, color: Colors.white, size: height * 0.02,),
+                  ),
                 ),
               ),
-              contentPadding: EdgeInsets.only(
-                left: width * 0.01,
-                right: width * 0.01,
+              SizedBox(
+                width: width * 0.01,
               ),
-              floatingLabelBehavior: FloatingLabelBehavior.never,
-              labelStyle: TextStyle(
-                color: Colors.white,
-                fontSize: smallSize,
-              ),
-              labelText: 'Search', suffixIcon: Icon(FluentIcons.search, color: Colors.white, size: height * 0.02,),
-            ),
+              Container(
+                padding: EdgeInsets.only(
+                  left: width * 0.01,
+                  right: width * 0.01,
+                ),
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.grey),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    PopupMenuButton<String>(
+                      onSelected: (value) {
+                        setState(() {
+                          selectedSort = value;
+                        });
+                      },
+                      tooltip: "Sort by",
+                      itemBuilder: (context) => [
+                        PopupMenuItem(value: "Name", child: Text("Name")),
+                        PopupMenuItem(value: "Date Added", child: Text("Date Added")),
+                        PopupMenuItem(value: "Duration", child: Text("Duration")),
+                      ],
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: Text(selectedSort),
+                      ),
+                    ),
+                    Container(
+                      width: 1, // Divider thickness
+                      height: double.maxFinite, // Divider height
+                      margin: EdgeInsets.only(
+                        right: width * 0.01,
+                        left: width * 0.01,
+                      ),
+                      color: Colors.grey,
+                    ),
+                    IconButton(
+                      icon: Icon(isAscending ? FluentIcons.sortAscending : FluentIcons.sortDescending),
+                      onPressed: () {
+                        setState(() {
+                          isAscending = !isAscending;
+                        });
+                      },
+                    ),
+                  ],
+                ),
+              )
+            ],
           ),
         ),
         Expanded(
@@ -101,6 +185,8 @@ class _TracksState extends State<Tracks>{
             future: songsFuture,
             builder: (context, snapshot){
               if(snapshot.hasError){
+                debugPrint(snapshot.error.toString());
+                debugPrintStack();
                 return Center(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -170,14 +256,14 @@ class _TracksState extends State<Tracks>{
                                 dc.updatePlaying(songPaths, index);
                               }
                               SettingsController.index = SettingsController.currentQueue.indexOf(song.path);
-                             await AppAudioHandler.play();
+                              await AppAudioHandler.play();
                             }
                             else {
                               if (SettingsController.playing == true) {
                                 await AppAudioHandler.pause();
                               }
                               else {
-                               await AppAudioHandler.play();
+                                await AppAudioHandler.play();
                               }
                             }
                           }
@@ -202,44 +288,21 @@ class _TracksState extends State<Tracks>{
                               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                               crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
-                                Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    SizedBox(
-                                      width: width * 0.035,
-                                      height: width * 0.035,
-                                      child: IconButton(
-                                        onPressed: (){
-                                          debugPrint("Add $index");
-                                          Navigator.pushNamed(context, '/add', arguments: [song]);
-                                        },
-                                        padding: const EdgeInsets.all(0),
-                                        icon: Icon(
-                                          FluentIcons.addSingle,
-                                          color: Colors.white,
-                                          size: height * 0.03,
-                                        ),
-                                      ),
+                                SizedBox(
+                                  width: width * 0.035,
+                                  height: width * 0.035,
+                                  child: IconButton(
+                                    tooltip: "Go to Album",
+                                    onPressed: (){
+                                      Navigator.pushNamed(context, '/album', arguments: DataController.albumBox.query(AlbumType_.name.equals(song.album)).build().findFirst());
+                                    },
+                                    padding: const EdgeInsets.all(0),
+                                    icon: Icon(
+                                      FluentIcons.album,
+                                      color: Colors.white,
+                                      size: height * 0.03,
                                     ),
-
-                                    SizedBox(
-                                      width: width * 0.035,
-                                      height: width * 0.035,
-                                      child: IconButton(
-                                        onPressed: (){
-                                          debugPrint("Play Next: $index");
-                                          dc.addNextToQueue([song.path]);
-                                        },
-                                        padding: const EdgeInsets.all(0),
-                                        icon: Icon(
-                                          FluentIcons.playNext2,
-                                          color: Colors.white,
-                                          size: height * 0.03,
-                                        ),
-                                      ),
-                                    ),
-
-                                  ],
+                                  ),
                                 ),
                                 Expanded(
                                   child: ValueListenableBuilder(
@@ -256,51 +319,61 @@ class _TracksState extends State<Tracks>{
                                     },
                                   ),
                                 ),
-                                Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    SizedBox(
-                                      width: width * 0.035,
-                                      height: width * 0.035,
-                                      child: IconButton(
-                                        onPressed: (){
-                                          Navigator.pushNamed(context, '/album', arguments: DataController.albumBox.query(AlbumType_.name.equals(song.album)).build().findFirst());
-                                        },
-                                        padding: const EdgeInsets.all(0),
-                                        icon: Icon(
-                                          FluentIcons.album,
-                                          color: Colors.white,
-                                          size: height * 0.03,
+                                SizedBox(
+                                  width: width * 0.035,
+                                  height: width * 0.035,
+                                  child: PopupMenuButton<String>(
+                                    icon: Icon(
+                                      FluentIcons.moreVertical,
+                                      color: Colors.white,
+                                      size: height * 0.03,
+                                    ),
+                                    onSelected: (String value){
+                                      switch(value){
+                                        case 'add':
+                                          debugPrint("Add $index");
+                                          Navigator.pushNamed(context, '/add', arguments: [song]);
+                                          break;
+                                        case 'playNext':
+                                          debugPrint("Play Next: $index");
+                                          dc.addNextToQueue([song.path]);
+                                          break;
+                                        case 'select':
+                                          debugPrint("Select $index");
+                                          // if (DataController.selected.contains(song.path)){
+                                          //   DataController.selected = List.from(DataController.selected)..remove(song.path);
+                                          //   return;
+                                          // }
+                                          // DataController.selected = List.from(DataController.selected)..add(song.path);
+                                          break;
+                                        case 'details':
+                                          debugPrint("Details $index");
+                                          Navigator.pushNamed(context, '/details', arguments: song);
+                                          break;
+                                      }
+                                    },
+                                    itemBuilder: (context){
+                                      return [
+                                        const PopupMenuItem<String>(
+                                          value: 'add',
+                                          child: Text("Add to Playlist"),
                                         ),
-                                      ),
-                                    ),
-                                    ValueListenableBuilder(
-                                      valueListenable: DataController.selectedPaths,
-                                      builder: (context, value, child){
-                                        return SizedBox(
-                                          width: width * 0.035,
-                                          height: width * 0.035,
-                                          child: IconButton(
-                                            onPressed: (){
-                                              debugPrint("Select $index");
-                                              if (DataController.selected.contains(song.path)){
-                                                DataController.selected = List.from(DataController.selected)..remove(song.path);
-                                                return;
-                                              }
-                                              DataController.selected = List.from(DataController.selected)..add(song.path);
-                                            },
-                                            padding: const EdgeInsets.all(0),
-                                            icon: Icon(
-                                              DataController.selected.contains(song.path) ? FluentIcons.checkCircleOn : FluentIcons.checkCircleOff,
-                                              color: Colors.white,
-                                              size: height * 0.03,
-                                            ),
-                                          ),
-                                        );
-                                      },
-                                    ),
-                                  ],
-                                )
+                                        const PopupMenuItem<String>(
+                                          value: 'playNext',
+                                          child: Text("Play Next"),
+                                        ),
+                                        const PopupMenuItem<String>(
+                                          value: 'select',
+                                          child: Text("Select"),
+                                        ),
+                                        const PopupMenuItem<String>(
+                                          value: 'details',
+                                          child: Text("Track Details"),
+                                        ),
+                                      ];
+                                    },
+                                  ),
+                                ),
                               ],
                             ),
                             child: Container(
@@ -333,12 +406,13 @@ class _TracksState extends State<Tracks>{
                                 delayBefore: const Duration(seconds: 2),
                                 pauseBetween: const Duration(seconds: 2),
                               ),
-                          ),
+                            ),
                           ),
                         ),
                       ),
 
                     );
+
 
                   },
                 );

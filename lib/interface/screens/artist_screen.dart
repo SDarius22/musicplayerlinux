@@ -249,7 +249,7 @@ class _ArtistScreenState extends State<ArtistScreen> {
                                         height: height * 0.005,
                                       ),
                                       Text(
-                                          widget.artist.songs[index].artists.toString().length > 60 ? "${widget.artist.songs[index].artists.toString().substring(0, 60)}..." : widget.artist.songs[index].artists.toString(),
+                                          widget.artist.songs[index].trackArtist.toString().length > 60 ? "${widget.artist.songs[index].trackArtist.toString().substring(0, 60)}..." : widget.artist.songs[index].trackArtist.toString(),
                                           style: TextStyle(
                                             color: Colors.white,
                                             fontSize: smallSize,

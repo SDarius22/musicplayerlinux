@@ -124,7 +124,7 @@ final _entities = <obx_int.ModelEntity>[
   obx_int.ModelEntity(
       id: const obx_int.IdUid(4, 6804076072802197348),
       name: 'Settings',
-      lastPropertyId: const obx_int.IdUid(31, 2620913899500465255),
+      lastPropertyId: const obx_int.IdUid(35, 3790165928719475462),
       flags: 0,
       properties: <obx_int.ModelProperty>[
         obx_int.ModelProperty(
@@ -155,11 +155,6 @@ final _entities = <obx_int.ModelEntity>[
         obx_int.ModelProperty(
             id: const obx_int.IdUid(6, 6047951844641597661),
             name: 'primaryDevice',
-            type: 9,
-            flags: 0),
-        obx_int.ModelProperty(
-            id: const obx_int.IdUid(7, 1802142995195547451),
-            name: 'directory',
             type: 9,
             flags: 0),
         obx_int.ModelProperty(
@@ -261,6 +256,26 @@ final _entities = <obx_int.ModelEntity>[
             id: const obx_int.IdUid(31, 2620913899500465255),
             name: 'slider',
             type: 6,
+            flags: 0),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(32, 5494903356063044467),
+            name: 'gridView',
+            type: 1,
+            flags: 0),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(33, 8011405811957446964),
+            name: 'songPlaces',
+            type: 30,
+            flags: 0),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(34, 6418856442391201285),
+            name: 'mainSongPlace',
+            type: 9,
+            flags: 0),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(35, 3790165928719475462),
+            name: 'songPlaceIncludeSubfolders',
+            type: 27,
             flags: 0)
       ],
       relations: <obx_int.ModelRelation>[],
@@ -268,7 +283,7 @@ final _entities = <obx_int.ModelEntity>[
   obx_int.ModelEntity(
       id: const obx_int.IdUid(5, 7894316662941293306),
       name: 'SongType',
-      lastPropertyId: const obx_int.IdUid(14, 3238798048305584967),
+      lastPropertyId: const obx_int.IdUid(17, 1343901758836927781),
       flags: 0,
       properties: <obx_int.ModelProperty>[
         obx_int.ModelProperty(
@@ -279,11 +294,6 @@ final _entities = <obx_int.ModelEntity>[
         obx_int.ModelProperty(
             id: const obx_int.IdUid(2, 8662021158587083310),
             name: 'title',
-            type: 9,
-            flags: 0),
-        obx_int.ModelProperty(
-            id: const obx_int.IdUid(3, 2984380281557415328),
-            name: 'artists',
             type: 9,
             flags: 0),
         obx_int.ModelProperty(
@@ -335,6 +345,21 @@ final _entities = <obx_int.ModelEntity>[
             id: const obx_int.IdUid(14, 3238798048305584967),
             name: 'playCount',
             type: 6,
+            flags: 0),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(15, 5403121951651724452),
+            name: 'trackArtist',
+            type: 9,
+            flags: 0),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(16, 5272121219338655893),
+            name: 'year',
+            type: 6,
+            flags: 0),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(17, 1343901758836927781),
+            name: 'genre',
+            type: 9,
             flags: 0)
       ],
       relations: <obx_int.ModelRelation>[],
@@ -388,7 +413,9 @@ obx_int.ModelDefinition getObjectBoxModel() {
         149915083280863291,
         1171492870719301957,
         3807358697915249101,
-        3700143381519926938
+        3700143381519926938,
+        2984380281557415328,
+        1802142995195547451
       ],
       retiredRelationUids: const [3440552932794375637],
       modelVersion: 5,
@@ -523,7 +550,6 @@ obx_int.ModelDefinition getObjectBoxModel() {
           final deviceListOffset = fbb.writeList(
               object.deviceList.map(fbb.writeString).toList(growable: false));
           final primaryDeviceOffset = fbb.writeString(object.primaryDevice);
-          final directoryOffset = fbb.writeString(object.directory);
           final deezerARLOffset = fbb.writeString(object.deezerARL);
           final queueAddOffset = fbb.writeString(object.queueAdd);
           final queuePlayOffset = fbb.writeString(object.queuePlay);
@@ -534,14 +560,18 @@ obx_int.ModelDefinition getObjectBoxModel() {
           final shuffledQueueOffset = fbb.writeList(object.shuffledQueue
               .map(fbb.writeString)
               .toList(growable: false));
-          fbb.startTable(32);
+          final songPlacesOffset = fbb.writeList(
+              object.songPlaces.map(fbb.writeString).toList(growable: false));
+          final mainSongPlaceOffset = fbb.writeString(object.mainSongPlace);
+          final songPlaceIncludeSubfoldersOffset =
+              fbb.writeListInt64(object.songPlaceIncludeSubfolders);
+          fbb.startTable(36);
           fbb.addInt64(0, object.id);
           fbb.addOffset(1, mongoIDOffset);
           fbb.addOffset(2, emailOffset);
           fbb.addOffset(3, passwordOffset);
           fbb.addOffset(4, deviceListOffset);
           fbb.addOffset(5, primaryDeviceOffset);
-          fbb.addOffset(6, directoryOffset);
           fbb.addInt64(7, object.index);
           fbb.addBool(9, object.firstTime);
           fbb.addBool(10, object.systemTray);
@@ -562,6 +592,10 @@ obx_int.ModelDefinition getObjectBoxModel() {
           fbb.addInt64(28, object.lightColor);
           fbb.addInt64(29, object.darkColor);
           fbb.addInt64(30, object.slider);
+          fbb.addBool(31, object.gridView);
+          fbb.addOffset(32, songPlacesOffset);
+          fbb.addOffset(33, mainSongPlaceOffset);
+          fbb.addOffset(34, songPlaceIncludeSubfoldersOffset);
           fbb.finish(fbb.endTable());
           return object.id;
         },
@@ -583,8 +617,6 @@ obx_int.ModelDefinition getObjectBoxModel() {
                 .vTableGet(buffer, rootOffset, 12, [])
             ..primaryDevice = const fb.StringReader(asciiOptimization: true)
                 .vTableGet(buffer, rootOffset, 14, '')
-            ..directory = const fb.StringReader(asciiOptimization: true)
-                .vTableGet(buffer, rootOffset, 16, '')
             ..index =
                 const fb.Int64Reader().vTableGet(buffer, rootOffset, 18, 0)
             ..firstTime =
@@ -630,7 +662,18 @@ obx_int.ModelDefinition getObjectBoxModel() {
             ..darkColor =
                 const fb.Int64Reader().vTableGet(buffer, rootOffset, 62, 0)
             ..slider =
-                const fb.Int64Reader().vTableGet(buffer, rootOffset, 64, 0);
+                const fb.Int64Reader().vTableGet(buffer, rootOffset, 64, 0)
+            ..gridView =
+                const fb.BoolReader().vTableGet(buffer, rootOffset, 66, false)
+            ..songPlaces = const fb.ListReader<String>(
+                    fb.StringReader(asciiOptimization: true),
+                    lazy: false)
+                .vTableGet(buffer, rootOffset, 68, [])
+            ..mainSongPlace = const fb.StringReader(asciiOptimization: true)
+                .vTableGet(buffer, rootOffset, 70, '')
+            ..songPlaceIncludeSubfolders =
+                const fb.ListReader<int>(fb.Int64Reader(), lazy: false)
+                    .vTableGet(buffer, rootOffset, 72, []);
 
           return object;
         }),
@@ -644,15 +687,15 @@ obx_int.ModelDefinition getObjectBoxModel() {
         },
         objectToFB: (SongType object, fb.Builder fbb) {
           final titleOffset = fbb.writeString(object.title);
-          final artistsOffset = fbb.writeString(object.artists);
           final albumOffset = fbb.writeString(object.album);
           final albumArtistOffset = fbb.writeString(object.albumArtist);
           final pathOffset = fbb.writeString(object.path);
           final lyricsPathOffset = fbb.writeString(object.lyricsPath);
-          fbb.startTable(15);
+          final trackArtistOffset = fbb.writeString(object.trackArtist);
+          final genreOffset = fbb.writeString(object.genre);
+          fbb.startTable(18);
           fbb.addInt64(0, object.id);
           fbb.addOffset(1, titleOffset);
-          fbb.addOffset(2, artistsOffset);
           fbb.addOffset(3, albumOffset);
           fbb.addOffset(4, albumArtistOffset);
           fbb.addInt64(5, object.duration);
@@ -663,6 +706,9 @@ obx_int.ModelDefinition getObjectBoxModel() {
           fbb.addBool(11, object.liked);
           fbb.addInt64(12, object.lastPlayed?.millisecondsSinceEpoch);
           fbb.addInt64(13, object.playCount);
+          fbb.addOffset(14, trackArtistOffset);
+          fbb.addInt64(15, object.year);
+          fbb.addOffset(16, genreOffset);
           fbb.finish(fbb.endTable());
           return object.id;
         },
@@ -675,8 +721,6 @@ obx_int.ModelDefinition getObjectBoxModel() {
             ..id = const fb.Int64Reader().vTableGet(buffer, rootOffset, 4, 0)
             ..title = const fb.StringReader(asciiOptimization: true)
                 .vTableGet(buffer, rootOffset, 6, '')
-            ..artists = const fb.StringReader(asciiOptimization: true)
-                .vTableGet(buffer, rootOffset, 8, '')
             ..album = const fb.StringReader(asciiOptimization: true)
                 .vTableGet(buffer, rootOffset, 10, '')
             ..albumArtist = const fb.StringReader(asciiOptimization: true)
@@ -697,7 +741,12 @@ obx_int.ModelDefinition getObjectBoxModel() {
                 ? null
                 : DateTime.fromMillisecondsSinceEpoch(lastPlayedValue)
             ..playCount =
-                const fb.Int64Reader().vTableGet(buffer, rootOffset, 30, 0);
+                const fb.Int64Reader().vTableGet(buffer, rootOffset, 30, 0)
+            ..trackArtist = const fb.StringReader(asciiOptimization: true)
+                .vTableGet(buffer, rootOffset, 32, '')
+            ..year = const fb.Int64Reader().vTableGet(buffer, rootOffset, 34, 0)
+            ..genre = const fb.StringReader(asciiOptimization: true)
+                .vTableGet(buffer, rootOffset, 36, '');
 
           return object;
         })
@@ -797,89 +846,101 @@ class Settings_ {
   static final primaryDevice =
       obx.QueryStringProperty<Settings>(_entities[3].properties[5]);
 
-  /// See [Settings.directory].
-  static final directory =
-      obx.QueryStringProperty<Settings>(_entities[3].properties[6]);
-
   /// See [Settings.index].
   static final index =
-      obx.QueryIntegerProperty<Settings>(_entities[3].properties[7]);
+      obx.QueryIntegerProperty<Settings>(_entities[3].properties[6]);
 
   /// See [Settings.firstTime].
   static final firstTime =
-      obx.QueryBooleanProperty<Settings>(_entities[3].properties[8]);
+      obx.QueryBooleanProperty<Settings>(_entities[3].properties[7]);
 
   /// See [Settings.systemTray].
   static final systemTray =
-      obx.QueryBooleanProperty<Settings>(_entities[3].properties[9]);
+      obx.QueryBooleanProperty<Settings>(_entities[3].properties[8]);
 
   /// See [Settings.fullClose].
   static final fullClose =
-      obx.QueryBooleanProperty<Settings>(_entities[3].properties[10]);
+      obx.QueryBooleanProperty<Settings>(_entities[3].properties[9]);
 
   /// See [Settings.appNotifications].
   static final appNotifications =
-      obx.QueryBooleanProperty<Settings>(_entities[3].properties[11]);
+      obx.QueryBooleanProperty<Settings>(_entities[3].properties[10]);
 
   /// See [Settings.deezerARL].
   static final deezerARL =
-      obx.QueryStringProperty<Settings>(_entities[3].properties[12]);
+      obx.QueryStringProperty<Settings>(_entities[3].properties[11]);
 
   /// See [Settings.queueAdd].
   static final queueAdd =
-      obx.QueryStringProperty<Settings>(_entities[3].properties[13]);
+      obx.QueryStringProperty<Settings>(_entities[3].properties[12]);
 
   /// See [Settings.queuePlay].
   static final queuePlay =
-      obx.QueryStringProperty<Settings>(_entities[3].properties[14]);
+      obx.QueryStringProperty<Settings>(_entities[3].properties[13]);
 
   /// See [Settings.queue].
   static final queue =
-      obx.QueryStringVectorProperty<Settings>(_entities[3].properties[15]);
+      obx.QueryStringVectorProperty<Settings>(_entities[3].properties[14]);
 
   /// See [Settings.missingSongs].
   static final missingSongs =
-      obx.QueryStringVectorProperty<Settings>(_entities[3].properties[16]);
+      obx.QueryStringVectorProperty<Settings>(_entities[3].properties[15]);
 
   /// See [Settings.repeat].
   static final repeat =
-      obx.QueryBooleanProperty<Settings>(_entities[3].properties[17]);
+      obx.QueryBooleanProperty<Settings>(_entities[3].properties[16]);
 
   /// See [Settings.shuffle].
   static final shuffle =
-      obx.QueryBooleanProperty<Settings>(_entities[3].properties[18]);
+      obx.QueryBooleanProperty<Settings>(_entities[3].properties[17]);
 
   /// See [Settings.balance].
   static final balance =
-      obx.QueryDoubleProperty<Settings>(_entities[3].properties[19]);
+      obx.QueryDoubleProperty<Settings>(_entities[3].properties[18]);
 
   /// See [Settings.speed].
   static final speed =
-      obx.QueryDoubleProperty<Settings>(_entities[3].properties[20]);
+      obx.QueryDoubleProperty<Settings>(_entities[3].properties[19]);
 
   /// See [Settings.volume].
   static final volume =
-      obx.QueryDoubleProperty<Settings>(_entities[3].properties[21]);
+      obx.QueryDoubleProperty<Settings>(_entities[3].properties[20]);
 
   /// See [Settings.sleepTimer].
   static final sleepTimer =
-      obx.QueryIntegerProperty<Settings>(_entities[3].properties[22]);
+      obx.QueryIntegerProperty<Settings>(_entities[3].properties[21]);
 
   /// See [Settings.shuffledQueue].
   static final shuffledQueue =
-      obx.QueryStringVectorProperty<Settings>(_entities[3].properties[23]);
+      obx.QueryStringVectorProperty<Settings>(_entities[3].properties[22]);
 
   /// See [Settings.lightColor].
   static final lightColor =
-      obx.QueryIntegerProperty<Settings>(_entities[3].properties[24]);
+      obx.QueryIntegerProperty<Settings>(_entities[3].properties[23]);
 
   /// See [Settings.darkColor].
   static final darkColor =
-      obx.QueryIntegerProperty<Settings>(_entities[3].properties[25]);
+      obx.QueryIntegerProperty<Settings>(_entities[3].properties[24]);
 
   /// See [Settings.slider].
   static final slider =
-      obx.QueryIntegerProperty<Settings>(_entities[3].properties[26]);
+      obx.QueryIntegerProperty<Settings>(_entities[3].properties[25]);
+
+  /// See [Settings.gridView].
+  static final gridView =
+      obx.QueryBooleanProperty<Settings>(_entities[3].properties[26]);
+
+  /// See [Settings.songPlaces].
+  static final songPlaces =
+      obx.QueryStringVectorProperty<Settings>(_entities[3].properties[27]);
+
+  /// See [Settings.mainSongPlace].
+  static final mainSongPlace =
+      obx.QueryStringProperty<Settings>(_entities[3].properties[28]);
+
+  /// See [Settings.songPlaceIncludeSubfolders].
+  static final songPlaceIncludeSubfolders =
+      obx.QueryIntegerVectorProperty<Settings>(_entities[3].properties[29]);
 }
 
 /// [SongType] entity fields to define ObjectBox queries.
@@ -892,47 +953,55 @@ class SongType_ {
   static final title =
       obx.QueryStringProperty<SongType>(_entities[4].properties[1]);
 
-  /// See [SongType.artists].
-  static final artists =
-      obx.QueryStringProperty<SongType>(_entities[4].properties[2]);
-
   /// See [SongType.album].
   static final album =
-      obx.QueryStringProperty<SongType>(_entities[4].properties[3]);
+      obx.QueryStringProperty<SongType>(_entities[4].properties[2]);
 
   /// See [SongType.albumArtist].
   static final albumArtist =
-      obx.QueryStringProperty<SongType>(_entities[4].properties[4]);
+      obx.QueryStringProperty<SongType>(_entities[4].properties[3]);
 
   /// See [SongType.duration].
   static final duration =
-      obx.QueryIntegerProperty<SongType>(_entities[4].properties[5]);
+      obx.QueryIntegerProperty<SongType>(_entities[4].properties[4]);
 
   /// See [SongType.path].
   static final path =
-      obx.QueryStringProperty<SongType>(_entities[4].properties[6]);
+      obx.QueryStringProperty<SongType>(_entities[4].properties[5]);
 
   /// See [SongType.lyricsPath].
   static final lyricsPath =
-      obx.QueryStringProperty<SongType>(_entities[4].properties[7]);
+      obx.QueryStringProperty<SongType>(_entities[4].properties[6]);
 
   /// See [SongType.trackNumber].
   static final trackNumber =
-      obx.QueryIntegerProperty<SongType>(_entities[4].properties[8]);
+      obx.QueryIntegerProperty<SongType>(_entities[4].properties[7]);
 
   /// See [SongType.discNumber].
   static final discNumber =
-      obx.QueryIntegerProperty<SongType>(_entities[4].properties[9]);
+      obx.QueryIntegerProperty<SongType>(_entities[4].properties[8]);
 
   /// See [SongType.liked].
   static final liked =
-      obx.QueryBooleanProperty<SongType>(_entities[4].properties[10]);
+      obx.QueryBooleanProperty<SongType>(_entities[4].properties[9]);
 
   /// See [SongType.lastPlayed].
   static final lastPlayed =
-      obx.QueryDateProperty<SongType>(_entities[4].properties[11]);
+      obx.QueryDateProperty<SongType>(_entities[4].properties[10]);
 
   /// See [SongType.playCount].
   static final playCount =
-      obx.QueryIntegerProperty<SongType>(_entities[4].properties[12]);
+      obx.QueryIntegerProperty<SongType>(_entities[4].properties[11]);
+
+  /// See [SongType.trackArtist].
+  static final trackArtist =
+      obx.QueryStringProperty<SongType>(_entities[4].properties[12]);
+
+  /// See [SongType.year].
+  static final year =
+      obx.QueryIntegerProperty<SongType>(_entities[4].properties[13]);
+
+  /// See [SongType.genre].
+  static final genre =
+      obx.QueryStringProperty<SongType>(_entities[4].properties[14]);
 }

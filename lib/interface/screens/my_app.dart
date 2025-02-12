@@ -1,5 +1,6 @@
 import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:desktop_drop/desktop_drop.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:musicplayer/controller/app_manager.dart';
 import 'package:musicplayer/controller/online_controller.dart';
@@ -10,6 +11,7 @@ import 'package:musicplayer/interface/screens/loading_screen.dart';
 import 'package:musicplayer/interface/screens/playlist_screen.dart';
 import 'package:musicplayer/interface/screens/settings_screen.dart';
 import 'package:musicplayer/interface/screens/user_screen.dart';
+import 'package:musicplayer/interface/widgets/actions_widget.dart';
 import 'package:musicplayer/interface/widgets/notification_widget.dart';
 
 import '../../controller/app_audio_handler.dart';
@@ -26,6 +28,7 @@ import '../widgets/song_player_widget.dart';
 import 'album_screen.dart';
 import 'artist_screen.dart';
 import 'create_screen.dart';
+import 'details_screen.dart';
 import 'home.dart';
 import 'welcome_screen.dart';
 
@@ -65,6 +68,7 @@ class _MyAppState extends State<MyApp> {
     var width = MediaQuery.of(context).size.width;
     var normalSize = MediaQuery.of(context).size.height * 0.02;
     // var smallSize = MediaQuery.of(context).size.height * 0.0175;
+    var bigSize = MediaQuery.of(context).size.height * 0.0225;
     return FutureBuilder(
         future: _init,
         builder: (context, snapshot) {
@@ -391,56 +395,13 @@ class _MyAppState extends State<MyApp> {
                                   ],
                                 ),
                           ),
-                          IconButton(
-                              onPressed: () {
-                                debugPrint("Tapped settings");
-                                final am = AppManager();
-                                am.minimizedNotifier.value = true;
-                                am.navigatorKey.currentState!.pushNamed('/settings');
-                                // Navigator.pushNamed(context, '/settings');
-                                // am.minimizedNotifier.value = true;
-                                // am.navigatorKey.currentState!.push(MaterialPageRoute(builder: (BuildContext context){
-                                //   return const SettingsScreen();
-                                // })).then((value) {
-                                //   setState(() {
-                                //     _init = Future(() async {
-                                //       await WorkerController.retrieveAllSongs();
-                                //       if (SettingsController.queue.isEmpty) {
-                                //         debugPrint("Queue is empty");
-                                //         var songs = await DataController.getSongs('');
-                                //         SettingsController.queue =
-                                //             songs.map((e) => e.path).toList();
-                                //         SettingsController.index = 0;
-                                //       }
-                                //     });
-                                //   });
-                                // });
-                              },
-                              icon: Icon(
-                                FluentIcons.settings,
-                                size: MediaQuery
-                                    .of(context)
-                                    .size
-                                    .height * 0.0175,
-                                color: Colors.white,
-                              )
-                          ),
                           ValueListenableBuilder(
                             valueListenable: OnlineController.loggedInNotifier,
                             builder: (context, value, child) =>
                                 ElevatedButton.icon(
                                   onPressed: () async {
                                     debugPrint("Tapped user");
-                                    final am = AppManager();
-                                    am.minimizedNotifier.value = true;
-                                    am.navigatorKey.currentState!.pushNamed('/user');
-                                    // Navigator.pushNamed(context, '/user');
-
-                                    // am.navigatorKey.currentState!.push(
-                                    //     MaterialPageRoute(
-                                    //         builder: (BuildContext context) {
-                                    //           return const UserScreen();
-                                    //         }));
+                                    Scaffold.of(context).openEndDrawer();
                                   },
                                   iconAlignment: IconAlignment.end,
                                   label: Text(
@@ -564,6 +525,7 @@ class _MyAppState extends State<MyApp> {
                               '/album' => AlbumScreen(album: settings.arguments as AlbumType),
                               '/playlist' =>
                                   PlaylistScreen(playlist: settings.arguments as PlaylistType),
+                              '/details' => DetailsScreen(song: settings.arguments as SongType),
                               _ => const LoadingScreen(),
                             },
                             if (settings.name != '/welcome' && settings.name != '/')
@@ -660,13 +622,181 @@ class _MyAppState extends State<MyApp> {
                     },
                   ),
                 ),
-                AnimatedContainer(
-                  duration: const Duration(milliseconds: 500),
-                  alignment: Alignment.bottomCenter,
-                  child: const SongPlayerWidget(),
+                ValueListenableBuilder(
+                  valueListenable: SettingsController.firstTimeNotifier,
+                  builder: (context, value, child) {
+                    return value ? const SizedBox() :
+                    AnimatedContainer(
+                      duration: const Duration(milliseconds: 500),
+                      alignment: Alignment.bottomCenter,
+                      child: const SongPlayerWidget(),
+                    );
+                  }
                 ),
+
               ],
             ),
+            endDrawer: SettingsController.firstTime ? null :
+            ValueListenableBuilder(
+              valueListenable: SettingsController.darkColorNotifier,
+              builder: (context, value, child) {
+                return Drawer(
+                  width: width * 0.2,
+                  backgroundColor: SettingsController.darkColorNotifier.value,
+                  shape: const RoundedRectangleBorder(
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(20),
+                      bottomLeft: Radius.circular(20),
+                    ),
+                  ),
+                  child: Column(
+                    children: [
+                      Flexible(
+                        child: ListView(
+                          children: [
+                            ListTile(
+                              dense: true,
+                              visualDensity: const VisualDensity(vertical: 4),
+                              contentPadding: EdgeInsets.symmetric(
+                                  horizontal: width * 0.01,
+                                  vertical: MediaQuery.of(context).size.height * 0.025,
+                              ),
+                              title: Text(
+                                OnlineController.loggedInNotifier.value ? SettingsController.email : "Log in",
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: bigSize,
+                                ),
+                              ),
+                              subtitle: OnlineController.loggedInNotifier.value ? const Text("Logged in") : null,
+                              leading: OnlineController.loggedInNotifier.value ? const Icon(FluentIcons.circlePersonFilled) : const Icon(FluentIcons.circlePerson),
+                              trailing: OnlineController.loggedInNotifier.value ? IconButton(
+                                icon: const Icon(FluentIcons.back),
+                                onPressed: () async {
+                                  // await OnlineController().signOut();
+                                },
+                              ) : null,
+                              onTap: () {
+                                Navigator.pop(context);
+                                AppManager().navigatorKey.currentState!.pushNamed('/user');
+                              },
+                            ),
+                            ListTile(
+                              dense: true,
+                              title: Text(
+                                "Settings",
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: normalSize,
+                                ),
+                              ),
+                              leading: Icon(FluentIcons.settings, size: MediaQuery.of(context).size.height * 0.025,),
+                              onTap: () {
+                                debugPrint("Tapped settings");
+                                final am = AppManager();
+                                am.minimizedNotifier.value = true;
+                                Navigator.pop(context);
+                                am.navigatorKey.currentState!.pushNamed('/settings');
+                                // Navigator.pushNamed(context, '/settings');
+                                // am.minimizedNotifier.value = true;
+                                // am.navigatorKey.currentState!.push(MaterialPageRoute(builder: (BuildContext context){
+                                //   return const SettingsScreen();
+                                // })).then((value) {
+                                //   setState(() {
+                                //     _init = Future(() async {
+                                //       await WorkerController.retrieveAllSongs();
+                                //       if (SettingsController.queue.isEmpty) {
+                                //         debugPrint("Queue is empty");
+                                //         var songs = await DataController.getSongs('');
+                                //         SettingsController.queue =
+                                //             songs.map((e) => e.path).toList();
+                                //         SettingsController.index = 0;
+                                //       }
+                                //     });
+                                //   });
+                                // });
+                              },
+                            ),
+                            ListTile(
+                              dense: true,
+                              title: Text(
+                                "Create",
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: normalSize,
+                                ),
+                              ),
+                              leading: Icon(FluentIcons.create, size: MediaQuery.of(context).size.height * 0.025,),
+                              onTap: () {
+                                Navigator.pop(context);
+                                AppManager().navigatorKey.currentState!.pushNamed('/create', arguments: [""]);
+                              },
+                            ),
+                            ListTile(
+                              dense: true,
+                              title: Text(
+                                "Export",
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: normalSize,
+                                ),
+                              ),
+                              leading: Icon(FluentIcons.export, size: MediaQuery.of(context).size.height * 0.025,),
+                              onTap: () {
+                                Navigator.pop(context);
+                                AppManager().navigatorKey.currentState!.pushNamed('/export');
+                              },
+                            ),
+                            ListTile(
+                              dense: true,
+                              title: Text(
+                                "Contact us",
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: normalSize,
+                                ),
+                              ),
+                              leading: Icon(FluentIcons.open, size: MediaQuery.of(context).size.height * 0.025,),
+                              onTap: () {
+
+                              },
+                            ),
+                            ListTile(
+                              dense: true,
+                              title: Text(
+                                "About",
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: normalSize,
+                                ),
+                              ),
+                              leading: Icon(FluentIcons.open, size: MediaQuery.of(context).size.height * 0.025,),
+                              onTap: () {
+                                showAboutDialog(
+                                  context: context,
+                                  applicationIcon: Image.asset('assets/bg.png', fit: BoxFit.cover, width: width * 0.075, height: width * 0.075,),
+                                  applicationName: 'Music Player',
+                                  applicationVersion: 'version: 0.0.1',
+                                  applicationLegalese: '© 2025 Music Player',
+                                  children: [
+                                    Text('Music Player is a free and open-source music player for Windows, Linux and Android.'),
+                                    Text('Developed by: Darius Sala'),
+                                    Text(''),
+                                    Text('This software is provided as-is, without any warranty or guarantee of any kind. Use at your own risk.'),
+                                  ],
+                                );
+                              },
+                            )
+                          ],
+                        ),
+                      ),
+                      const ActionsWidget(),
+                    ],
+                  ),
+                );
+              }
+            ),
+
             bottomNavigationBar: SettingsController.firstTime ? null : const NotificationWidget(),
           );
         }

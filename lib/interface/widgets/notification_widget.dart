@@ -39,7 +39,7 @@ class _NotificationWidgetState extends State<NotificationWidget> {
                 ),
               ),
               const Spacer(),
-              am.actions,
+              am.notificationActions,
             ],
           ),
         );

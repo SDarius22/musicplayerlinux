@@ -16,11 +16,18 @@ class FluentIcons{
   static const IconData circlePersonFilled = IconData(0xECB8, fontFamily: 'FluentIcons-Resizable');
   static const IconData circlePerson = IconData(0xECB9, fontFamily: 'FluentIcons-Resizable');
 
+  static const IconData create = IconData(0xEFE4, fontFamily: 'FluentIcons-Resizable');
+
   static const IconData divider = IconData(0xE64A, fontFamily: 'FluentIcons-Resizable');
 
   static const IconData download = IconData(0xE0C8, fontFamily: 'FluentIcons-Resizable');
 
   static const IconData drag = IconData(0xE73E, fontFamily: 'FluentIcons-Resizable');
+
+  static const IconData export = IconData(0xE603, fontFamily: 'FluentIcons-Resizable');
+
+  static const IconData listView = IconData(0xE070, fontFamily: 'FluentIcons-Resizable');
+  static const IconData gridView = IconData(0xE060, fontFamily: 'FluentIcons-Resizable');
 
   static const IconData editOn = IconData(0xE796, fontFamily: 'FluentIcons-Resizable');
   static const IconData editOff = IconData(0xE79E, fontFamily: 'FluentIcons-Resizable');
@@ -29,6 +36,8 @@ class FluentIcons{
 
   static const IconData folder = IconData(0xE841, fontFamily: 'FluentIcons-Resizable');
   static const IconData folderFilled = IconData(0xE840, fontFamily: 'FluentIcons-Resizable');
+  static const IconData folderAdd = IconData(0xE843, fontFamily: 'FluentIcons-Resizable');
+  static const IconData folderAddFilled = IconData(0xE842, fontFamily: 'FluentIcons-Resizable');
 
   static const IconData trash = IconData(0xE5F0, fontFamily: 'FluentIcons-Resizable');
 
@@ -37,6 +46,8 @@ class FluentIcons{
 
   static const IconData minimize = IconData(0xE104, fontFamily: 'FluentIcons-Resizable');
   static const IconData maximize = IconData(0xE100, fontFamily: 'FluentIcons-Resizable');
+
+  static const IconData moreVertical = IconData(0xEB6B, fontFamily: 'FluentIcons-Resizable');
 
   static const IconData listOn = IconData(0xEA87, fontFamily: 'FluentIcons-Resizable');
 
@@ -68,6 +79,9 @@ class FluentIcons{
 
   static const IconData shuffleOn = IconData(0xE130, fontFamily: 'FluentIcons-Resizable');
   static const IconData shuffleOff = IconData(0xE133, fontFamily: 'FluentIcons-Resizable');
+
+  static const IconData sortAscending = IconData(0xE13C, fontFamily: 'FluentIcons-Resizable');
+  static const IconData sortDescending = IconData(0xE138, fontFamily: 'FluentIcons-Resizable');
 
   static const IconData open = IconData(0xEBE5, fontFamily: 'FluentIcons-Resizable');
 

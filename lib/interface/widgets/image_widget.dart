@@ -22,6 +22,58 @@ class _ImageWidgetState extends State<ImageWidget> {
 
   @override
   Widget build(BuildContext context) {
+    if (widget.url != null) {
+      return AspectRatio(
+        aspectRatio: 1.0,
+        child: MouseRegion(
+          onEnter: (event) {
+            isHovered.value = true;
+          },
+          onExit: (event) {
+            isHovered.value = false;
+          },
+          child: Container(
+            decoration: BoxDecoration(
+                color: Colors.black,
+                image: DecorationImage(
+                  fit: BoxFit.cover,
+                  image: Image.network(widget.url ?? "").image,
+                )
+            ),
+            child: widget.hoveredChild != null?
+            ValueListenableBuilder(
+                valueListenable: isHovered,
+                builder: (context, value, child) {
+                  return Stack(
+                    children: [
+                      AnimatedOpacity(
+                        opacity: value ? 0.0 : 1.0,
+                        duration: const Duration(milliseconds: 0),
+                        child: widget.child,
+                      ),
+                      AnimatedOpacity(
+                        opacity: value ? 1.0 : 0.0,
+                        duration: const Duration(milliseconds: 0),
+                        child: ClipRect(
+                          child: BackdropFilter(
+                            filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                            child: Container(
+                              color: Colors.black.withOpacity(0.4),
+                              alignment: Alignment.center,
+                              child: widget.hoveredChild,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  );
+                }
+            ) :
+            widget.child,
+          ),
+        ),
+      );
+    }
     return FutureBuilder(
       future: WorkerController.getImage(widget.path ?? ""),
       builder: (context, snapshot) {
@@ -49,20 +101,29 @@ class _ImageWidgetState extends State<ImageWidget> {
                 ValueListenableBuilder(
                     valueListenable: isHovered,
                     builder: (context, value, child) {
-                      return value ?
-                      ClipRect(
-                        child: BackdropFilter(
-                          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                          child: Container(
-                            color: Colors.black.withOpacity(0.4),
-                            alignment: Alignment.center,
-                            child: widget.hoveredChild,
+                      return Stack(
+                        children: [
+                          AnimatedOpacity(
+                            opacity: value ? 0.0 : 1.0,
+                            duration: const Duration(milliseconds: 0),
+                            child: widget.child,
                           ),
-                        ),
-                      ) :
-                      widget.child != null ?
-                      widget.child! :
-                      Container();
+                          AnimatedOpacity(
+                            opacity: value ? 1.0 : 0.0,
+                            duration: const Duration(milliseconds: 0),
+                            child: ClipRect(
+                              child: BackdropFilter(
+                                filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                                child: Container(
+                                  color: Colors.black.withOpacity(0.4),
+                                  alignment: Alignment.center,
+                                  child: widget.hoveredChild,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      );
                     }
                 ) :
                 widget.child,
@@ -81,6 +142,5 @@ class _ImageWidgetState extends State<ImageWidget> {
         );
       },
     );
-
   }
 }

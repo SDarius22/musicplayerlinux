@@ -138,145 +138,22 @@ class OnlineController{
     return (getResponseJson['data']);
   }
 
-  Future<List<String>> searchLyrics(String title, String artist) async {
-    //plainLyricNotifier.value = 'Searching for lyrics...';
-    final Map<String, String> cookies = {'arl': SettingsController.deezerARL};
-    final Map<String, String> params = {'jo': 'p', 'rto': 'c', 'i': 'c'};
-    const String loginUrl = 'https://auth.deezer.com/login/arl';
-    const String deezerApiUrl = 'https://pipe.deezer.com/api';
-    String searchUrl = 'https://api.deezer.com/search?q=$title-$artist&limit=1&index=0&output=json';
-    debugPrint(searchUrl);
+  static Future<List<String>> searchLyrics(String title, String artist, String album) async {
+    String url = 'https://darius-tech.pro/api/lyrics/$title/$artist/$album';
+    debugPrint("Searching lyrics for $title by $artist");
+    //print(url);
+    String plainLyric = "";
+    String syncedLyric = "";
 
-    final Uri uri = Uri.parse(loginUrl).replace(queryParameters: params);
-    final http.Request postRequest = http.Request('POST', uri);
-    postRequest.headers
-        .addAll({'Content-Type': 'application/json', 'Cookie': 'arl=${cookies['arl']}'});
-    final http.StreamedResponse streamedResponse = await postRequest.send();
-    final String postResponseString = await streamedResponse.stream.bytesToString();
-    final Map<String, dynamic> postResponseJson = jsonDecode(postResponseString);
+    final http.Response getResponse = await http.get(Uri.parse(url));
 
-    //debugPrint(postResponseJson);
-    final String jwt = postResponseJson['jwt'];
-    //debugPrint(jwt);
+    final Map<String, dynamic> getResponseJson = jsonDecode(utf8.decode(getResponse.bodyBytes));
 
-    final http.Response getResponse = await http.get(Uri.parse(searchUrl), headers: {
-      'Cookie': 'arl=${cookies['arl']}',
-    });
+    //print(getResponseJson);
 
-    final Map<String, dynamic> getResponseJson = jsonDecode(getResponse.body);
-    //debugPrint(getResponseJson['data'][0]['id']);
+    plainLyric = getResponseJson['plain_lyrics'];
+    syncedLyric = getResponseJson['synced_lyrics'];
 
-    final String trackId = getResponseJson['data'][0]['id'].toString();
-
-    final Map<String, dynamic> jsonData = {
-      'operationName': 'SynchronizedTrackLyrics',
-      'variables': {
-        'trackId': trackId,
-      },
-      'query': '''query SynchronizedTrackLyrics(\$trackId: String!) {
-                            track(trackId: \$trackId) {
-                              ...SynchronizedTrackLyrics
-                              __typename
-                            }
-                          }
-                      
-                          fragment SynchronizedTrackLyrics on Track {
-                            id
-                            lyrics {
-                              ...Lyrics
-                              __typename
-                            }
-                            album {
-                              cover {
-                                small: urls(pictureRequest: {width: 100, height: 100})
-                                medium: urls(pictureRequest: {width: 264, height: 264})
-                                large: urls(pictureRequest: {width: 800, height: 800})
-                              explicitStatus
-                              __typename
-                            }
-                            __typename
-                          }
-                          __typename
-                          }
-                      
-                          fragment Lyrics on Lyrics {
-                            id
-                            copyright
-                            text
-                            writers
-                            synchronizedLines {
-                              ...LyricsSynchronizedLines
-                              __typename
-                            }
-                            __typename
-                          }
-                      
-                          fragment LyricsSynchronizedLines on LyricsSynchronizedLine {
-                            lrcTimestamp
-                            line
-                            lineTranslated
-                            milliseconds
-                            duration
-                            __typename
-                          }'''
-    };
-
-    final http.Response lyricResponse = await http.post(
-      Uri.parse(deezerApiUrl),
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer $jwt',
-      },
-      body: jsonEncode(jsonData),
-    );
-
-    final Map<String, dynamic> lyricResponseJson = jsonDecode(lyricResponse.body);
-    //debugPrint(lyricResponseJson);
-
-    String plainLyric = '';
-    String syncedLyric = '';
-    try {
-      plainLyric += lyricResponseJson['data']['track']['lyrics']['text'] + "\n";
-      plainLyric += "\nWriters: ${lyricResponseJson['data']['track']['lyrics']['writers']}\nCopyright: ${lyricResponseJson['data']['track']['lyrics']['copyright']}";
-    } catch (e) {
-      debugPrint(e.toString());
-      plainLyric = 'No lyrics found';
-    }
-
-    try {
-      for (var line in lyricResponseJson['data']['track']['lyrics']['synchronizedLines']) {
-        syncedLyric += "${line['lrcTimestamp']} ${line['line']}\n";
-      }
-      syncedLyric += "\nWriters: ${lyricResponseJson['data']['track']['lyrics']['writers']}\nCopyright: ${lyricResponseJson['data']['track']['lyrics']['copyright']}";
-    } catch (e) {
-      debugPrint(e.toString());
-      syncedLyric = 'No lyrics found';
-    }
-    //debugPrint(plainLyric);
-
-    // lyricModelNotifier.value = LyricsModelBuilder.create().bindLyricToMain(syncedLyric).getModel();
-    // plainLyricNotifier.value = plainLyric;
-    //
-    // if (syncedLyric != 'No lyrics found') {
-    //   var lyrPath = path
-    //       .replaceAll(".mp3", ".lrc")
-    //       .replaceAll(".flac", ".lrc")
-    //       .replaceAll(".wav", ".lrc")
-    //       .replaceAll(".m4a", ".lrc");
-    //   File lyrFile = File(lyrPath);
-    //   lyrFile.writeAsStringSync(syncedLyric);
-    //   song.lyricsPath = lyrFile.path;
-    // } else if (plainLyric != 'No lyrics found') {
-    //   var lyrPath = path
-    //       .replaceAll(".mp3", ".lrc")
-    //       .replaceAll(".flac", ".lrc")
-    //       .replaceAll(".wav", ".lrc")
-    //       .replaceAll(".m4a", ".lrc");
-    //   File lyrFile = File(lyrPath);
-    //   lyrFile.writeAsStringSync(plainLyric);
-    //   song.lyricsPath = lyrFile.path;
-    // }
-    // songBox.put(song);
     return [plainLyric, syncedLyric];
   }
 

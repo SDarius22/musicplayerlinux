@@ -5,14 +5,17 @@ class SongType{
   @Id()
   int id = 0;
   String title = "Unknown Song";
-  String artists = "Unknown artist";
+  String trackArtist = "Unknown artist";
   String album = "Unknown album";
   String albumArtist = "Unknown album artist";
   int duration = 0;
   String path = "";
-  String lyricsPath = "No lyrics";
+  String lyricsPath = "";
   int trackNumber = 0;
   int discNumber = 0;
+  int year = 0;
+  String genre = "Unknown genre";
+
 
   bool liked = false;
   DateTime? lastPlayed;

@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:musicplayer/controller/app_manager.dart';
 import 'package:musicplayer/controller/audio_player_controller.dart';
+import 'package:musicplayer/controller/online_controller.dart';
 import 'package:musicplayer/controller/settings_controller.dart';
 import 'package:musicplayer/controller/worker_controller.dart';
 
@@ -78,10 +79,26 @@ class DataController {
     if (song == null) {
       return ["No lyrics found", "No lyrics found"];
     } else {
-      if (song.lyricsPath.isEmpty) {
+      if (song.lyricsPath.isEmpty || !File(song.lyricsPath).existsSync()) {
         try {
-          // return await searchLyrics(path);
-          return ["No lyrics found", "No lyrics found"];
+           var lyrics = await OnlineController.searchLyrics(song.title, song.trackArtist, song.album);
+           if(lyrics[1].isNotEmpty){
+              var lyrPath = path.split(".");
+              lyrPath.removeLast();
+              lyrPath.add("lrc");
+              song.lyricsPath = lyrPath.join(".");
+              File(song.lyricsPath).writeAsStringSync(lyrics[1]);
+              songBox.put(song);
+           }
+           else if(lyrics[0].isNotEmpty){
+              var lyrPath = path.split(".");
+              lyrPath.removeLast();
+              lyrPath.add("txt");
+              song.lyricsPath = lyrPath.join(".");
+              File(song.lyricsPath).writeAsStringSync(lyrics[0]);
+              songBox.put(song);
+           }
+           return lyrics;
         } catch (e) {
           debugPrint(e.toString());
           return ["No lyrics found", "No lyrics found"];
@@ -121,7 +138,7 @@ class DataController {
   static Future<SongType> getSong(String path) async {
     var song = ObjectBox.store.box<SongType>().query(SongType_.path.equals(path)).build().findFirst();
     if (song != null) {
-      debugPrint(song.duration.toString());
+      // debugPrint(song.duration.toString());
 
     } else {
       song = await WorkerController.retrieveSong(path);
@@ -132,14 +149,17 @@ class DataController {
   }
 
   static Future<List<SongType>> getSongs(String searchValue, [int? limit]) async {
-    return songBox
-        .query(SongType_.title.contains(searchValue, caseSensitive: false) |
-    SongType_.artists.contains(searchValue, caseSensitive: false) |
-    SongType_.album.contains(searchValue, caseSensitive: false))
-        .order(SongType_.title)
-        .build()
-        .find();
-
+    var query = songBox
+        .query(
+                SongType_.title.contains(searchValue, caseSensitive: false) |
+                SongType_.trackArtist.contains(searchValue, caseSensitive: false) |
+                SongType_.album.contains(searchValue, caseSensitive: false)
+              )
+        .order(SongType_.title).build();
+    if (limit != null) {
+      query.limit = limit;
+    }
+    return query.find();
   }
 
   Future<void> addToPlaylist(PlaylistType playlist, List<SongType> songs) async {
@@ -152,17 +172,17 @@ class DataController {
         playlist.duration += song.duration;
         bool found = false;
         for (var artistCountStr in playlist.artistCount){
-          if (artistCountStr.contains(song.artists)){
+          if (artistCountStr.contains(song.trackArtist)){
             int count = int.parse(artistCountStr.split(" - ")[1]);
             count += 1;
             playlist.artistCount.remove(artistCountStr);
-            playlist.artistCount.add("${song.artists} - $count");
+            playlist.artistCount.add("${song.trackArtist} - $count");
             found = true;
             break;
           }
         }
         if (!found){
-          playlist.artistCount.add("${song.artists} - 1");
+          playlist.artistCount.add("${song.trackArtist} - 1");
         }
       }
       playlistBox.put(playlist);
@@ -175,17 +195,17 @@ class DataController {
         playlist.duration += songs[i].duration;
         bool found = false;
         for (var artistCountStr in playlist.artistCount){
-          if (artistCountStr.contains(songs[i].artists)){
+          if (artistCountStr.contains(songs[i].trackArtist)){
             int count = int.parse(artistCountStr.split(" - ")[1]);
             count += 1;
             playlist.artistCount.remove(artistCountStr);
-            playlist.artistCount.add("${songs[i].artists} - $count");
+            playlist.artistCount.add("${songs[i].trackArtist} - $count");
             found = true;
             break;
           }
         }
         if (!found){
-          playlist.artistCount.add("${songs[i].artists} - 1");
+          playlist.artistCount.add("${songs[i].trackArtist} - 1");
         }
       }
       playlistBox.put(playlist);
@@ -226,7 +246,7 @@ class DataController {
   Future<void> deletePlaylist(PlaylistType playlist) async {
     playlistBox.remove(playlist.id);
     try {
-      var file = File("${SettingsController.directory}/${playlist.name}.m3u");
+      var file = File("${SettingsController.mainSongPlace}/${playlist.name}.m3u");
       file.delete();
     } catch (e) {
       debugPrint(e.toString());
@@ -234,7 +254,7 @@ class DataController {
   }
 
   Future<void> exportPlaylist(PlaylistType playlist) async {
-    var file = File("${SettingsController.directory}/${playlist.name}.m3u");
+    var file = File("${SettingsController.mainSongPlace}/${playlist.name}.m3u");
     file.writeAsStringSync("#EXTM3U\n");
     for (var song in playlist.paths) {
       file.writeAsStringSync('$song\n', mode: FileMode.append);
@@ -308,17 +328,17 @@ class DataController {
       mostPlayed.duration = duration;
       bool found = false;
       for (var artistCountStr in mostPlayed.artistCount){
-        if (artistCountStr.contains(song.artists)){
+        if (artistCountStr.contains(song.trackArtist)){
           int count = int.parse(artistCountStr.split(" - ")[1]);
           count += 1;
           mostPlayed.artistCount.remove(artistCountStr);
-          mostPlayed.artistCount.add("${song.artists} - $count");
+          mostPlayed.artistCount.add("${song.trackArtist} - $count");
           found = true;
           break;
         }
       }
       if (!found){
-        mostPlayed.artistCount.add("${song.artists} - 1");
+        mostPlayed.artistCount.add("${song.trackArtist} - 1");
       }
     }
 
@@ -344,17 +364,17 @@ class DataController {
       recentlyPlayed.duration = duration;
       bool found = false;
       for (var artistCountStr in recentlyPlayed.artistCount){
-        if (artistCountStr.contains(song.artists)){
+        if (artistCountStr.contains(song.trackArtist)){
           int count = int.parse(artistCountStr.split(" - ")[1]);
           count += 1;
           recentlyPlayed.artistCount.remove(artistCountStr);
-          recentlyPlayed.artistCount.add("${song.artists} - $count");
+          recentlyPlayed.artistCount.add("${song.trackArtist} - $count");
           found = true;
           break;
         }
       }
       if (!found){
-        recentlyPlayed.artistCount.add("${song.artists} - 1");
+        recentlyPlayed.artistCount.add("${song.trackArtist} - 1");
       }
     }
     playlistBox.put(recentlyPlayed);

@@ -14,8 +14,6 @@ class WelcomeScreen extends StatefulWidget {
 
 class _WelcomeScreenState extends State<WelcomeScreen> {
 
-  String directory = "";
-
   @override
   Widget build(BuildContext context) {
     var width = MediaQuery.of(context).size.width;
@@ -50,6 +48,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
             SizedBox(
               height: height * 0.025,
             ),
+            if (SettingsController.songPlaces.isEmpty)
             Text(
               "Add music to your library by choosing a folder below:",
               style: TextStyle(
@@ -58,48 +57,208 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                 color: Colors.white,
               ),
             ),
+            if (SettingsController.songPlaces.isEmpty)
             SizedBox(
               height: height * 0.025,
             ),
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 500),
-              width: directory.isNotEmpty ?
-              directory.length * 30 > width/3 ? width/3 :
-              directory.length * 30 : width/10,
-              height: height * 0.06,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.all(0),
-                  foregroundColor: Colors.white, backgroundColor: Colors.grey.shade900,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10.0),
+            if (SettingsController.songPlaces.isEmpty)
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 500),
+                width: width * 0.1,
+                height: height * 0.06,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.all(0),
+                    foregroundColor: Colors.white, backgroundColor: Colors.grey.shade900,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10.0),
+                    ),
                   ),
-                ),
-                onPressed: () async {
-                  String chosen = await FilePicker.platform.getDirectoryPath() ?? "";
-                  if(chosen != "") {
-                    //debugPrint(chosen);
-                    setState(() {
-                      SettingsController.directory = chosen;
-                      directory = chosen;
-                    });
-                  }
-                },
-                child: directory.isNotEmpty ?
-                Text(directory.length < 50 ? directory : "${directory.substring(0, 50)}...",
-                  style: TextStyle(
-                    fontSize: normalSize,
-                    fontWeight: FontWeight.normal,
+                  onPressed: () async {
+                    String chosen = await FilePicker.platform.getDirectoryPath() ?? "";
+                    if(chosen != "") {
+                      //debugPrint(chosen);
+                      SettingsController.songPlaces = [chosen];
+                      SettingsController.mainSongPlace = chosen;
+                      SettingsController.songPlaceIncludeSubfolders = [1];
+                      setState(() {
+                      });
+                    }
+                  },
+                  child: Icon(
+                    FluentIcons.folder,
                     color: Colors.white,
+                    size: height * 0.03,
                   ),
-                ) :
-                Icon(
-                  FluentIcons.folder,
-                  color: Colors.white,
-                  size: height * 0.03,
+
+                ),
+              )
+            else
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 500),
+                child: DataTable(
+                  columns: [
+                    DataColumn(
+                      label: Text(
+                        "Folder",
+                        style: TextStyle(
+                          fontSize: normalSize,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                    DataColumn(
+                      label: Text(
+                        "Main",
+                        style: TextStyle(
+                          fontSize: normalSize,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                    DataColumn(
+                      headingRowAlignment: MainAxisAlignment.center,
+                      label: Text(
+                        "Include subfolders",
+                        style: TextStyle(
+                          fontSize: normalSize,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                    DataColumn(
+                      label: Text(
+                        "",
+                        style: TextStyle(
+                          fontSize: normalSize,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ],
+                  rows: List<DataRow>.generate(
+                    SettingsController.songPlaces.length + 1,
+                    (index) {
+                      return index < SettingsController.songPlaces.length?
+                      DataRow(
+                        cells: [
+                          DataCell(
+                            Text(
+                              SettingsController.songPlaces[index],
+                              style: TextStyle(
+                                fontSize: normalSize,
+                                fontWeight: FontWeight.normal,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                          DataCell(
+                            IconButton(
+                              icon: Icon(
+                                SettingsController.mainSongPlace ==
+                                    SettingsController.songPlaces[index]
+                                    ? FluentIcons.checkCircleOn
+                                    : FluentIcons.checkCircleOff,
+                                color: Colors.white,
+                                size: height * 0.03,
+                              ),
+                              onPressed: SettingsController.songPlaces.length <= 1 ? null : () {
+                                setState(() {
+                                  SettingsController.mainSongPlace =
+                                  SettingsController.songPlaces[index];
+                                });
+                              },
+                            ),
+                          ),
+                          DataCell(
+                            IconButton(
+                              icon: Icon(
+                                SettingsController.songPlaceIncludeSubfolders[index] == 1
+                                    ? FluentIcons.checkCircleOn
+                                    : FluentIcons.checkCircleOff,
+                                color: Colors.white,
+                                size: height * 0.03,
+                              ),
+                              onPressed: () {
+                                if (SettingsController.songPlaceIncludeSubfolders[index] == 1) {
+                                  debugPrint("Setting to 0");
+                                  final updatedList = List<int>.from(
+                                      SettingsController.songPlaceIncludeSubfolders);
+                                  updatedList[index] = 0;
+                                  SettingsController.songPlaceIncludeSubfolders = updatedList;
+                                } else {
+                                  debugPrint("Setting to 1");
+                                  final updatedList = List<int>.from(
+                                      SettingsController.songPlaceIncludeSubfolders);
+                                  updatedList[index] = 1;
+                                  SettingsController.songPlaceIncludeSubfolders = updatedList;
+                                }
+                                setState(() {});
+                              },
+                            ),
+                          ),
+                          DataCell(
+                            IconButton(
+                              icon: Icon(
+                                FluentIcons.trash,
+                                color: Colors.red,
+                                size: height * 0.03,
+                              ),
+                              onPressed: () {
+                                String current = SettingsController.songPlaces[index];
+                                SettingsController.songPlaces = List<String>.from(SettingsController.songPlaces)..removeAt(index);
+                                SettingsController.songPlaceIncludeSubfolders = List<int>.from(SettingsController.songPlaceIncludeSubfolders)..removeAt(index);
+                                if (SettingsController.mainSongPlace == current) {
+                                  try {
+                                    SettingsController.mainSongPlace = SettingsController.songPlaces[0];
+                                  } catch (e) {
+                                    SettingsController.mainSongPlace = "";
+                                  }
+                                }
+                                setState(() {
+                                });
+                              },
+                            ),
+                          ),
+                        ],
+                      ) :
+                      DataRow(
+                        cells: [
+                          const DataCell(
+                            Text("")
+                          ),
+                          const DataCell(
+                            Text("")
+                          ),
+                          const DataCell(
+                            Text("")
+                          ),
+                          DataCell(
+                            IconButton(
+                              onPressed: () async {
+                                String chosen = await FilePicker.platform.getDirectoryPath() ?? "";
+                                if(chosen != "") {
+                                  //debugPrint(chosen);
+                                  SettingsController.songPlaces = List<String>.from(SettingsController.songPlaces)..add(chosen);
+                                  SettingsController.songPlaceIncludeSubfolders = List<int>.from(SettingsController.songPlaceIncludeSubfolders)..add(1);
+                                  setState(() {
+                                  });
+                                }
+                              },
+                              tooltip: "Add Another Folder",
+                              icon: Icon(FluentIcons.folderAdd, color: Colors.white, size: height * 0.03,),
+                            ),
+                          ),
+                        ],
+                      );
+                    }
+                  ),
                 ),
               ),
-            ),
             SizedBox(
               height: height * 0.1,
             ),
@@ -164,16 +323,12 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                     borderRadius: BorderRadius.circular(10.0),
                   ),
                 ),
-                onPressed: () async {
+                onPressed: SettingsController.songPlaces.isEmpty? null : () async {
                   debugPrint("Pressed");
-                  if (SettingsController.directory == ""){
-                    return;
-                  }
                   if (SettingsController.deezerARL.isEmpty){
-                    SettingsController.deezerARL = "b907c256773be4ea86dd637b2c50fe45232de28cb81e31230b01029e7be5d4132e343bc77f18cfa2daaadfd31f5773c5a9d9e2f5b70ff07a23f04c73e17e21dc770855560de5759305281200096cfcb810b26e7d944819adc8755b9b4e271b8c";
+                    SettingsController.deezerARL = "";
                   }
                   SettingsController.firstTime = false;
-                  // widget.controller.settingsBox.put(widget.controller.settings);
                   debugPrint(SettingsController.firstTime.toString());
                   final dc = DataController();
                   PlaylistType favorites = PlaylistType();

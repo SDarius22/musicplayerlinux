@@ -12,12 +12,15 @@ class Settings{
   String primaryDevice = '';
   List<String> missingSongs = []; // this is the list of songs that are missing from the library
 
-  String directory = '/'; // not in the database, only in the settings local db
+  List<String> songPlaces = []; // not in the database, only in the settings local db
+  String mainSongPlace = ''; // not in the database, only in the settings local db
+  List<int> songPlaceIncludeSubfolders = []; // not in the database, only in the settings local db
 
   bool firstTime = true;
   bool systemTray = true;
   bool fullClose = false;
   bool appNotifications = true;
+  bool gridView = true;
   String deezerARL = '';
   String queueAdd = 'last';
   String queuePlay = 'all';

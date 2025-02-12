@@ -380,7 +380,7 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
                                                     height: height * 0.005,
                                                   ),
                                                   Text(
-                                                      song.artists.toString().length > 60 ? "${song.artists.toString().substring(0, 60)}..." : song.artists.toString(),
+                                                      song.trackArtist.toString().length > 60 ? "${song.trackArtist.toString().substring(0, 60)}..." : song.trackArtist.toString(),
                                                       style: TextStyle(
                                                         color: Colors.white,
                                                         fontSize: smallSize,
@@ -470,7 +470,7 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
                                                   SizedBox(
                                                     height: height * 0.001,
                                                   ),
-                                                  Text(song.artists.toString().length > 60 ? "${song.artists.toString().substring(0, 60)}..." : song.artists.toString(),
+                                                  Text(song.trackArtist.toString().length > 60 ? "${song.trackArtist.toString().substring(0, 60)}..." : song.trackArtist.toString(),
                                                       style: TextStyle(
                                                         color: Colors.white,
                                                         fontSize: smallSize,

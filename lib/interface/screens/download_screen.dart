@@ -168,7 +168,7 @@ class _DownloadState extends State<Download>{
                                   progress.value = received / total;
                                 },
                               );
-                              File file = File("${SettingsController.directory}/${song['artist']['name']
+                              File file = File("${SettingsController.mainSongPlace}/${song['artist']['name']
                                   .toString()} - ${song['title']
                                   .toString()}.mp3");
                               if (stream != null) {

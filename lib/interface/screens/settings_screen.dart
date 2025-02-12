@@ -84,76 +84,76 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       ),
                     ],
                   ),
-                  ///Music Directory
-                  Row(
-                    children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            "Music Directory",
-                            style: TextStyle(
-                              fontSize: normalSize,
-                              fontWeight: FontWeight.normal,
-                              color: Colors.white,
-                            ),
-                          ),
-                          SizedBox(
-                            height: height * 0.005,
-                          ),
-                          Text("Select the directory where your music is stored", style: TextStyle(
-                            fontSize: smallSize,
-                            fontWeight: FontWeight.normal,
-                            color: Colors.grey.shade50,
-                          ),),
-                        ],
-                      ),
-                      SizedBox(
-                        width: width * 0.025,
-                      ),
-                      const Tooltip(
-                        message: 'Changing the directory will clear the current queue and possibly make your playlists unusable.',
-                        child: Icon(
-                          Icons.warning,
-                        ),
-                      ),
-                      const Spacer(),
-                      ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          foregroundColor: Colors.white, backgroundColor: Colors.grey.shade900,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(width * 0.01),
-                          ),
-                        ),
-                        onPressed: () async {
-                          String directory = await FilePicker.platform.getDirectoryPath() ?? "";
-                          if(directory != "") {
-                            setState(() {
-                              SettingsController.directory = directory;
-                            });
-                            SettingsController.queue = [];
-                            SettingsController.index = 0;
-                            DataController.reset();
-                            if(mounted) {
-                              Navigator.pushReplacementNamed(context, '/');
-                            }
-                            // am.navigatorKey.currentState!.pop(MaterialPageRoute(builder: (context) => const HomeScreen()));
-                            // SettingsController.settingsBox.put(SettingsController.settings);
-                            // SettingsController.reset();
-                          }
-                        },
-                        child: Text(
-                          SettingsController.directory.length <= 40 ? SettingsController.directory : "${SettingsController.directory.substring(0, 40)}...",
-                          style: TextStyle(
-                            fontSize: normalSize,
-                            fontWeight: FontWeight.normal,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
+                  // ///Music Directory
+                  // Row(
+                  //   children: [
+                  //     Column(
+                  //       crossAxisAlignment: CrossAxisAlignment.start,
+                  //       mainAxisAlignment: MainAxisAlignment.center,
+                  //       children: [
+                  //         Text(
+                  //           "Music Directory",
+                  //           style: TextStyle(
+                  //             fontSize: normalSize,
+                  //             fontWeight: FontWeight.normal,
+                  //             color: Colors.white,
+                  //           ),
+                  //         ),
+                  //         SizedBox(
+                  //           height: height * 0.005,
+                  //         ),
+                  //         Text("Select the directory where your music is stored", style: TextStyle(
+                  //           fontSize: smallSize,
+                  //           fontWeight: FontWeight.normal,
+                  //           color: Colors.grey.shade50,
+                  //         ),),
+                  //       ],
+                  //     ),
+                  //     SizedBox(
+                  //       width: width * 0.025,
+                  //     ),
+                  //     const Tooltip(
+                  //       message: 'Changing the directory will clear the current queue and possibly make your playlists unusable.',
+                  //       child: Icon(
+                  //         Icons.warning,
+                  //       ),
+                  //     ),
+                  //     const Spacer(),
+                  //     ElevatedButton(
+                  //       style: ElevatedButton.styleFrom(
+                  //         foregroundColor: Colors.white, backgroundColor: Colors.grey.shade900,
+                  //         shape: RoundedRectangleBorder(
+                  //           borderRadius: BorderRadius.circular(width * 0.01),
+                  //         ),
+                  //       ),
+                  //       onPressed: () async {
+                  //         String directory = await FilePicker.platform.getDirectoryPath() ?? "";
+                  //         if(directory != "") {
+                  //           setState(() {
+                  //             SettingsController.directory = directory;
+                  //           });
+                  //           SettingsController.queue = [];
+                  //           SettingsController.index = 0;
+                  //           DataController.reset();
+                  //           if(mounted) {
+                  //             Navigator.pushReplacementNamed(context, '/');
+                  //           }
+                  //           // am.navigatorKey.currentState!.pop(MaterialPageRoute(builder: (context) => const HomeScreen()));
+                  //           // SettingsController.settingsBox.put(SettingsController.settings);
+                  //           // SettingsController.reset();
+                  //         }
+                  //       },
+                  //       child: Text(
+                  //         SettingsController.directory.length <= 40 ? SettingsController.directory : "${SettingsController.directory.substring(0, 40)}...",
+                  //         style: TextStyle(
+                  //           fontSize: normalSize,
+                  //           fontWeight: FontWeight.normal,
+                  //           color: Colors.white,
+                  //         ),
+                  //       ),
+                  //     ),
+                  //   ],
+                  // ),
                   SizedBox(
                     height: height * 0.02,
                   ),
@@ -869,7 +869,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       const Spacer(),
                       IconButton(
                           onPressed: () async {
-                            FilePickerResult? result = await FilePicker.platform.pickFiles(initialDirectory: SettingsController.directory, type: FileType.custom, allowedExtensions: ['m3u'], allowMultiple: false);
+                            FilePickerResult? result = await FilePicker.platform.pickFiles(initialDirectory: SettingsController.mainSongPlace, type: FileType.custom, allowedExtensions: ['m3u'], allowMultiple: false);
                             if(result != null) {
                               File file = File(result.files.single.path ?? "");
                               List<String> lines = file.readAsLinesSync();

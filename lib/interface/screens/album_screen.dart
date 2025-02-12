@@ -43,8 +43,6 @@ class _AlbumScreenState extends State<AlbumScreen> {
     var boldSize = height * 0.025;
     var normalSize = height * 0.02;
     var smallSize = height * 0.015;
-    debugPrint("Album Screen");
-    debugPrint(DateTime.now().toString());
     return Container(
       width: width,
       height: height,
@@ -281,7 +279,7 @@ class _AlbumScreenState extends State<AlbumScreen> {
                                       height: height * 0.005,
                                     ),
                                     Text(
-                                        widget.album.songs[index].artists.toString().length > 60 ? "${widget.album.songs[index].artists.toString().substring(0, 60)}..." : widget.album.songs[index].artists.toString(),
+                                        widget.album.songs[index].trackArtist.toString().length > 60 ? "${widget.album.songs[index].trackArtist.toString().substring(0, 60)}..." : widget.album.songs[index].trackArtist.toString(),
                                         style: TextStyle(
                                           color: Colors.white,
                                           fontSize: smallSize,

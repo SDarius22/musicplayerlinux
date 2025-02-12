@@ -69,13 +69,19 @@ class SettingsController {
   static set missingSongs(List<String> missingSongs) =>
       _instance._updateSettings((settings) => settings.missingSongs = missingSongs);
 
-  static ValueNotifier<String> directoryNotifier = ValueNotifier<String>(settings.directory);
+  static List<String> get songPlaces => settings.songPlaces;
+  static set songPlaces(List<String> places) {
+    _instance._updateSettings((settings) => settings.songPlaces = places);
+  }
 
-  static String get directory => settings.directory;
+  static String get mainSongPlace => settings.mainSongPlace;
+  static set mainSongPlace(String place) {
+    _instance._updateSettings((settings) => settings.mainSongPlace = place);
+  }
 
-  static set directory(String directory) {
-    directoryNotifier.value = directory;
-    _instance._updateSettings((settings) => settings.directory = directory);
+  static List<int> get songPlaceIncludeSubfolders => settings.songPlaceIncludeSubfolders;
+  static set songPlaceIncludeSubfolders(List<int> includeSubfolders) {
+    _instance._updateSettings((settings) => settings.songPlaceIncludeSubfolders = includeSubfolders);
   }
 
   static ValueNotifier<bool> firstTimeNotifier = ValueNotifier<bool>(settings.firstTime);
@@ -112,6 +118,12 @@ class SettingsController {
   static set appNotifications(bool appNotifications) {
     appNotificationsNotifier.value = appNotifications;
     _instance._updateSettings((settings) => settings.appNotifications = appNotifications);
+  }
+
+  static bool get gridView => settings.gridView;
+
+  static set gridView(bool gridView) {
+    _instance._updateSettings((settings) => settings.gridView = gridView);
   }
 
 
