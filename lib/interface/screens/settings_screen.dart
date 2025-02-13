@@ -2,7 +2,6 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:musicplayer/utils/fluenticons/fluenticons.dart';
-import 'package:musicplayer/controller/data_controller.dart';
 import 'package:musicplayer/controller/settings_controller.dart';
 
 import '../../controller/audio_player_controller.dart';

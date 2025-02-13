@@ -120,49 +120,63 @@ class WorkerController {
     }
     catch(e){
       debugPrint(e.toString());
-      if (path.endsWith(".flac")) {
-        var flac = FlacInfo(File(path));
-        var metadatas = await flac.readMetadatas();
-        String metadata = metadatas[2].toString();
-        //debugPrint(metadata);
-        metadata = metadata.substring(1, metadata.length - 1);
-        List<String> metadata2 = metadata.split(', *1234a678::876a4321*,');
+      try {
+        if (path.endsWith(".flac")) {
+          var flac = FlacInfo(File(path));
+          var metadatas = await flac.readMetadatas();
+          String metadata = metadatas[2].toString();
+          //debugPrint(metadata);
+          metadata = metadata.substring(1, metadata.length - 1);
+          List<String> metadata2 = metadata.split(', *1234a678::876a4321*,');
 
-        //debugPrint(metadata2);
-        for (var metadate2 in metadata2) {
-          if (metadate2.contains("TITLE=")) {
-            metadataVariable.title = metadate2.substring(6);
-          }
-          if (metadate2.contains("ARTIST=") && !metadate2.contains("ALBUMARTIST=")) {
-            metadataVariable.trackArtist = metadate2.substring(8);
-          }
-          if (metadate2.contains("ALBUMARTIST=")) {
-            metadataVariable.albumArtist = metadate2.substring(12);
-          }
-          if (metadate2.contains("trackNumber=")) {
-            metadataVariable.trackNumber = int.parse(metadate2.substring(13));
-          }
-          if (metadate2.contains("discNumber=")) {
-            metadataVariable.discNumber = int.parse(metadate2.substring(12));
-          }
-          if (metadate2.contains("ALBUM=")) {
-            metadataVariable.album = metadate2.substring(7);
-          }
-          if (metadate2.contains("LENGTH=")) {
-            metadataVariable.duration = int.parse(metadate2.substring(8));
+          //debugPrint(metadata2);
+          for (var metadate2 in metadata2) {
+            if (metadate2.contains("TITLE=")) {
+              metadataVariable.title = metadate2.substring(6);
+            }
+            if (metadate2.contains("ARTIST=") && !metadate2.contains("ALBUMARTIST=")) {
+              metadataVariable.trackArtist = metadate2.substring(8);
+            }
+            if (metadate2.contains("ALBUMARTIST=")) {
+              metadataVariable.albumArtist = metadate2.substring(12);
+            }
+            if (metadate2.contains("trackNumber=")) {
+              metadataVariable.trackNumber = int.parse(metadate2.substring(13));
+            }
+            if (metadate2.contains("discNumber=")) {
+              metadataVariable.discNumber = int.parse(metadate2.substring(12));
+            }
+            if (metadate2.contains("ALBUM=")) {
+              metadataVariable.album = metadate2.substring(7);
+            }
+            if (metadate2.contains("LENGTH=")) {
+              metadataVariable.duration = int.parse(metadate2.substring(8));
+            }
           }
         }
+        else {
+          //debugPrint(path);
+          var parser = ID3TagReader.path(path);
+          var tags = parser.readTagSync();
+          metadataVariable.title = tags.title ?? path.replaceAll("\\", "/").split("/").last;
+          metadataVariable.trackArtist = tags.artist ?? "Unknown Artist";
+          metadataVariable.album = tags.album ?? 'Unknown Album';
+          metadataVariable.discNumber = int.parse(tags.trackNumber ?? "0");
+          metadataVariable.trackNumber = int.parse(tags.track ?? "0");
+          metadataVariable.duration = tags.duration?.inSeconds ?? 0;
+        }
       }
-      else {
-        //debugPrint(path);
-        var parser = ID3TagReader.path(path);
-        var tags = parser.readTagSync();
-        metadataVariable.title = tags.title ?? path.replaceAll("\\", "/").split("/").last;
-        metadataVariable.trackArtist = tags.artist ?? "Unknown Artist";
-        metadataVariable.album = tags.album ?? 'Unknown Album';
-        metadataVariable.discNumber = int.parse(tags.trackNumber ?? "0");
-        metadataVariable.trackNumber = int.parse(tags.track ?? "0");
-        metadataVariable.duration = tags.duration?.inSeconds ?? 0;
+      catch(e) {
+        debugPrint(e.toString());
+        metadataVariable.title = path.replaceAll("\\", "/").split("/").last;
+        metadataVariable.album = "Unknown Album";
+        metadataVariable.duration = 0;
+        metadataVariable.trackNumber = 0;
+        metadataVariable.trackArtist = "Unknown Artist";
+        metadataVariable.albumArtist = "Unknown Album Artist";
+        metadataVariable.discNumber = 0;
+        metadataVariable.year = 0;
+        metadataVariable.genre = "Unknown Genre";
       }
     }
     var lyrPath = path.replaceRange(path.lastIndexOf("."), path.length, ".lrc");
@@ -230,7 +244,7 @@ class WorkerController {
               await makeAlbumArtist(song);
             }
           }
-        } else if (entity is Directory && SettingsController.songPlaceIncludeSubfolders[SettingsController.songPlaces.indexOf(dir.path)] == 1) {
+        } else if (entity is Directory) {
           dirs.add(Directory(entity.path));
         }
       }

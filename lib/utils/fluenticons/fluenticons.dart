@@ -47,6 +47,8 @@ class FluentIcons{
   static const IconData minimize = IconData(0xE104, fontFamily: 'FluentIcons-Resizable');
   static const IconData maximize = IconData(0xE100, fontFamily: 'FluentIcons-Resizable');
 
+  static const IconData menu = IconData(0xEA67, fontFamily: 'FluentIcons-Resizable');
+  static const IconData menuVertical = IconData(0xF14D, fontFamily: 'FluentIcons-Resizable');
   static const IconData moreVertical = IconData(0xEB6B, fontFamily: 'FluentIcons-Resizable');
 
   static const IconData listOn = IconData(0xEA87, fontFamily: 'FluentIcons-Resizable');
@@ -54,6 +56,11 @@ class FluentIcons{
   static const IconData check = IconData(0xE405, fontFamily: 'FluentIcons-Resizable');
   static const IconData checkCircleOn = IconData(0xE407, fontFamily: 'FluentIcons-Resizable');
   static const IconData checkCircleOff = IconData(0xE408, fontFamily: 'FluentIcons-Resizable');
+
+  static const IconData artists1 = IconData(0xEC88, fontFamily: 'FluentIcons-Resizable');
+  static const IconData artists2 = IconData(0xEC7A, fontFamily: 'FluentIcons-Resizable');
+  static const IconData music = IconData(0xEB87, fontFamily: 'FluentIcons-Resizable');
+  static const IconData playlists = IconData(0xF068, fontFamily: 'FluentIcons-Resizable');
 
   static const IconData volumeOn = IconData(0xEFA0, fontFamily: 'FluentIcons-Resizable');
   static const IconData volumeOff = IconData(0xEFAA, fontFamily: 'FluentIcons-Resizable');

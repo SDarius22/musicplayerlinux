@@ -11,15 +11,15 @@ import '../../controller/worker_controller.dart';
 import '../../domain/song_type.dart';
 import '../widgets/image_widget.dart';
 
-class DetailsScreen extends StatefulWidget {
+class TrackScreen extends StatefulWidget {
   final SongType song;
-  const DetailsScreen({super.key, required this.song});
+  const TrackScreen({super.key, required this.song});
 
   @override
-  State<DetailsScreen> createState() => _DetailsScreenState();
+  State<TrackScreen> createState() => _TrackScreenState();
 }
 
-class _DetailsScreenState extends State<DetailsScreen> {
+class _TrackScreenState extends State<TrackScreen> {
   @override
   Widget build(BuildContext context) {
     final dc = DataController();

@@ -68,348 +68,356 @@ class _PlaylistsState extends State<Playlists>{
     var height = MediaQuery.of(context).size.height;
     var normalSize = height * 0.02;
     var smallSize = height * 0.015;
-    return Column(
-      children: [
-        Container(
-          height: height * 0.05,
-          margin: EdgeInsets.only(
-            left: width * 0.01,
-            right: width * 0.01,
-            bottom: height * 0.01,
-          ),
-          child: TextFormField(
-            initialValue: '',
-            focusNode: searchNode,
-            onChanged: _onSearchChanged,
-            cursorColor: Colors.white,
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: normalSize,
+    return Container(
+      padding: EdgeInsets.only(
+        top: height * 0.02,
+        left: width * 0.01,
+        right: width * 0.01,
+        bottom: height * 0.02,
+      ),
+      child: Column(
+        children: [
+          Container(
+            height: height * 0.05,
+            margin: EdgeInsets.only(
+              left: width * 0.01,
+              right: width * 0.01,
+              bottom: height * 0.01,
             ),
-            decoration: InputDecoration(
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(width * 0.02),
-                  borderSide: const BorderSide(
-                    color: Colors.white,
+            child: TextFormField(
+              initialValue: '',
+              focusNode: searchNode,
+              onChanged: _onSearchChanged,
+              cursorColor: Colors.white,
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: normalSize,
+              ),
+              decoration: InputDecoration(
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(width * 0.02),
+                    borderSide: const BorderSide(
+                      color: Colors.white,
+                    ),
                   ),
-                ),
-                contentPadding: EdgeInsets.only(
-                  left: width * 0.01,
-                  right: width * 0.01,
-                ),
-                floatingLabelBehavior: FloatingLabelBehavior.never,
-                labelStyle: TextStyle(
-                  color: Colors.white,
-                  fontSize: smallSize,
-                ),
-                labelText: 'Search', suffixIcon: Icon(FluentIcons.search, color: Colors.white, size: height * 0.02,)
+                  contentPadding: EdgeInsets.only(
+                    left: width * 0.01,
+                    right: width * 0.01,
+                  ),
+                  floatingLabelBehavior: FloatingLabelBehavior.never,
+                  labelStyle: TextStyle(
+                    color: Colors.white,
+                    fontSize: smallSize,
+                  ),
+                  labelText: 'Search', suffixIcon: Icon(FluentIcons.search, color: Colors.white, size: height * 0.02,)
+              ),
             ),
           ),
-        ),
-        Expanded(
-          child: FutureBuilder(
-              future: playlistsFuture,
-              builder: (context, snapshot){
-                if(snapshot.hasError){
-                  return Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          FluentIcons.error,
-                          size: height * 0.1,
-                          color: Colors.red,
-                        ),
-                        Text(
-                          "Error loading playlists",
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: smallSize,
+          Expanded(
+            child: FutureBuilder(
+                future: playlistsFuture,
+                builder: (context, snapshot){
+                  if(snapshot.hasError){
+                    return Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            FluentIcons.error,
+                            size: height * 0.1,
+                            color: Colors.red,
                           ),
-                        ),
-                        ElevatedButton(
-                          onPressed: (){
-                            setState(() {});
-                          },
-                          child: Text(
-                            "Retry",
+                          Text(
+                            "Error loading playlists",
                             style: TextStyle(
                               color: Colors.white,
                               fontSize: smallSize,
                             ),
                           ),
-                        ),
-                      ],
-                    ),
-                  );
-                }
-                else if(snapshot.hasData){
-                  return GridView.builder(
-                    padding: EdgeInsets.only(
-                      left: width * 0.01,
-                      right: width * 0.01,
-                      top: height * 0.01,
-                      bottom: width * 0.125,
-                    ),
-                    itemCount: snapshot.data!.length + 1,
-                    gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
-                      maxCrossAxisExtent: width * 0.125,
-                      crossAxisSpacing: width * 0.0125,
-                      mainAxisSpacing: width * 0.0125,
-                    ),
-                    itemBuilder: (BuildContext context, int index) {
-                      PlaylistType playlist = PlaylistType();
-                      if (index > 0){
-                        playlist = snapshot.data![index-1];
-                      }
-                      return index == 0 ?
-                      MouseRegion(
-                        cursor: SystemMouseCursors.click,
-                        child: GestureDetector(
-                          onTap: (){
-                            Navigator.pushNamed(context, '/create', arguments: [value]);
-                          },
-                          child:                               ClipRRect(
-                            borderRadius: BorderRadius.circular(width * 0.01),
-                            child: AspectRatio(
-                              aspectRatio: 1.0,
-                              child: StackHoverWidget(
-                                bottomWidget: Container(
-                                  decoration: BoxDecoration(
-                                      color: Colors.black,
-                                      image: DecorationImage(
-                                        fit: BoxFit.cover,
-                                        image: Image.asset("assets/create_playlist.png").image,
-                                      )
-                                  ),
-                                  child: Container(
-                                    alignment: Alignment.bottomCenter,
-                                    padding: EdgeInsets.only(
-                                      bottom: height * 0.005,
-                                    ),
+                          ElevatedButton(
+                            onPressed: (){
+                              setState(() {});
+                            },
+                            child: Text(
+                              "Retry",
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: smallSize,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }
+                  else if(snapshot.hasData){
+                    return GridView.builder(
+                      padding: EdgeInsets.only(
+                        left: width * 0.01,
+                        right: width * 0.01,
+                        top: height * 0.01,
+                        bottom: width * 0.125,
+                      ),
+                      itemCount: snapshot.data!.length + 1,
+                      gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
+                        maxCrossAxisExtent: width * 0.125,
+                        crossAxisSpacing: width * 0.0125,
+                        mainAxisSpacing: width * 0.0125,
+                      ),
+                      itemBuilder: (BuildContext context, int index) {
+                        PlaylistType playlist = PlaylistType();
+                        if (index > 0){
+                          playlist = snapshot.data![index-1];
+                        }
+                        return index == 0 ?
+                        MouseRegion(
+                          cursor: SystemMouseCursors.click,
+                          child: GestureDetector(
+                            onTap: (){
+                              Navigator.pushNamed(context, '/create', arguments: [value]);
+                            },
+                            child:                               ClipRRect(
+                              borderRadius: BorderRadius.circular(width * 0.01),
+                              child: AspectRatio(
+                                aspectRatio: 1.0,
+                                child: StackHoverWidget(
+                                  bottomWidget: Container(
                                     decoration: BoxDecoration(
-                                        gradient: LinearGradient(
-                                            begin: FractionalOffset.center,
-                                            end: FractionalOffset.bottomCenter,
-                                            colors: [
-                                              Colors.black.withOpacity(0.0),
-                                              Colors.black.withOpacity(0.5),
-                                              Colors.black,
-                                            ],
-                                            stops: const [0.0, 0.5, 1.0]
+                                        color: Colors.black,
+                                        image: DecorationImage(
+                                          fit: BoxFit.cover,
+                                          image: Image.asset("assets/create_playlist.png").image,
                                         )
                                     ),
-                                    child: TextScroll(
-                                      "Create a new playlist",
-                                      mode: TextScrollMode.bouncing,
-                                      velocity: const Velocity(pixelsPerSecond: Offset(20, 0)),
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: normalSize,
-                                        fontWeight: FontWeight.bold,
+                                    child: Container(
+                                      alignment: Alignment.bottomCenter,
+                                      padding: EdgeInsets.only(
+                                        bottom: height * 0.005,
                                       ),
-                                      pauseOnBounce: const Duration(seconds: 2),
-                                      delayBefore: const Duration(seconds: 2),
-                                      pauseBetween: const Duration(seconds: 2),
+                                      decoration: BoxDecoration(
+                                          gradient: LinearGradient(
+                                              begin: FractionalOffset.center,
+                                              end: FractionalOffset.bottomCenter,
+                                              colors: [
+                                                Colors.black.withOpacity(0.0),
+                                                Colors.black.withOpacity(0.5),
+                                                Colors.black,
+                                              ],
+                                              stops: const [0.0, 0.5, 1.0]
+                                          )
+                                      ),
+                                      child: TextScroll(
+                                        "Create a new playlist",
+                                        mode: TextScrollMode.bouncing,
+                                        velocity: const Velocity(pixelsPerSecond: Offset(20, 0)),
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: normalSize,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                        pauseOnBounce: const Duration(seconds: 2),
+                                        delayBefore: const Duration(seconds: 2),
+                                        pauseBetween: const Duration(seconds: 2),
+                                      ),
                                     ),
                                   ),
-                                ),
-                                topWidget: ClipRRect(
-                                  child: BackdropFilter(
-                                    filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                                    child: Container(
-                                      color: Colors.black.withOpacity(0.3),
-                                      alignment: Alignment.center,
+                                  topWidget: ClipRRect(
+                                    child: BackdropFilter(
+                                      filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                                      child: Container(
+                                        color: Colors.black.withOpacity(0.3),
+                                        alignment: Alignment.center,
+                                      ),
                                     ),
                                   ),
                                 ),
                               ),
                             ),
+
                           ),
 
-                        ),
-
-                      ) :
-                      MouseRegion(
-                        cursor: SystemMouseCursors.click,
-                        child: GestureDetector(
-                          onTap: () {
-                            //debugPrint(playlist.name);
-                            Navigator.pushNamed(context, '/playlist', arguments: playlist);
-                          },
-                          child: Column(
-                            children: [
-                              ClipRRect(
-                                borderRadius: BorderRadius.circular(width * 0.01),
-                                child: ImageWidget(
-                                  path: playlist.paths.isNotEmpty ? playlist.paths.first : '',
-                                  heroTag: playlist.name,
-                                  hoveredChild: Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                                    crossAxisAlignment: CrossAxisAlignment.center,
-                                    children: [
-                                      Column(
-                                        mainAxisAlignment: MainAxisAlignment.center,
-                                        children: [
-                                          SizedBox(
-                                            width: width * 0.035,
-                                            height: width * 0.035,
-                                            child: IconButton(
-                                              onPressed: (){
-                                                debugPrint("Add $index");
-                                                List<SongType> songs = [];
-                                                for (var path in playlist.paths){
-                                                  songs.add(DataController.songBox.query(SongType_.path.equals(path)).build().findFirst());
-                                                }
-                                                Navigator.pushNamed(context, '/add', arguments: songs);
-                                              },
-                                              padding: const EdgeInsets.all(0),
-                                              icon: Icon(
-                                                FluentIcons.addSingle,
-                                                color: Colors.white,
-                                                size: height * 0.035,
+                        ) :
+                        MouseRegion(
+                          cursor: SystemMouseCursors.click,
+                          child: GestureDetector(
+                            onTap: () {
+                              //debugPrint(playlist.name);
+                              Navigator.pushNamed(context, '/playlist', arguments: playlist);
+                            },
+                            child: Column(
+                              children: [
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(width * 0.01),
+                                  child: ImageWidget(
+                                    path: playlist.paths.isNotEmpty ? playlist.paths.first : '',
+                                    heroTag: playlist.name,
+                                    hoveredChild: Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                      crossAxisAlignment: CrossAxisAlignment.center,
+                                      children: [
+                                        Column(
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          children: [
+                                            SizedBox(
+                                              width: width * 0.035,
+                                              height: width * 0.035,
+                                              child: IconButton(
+                                                onPressed: (){
+                                                  debugPrint("Add $index");
+                                                  List<SongType> songs = [];
+                                                  for (var path in playlist.paths){
+                                                    songs.add(DataController.songBox.query(SongType_.path.equals(path)).build().findFirst());
+                                                  }
+                                                  Navigator.pushNamed(context, '/add', arguments: songs);
+                                                },
+                                                padding: const EdgeInsets.all(0),
+                                                icon: Icon(
+                                                  FluentIcons.addSingle,
+                                                  color: Colors.white,
+                                                  size: height * 0.035,
+                                                ),
                                               ),
                                             ),
-                                          ),
-                                          SizedBox(
-                                            width: width * 0.035,
-                                            height: width * 0.035,
-                                            child: IconButton(
-                                              onPressed: (){
-                                                debugPrint("Play Next: $index");
-                                                dc.addNextToQueue(playlist.paths);
-                                              },
-                                              padding: const EdgeInsets.all(0),
-                                              icon: Icon(
-                                                FluentIcons.playNext2,
-                                                color: Colors.white,
-                                                size: height * 0.03,
+                                            SizedBox(
+                                              width: width * 0.035,
+                                              height: width * 0.035,
+                                              child: IconButton(
+                                                onPressed: (){
+                                                  debugPrint("Play Next: $index");
+                                                  dc.addNextToQueue(playlist.paths);
+                                                },
+                                                padding: const EdgeInsets.all(0),
+                                                icon: Icon(
+                                                  FluentIcons.playNext2,
+                                                  color: Colors.white,
+                                                  size: height * 0.03,
+                                                ),
                                               ),
                                             ),
-                                          ),
-                                        ],
-                                      ),
-                                      const Expanded(
-                                        child: FittedBox(
-                                          fit: BoxFit.fill,
-                                          child: Icon(
-                                            FluentIcons.open,
-                                            color: Colors.white,
+                                          ],
+                                        ),
+                                        const Expanded(
+                                          child: FittedBox(
+                                            fit: BoxFit.fill,
+                                            child: Icon(
+                                              FluentIcons.open,
+                                              color: Colors.white,
+                                            ),
                                           ),
                                         ),
-                                      ),
-                                      Column(
-                                        mainAxisAlignment: MainAxisAlignment.center,
-                                        children: [
-                                          SizedBox(
-                                            width: width * 0.035,
-                                            height: width * 0.035,
-                                            child: IconButton(
-                                              onPressed: () async {
-                                                if(SettingsController.queue.equals(playlist.paths) == false){
-                                                  dc.updatePlaying(playlist.paths, 0);
-                                                }
-                                                SettingsController.index = SettingsController.currentQueue.indexOf(playlist.paths.first);
-                                                await AppAudioHandler.play();
-                                              },
-                                              padding: const EdgeInsets.all(0),
-                                              icon: Icon(
-                                                FluentIcons.play,
-                                                color: Colors.white,
-                                                size: height * 0.035,
+                                        Column(
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          children: [
+                                            SizedBox(
+                                              width: width * 0.035,
+                                              height: width * 0.035,
+                                              child: IconButton(
+                                                onPressed: () async {
+                                                  if(SettingsController.queue.equals(playlist.paths) == false){
+                                                    dc.updatePlaying(playlist.paths, 0);
+                                                  }
+                                                  SettingsController.index = SettingsController.currentQueue.indexOf(playlist.paths.first);
+                                                  await AppAudioHandler.play();
+                                                },
+                                                padding: const EdgeInsets.all(0),
+                                                icon: Icon(
+                                                  FluentIcons.play,
+                                                  color: Colors.white,
+                                                  size: height * 0.035,
+                                                ),
                                               ),
                                             ),
-                                          ),
-                                          ValueListenableBuilder(
-                                            valueListenable: DataController.selectedPaths,
-                                            builder: (context, value, child){
-                                              bool isSelected = true;
-                                              for (var path in playlist.paths){
-                                                if (!DataController.selected.contains(path)){
-                                                  isSelected = false;
-                                                  break;
+                                            ValueListenableBuilder(
+                                              valueListenable: DataController.selectedPaths,
+                                              builder: (context, value, child){
+                                                bool isSelected = true;
+                                                for (var path in playlist.paths){
+                                                  if (!DataController.selected.contains(path)){
+                                                    isSelected = false;
+                                                    break;
+                                                  }
                                                 }
-                                              }
-                                              return SizedBox(
-                                                width: width * 0.035,
-                                                height: width * 0.035,
-                                                child: IconButton(
-                                                  onPressed: (){
-                                                    debugPrint("Select $index");
-                                                    if (isSelected){
-                                                      DataController.selected = List.from(DataController.selected)..removeWhere((element) => playlist.paths.contains(element));
-                                                      return;
-                                                    }
-                                                    DataController.selected = List.from(DataController.selected)..addAll(playlist.paths);
-                                                  },
-                                                  padding: const EdgeInsets.all(0),
-                                                  icon: Icon(
-                                                    isSelected ? FluentIcons.checkCircleOn : FluentIcons.checkCircleOff,
-                                                    color: Colors.white,
-                                                    size: height * 0.03,
+                                                return SizedBox(
+                                                  width: width * 0.035,
+                                                  height: width * 0.035,
+                                                  child: IconButton(
+                                                    onPressed: (){
+                                                      debugPrint("Select $index");
+                                                      if (isSelected){
+                                                        DataController.selected = List.from(DataController.selected)..removeWhere((element) => playlist.paths.contains(element));
+                                                        return;
+                                                      }
+                                                      DataController.selected = List.from(DataController.selected)..addAll(playlist.paths);
+                                                    },
+                                                    padding: const EdgeInsets.all(0),
+                                                    icon: Icon(
+                                                      isSelected ? FluentIcons.checkCircleOn : FluentIcons.checkCircleOff,
+                                                      color: Colors.white,
+                                                      size: height * 0.03,
+                                                    ),
                                                   ),
-                                                ),
-                                              );
-                                            },
-                                          ),
-                                        ],
-                                      )
-                                    ],
-                                  ),
-                                  child: Container(
-                                    alignment: Alignment.bottomCenter,
-                                    padding: EdgeInsets.only(
-                                      bottom: height * 0.005,
-                                    ),
-                                    decoration: BoxDecoration(
-                                        gradient: LinearGradient(
-                                            begin: FractionalOffset.center,
-                                            end: FractionalOffset.bottomCenter,
-                                            colors: [
-                                              Colors.black.withOpacity(0.0),
-                                              Colors.black.withOpacity(0.5),
-                                              Colors.black,
-                                            ],
-                                            stops: const [0.0, 0.5, 1.0]
+                                                );
+                                              },
+                                            ),
+                                          ],
                                         )
+                                      ],
                                     ),
-                                    child: TextScroll(
-                                      playlist.name,
-                                      mode: TextScrollMode.bouncing,
-                                      velocity: const Velocity(pixelsPerSecond: Offset(20, 0)),
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: normalSize,
-                                        fontWeight: FontWeight.bold,
+                                    child: Container(
+                                      alignment: Alignment.bottomCenter,
+                                      padding: EdgeInsets.only(
+                                        bottom: height * 0.005,
                                       ),
-                                      pauseOnBounce: const Duration(seconds: 2),
-                                      delayBefore: const Duration(seconds: 2),
-                                      pauseBetween: const Duration(seconds: 2),
+                                      decoration: BoxDecoration(
+                                          gradient: LinearGradient(
+                                              begin: FractionalOffset.center,
+                                              end: FractionalOffset.bottomCenter,
+                                              colors: [
+                                                Colors.black.withOpacity(0.0),
+                                                Colors.black.withOpacity(0.5),
+                                                Colors.black,
+                                              ],
+                                              stops: const [0.0, 0.5, 1.0]
+                                          )
+                                      ),
+                                      child: TextScroll(
+                                        playlist.name,
+                                        mode: TextScrollMode.bouncing,
+                                        velocity: const Velocity(pixelsPerSecond: Offset(20, 0)),
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: normalSize,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                        pauseOnBounce: const Duration(seconds: 2),
+                                        delayBefore: const Duration(seconds: 2),
+                                        pauseBetween: const Duration(seconds: 2),
+                                      ),
                                     ),
                                   ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
-                        ),
 
-                      );
+                        );
 
-                    },
-                  );
+                      },
+                    );
+                  }
+                  else{
+                    return const Center(
+                      child: CircularProgressIndicator(
+                        color: Colors.white,
+                      ),
+                    );
+                  }
                 }
-                else{
-                  return const Center(
-                    child: CircularProgressIndicator(
-                      color: Colors.white,
-                    ),
-                  );
-                }
-              }
+            ),
           ),
-        ),
 
-      ],
+        ],
+      ),
     );
 
   }

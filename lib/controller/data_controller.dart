@@ -42,6 +42,7 @@ class DataController {
   }
 
   static Future<List<AlbumType>> getAlbums(String searchValue) async {
+    await Future.delayed(const Duration(milliseconds: 250));
     return ObjectBox.store.box<AlbumType>()
         .query(AlbumType_.name.contains(searchValue, caseSensitive: false))
         .order(AlbumType_.name)
@@ -50,6 +51,7 @@ class DataController {
   }
 
   static Future<List<ArtistType>> getArtists(String searchValue) async {
+    await Future.delayed(const Duration(milliseconds: 250));
     return ObjectBox.store.box<ArtistType>()
         .query(ArtistType_.name.contains(searchValue, caseSensitive: false))
         .order(ArtistType_.name)
@@ -114,6 +116,7 @@ class DataController {
   }
 
   static Future<List<PlaylistType>> getPlaylists(String searchValue) async {
+    await Future.delayed(const Duration(milliseconds: 250));
     return ObjectBox.store.box<PlaylistType>()
         .query(PlaylistType_.name.contains(searchValue, caseSensitive: false))
         .order(PlaylistType_.indestructible, flags: Order.descending)
