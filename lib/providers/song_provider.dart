@@ -1,0 +1,81 @@
+import 'package:flutter/cupertino.dart';
+import 'package:musicplayer/entities/song.dart';
+import 'package:musicplayer/services/song_service.dart';
+import 'package:rxdart/rxdart.dart';
+
+class SongProvider with ChangeNotifier {
+  final SongService _songService;
+
+  bool isAscending = false;
+  String query = '';
+  String sortField = 'Name'; // Name or Duration
+
+  late Future songsFuture;
+
+  SongProvider(this._songService) {
+    songsFuture = Future(() => _songService.getAllSongs());
+
+    songsStream.delay(const Duration(seconds: 10)).listen((_) {
+      debugPrint("Songs stream updated");
+      songsFuture = Future(() => _songService.getSongs(query, sortField, isAscending));
+      notifyListeners();
+    });
+
+    fileChangesStream.delay(const Duration(seconds: 10)).listen((event) {
+      debugPrint("File changes detected $event");
+      notifyListeners();
+    });
+    
+
+  }
+
+  Stream get songsStream => _songService.watchSongs();
+  Stream get fileChangesStream => _songService.fileChangesStream();
+  void setFlag(bool value) {
+    isAscending = value;
+    songsFuture = Future(() => _songService.getSongs(query, sortField, isAscending));
+    notifyListeners();
+  }
+
+  void setSortField(String field) {
+    sortField = field;
+    songsFuture = Future(() => _songService.getSongs(query, sortField, isAscending));
+    notifyListeners();
+  }
+
+  void setQuery(String newQuery) {
+    query = newQuery;
+    songsFuture = Future(() => _songService.getSongs(query, sortField, isAscending));
+    notifyListeners();
+  }
+
+  void addSong(String songPath) {
+    _songService.addSong(songPath);
+    notifyListeners();
+  }
+
+  Song? getSong(String songPath) {
+    return _songService.getSong(songPath);
+  }
+
+  List<Song> getSongs(String query, String sortField, bool flag) {
+    return _songService.getSongs(query, sortField, flag);
+  }
+
+  List<Song> getSongsFromPaths(List<String> paths) {
+    return _songService.getSongsFromPaths(paths);
+  }
+
+  List<Song> getAllSongs() {
+    return _songService.getAllSongs();
+  }
+
+  Future<void> startLoadingSongs() async {
+    debugPrint("Loading songs...");
+    try {
+      await _songService.retrieveAllSongs();
+    } catch (e) {
+      debugPrint("Error loading songs: $e");
+    }
+  }
+}

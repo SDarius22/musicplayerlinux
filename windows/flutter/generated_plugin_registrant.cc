@@ -12,7 +12,9 @@
 #include <desktop_drop/desktop_drop_plugin.h>
 #include <file_saver/file_saver_plugin.h>
 #include <objectbox_flutter_libs/objectbox_flutter_libs_plugin.h>
-#include <system_tray/system_tray_plugin.h>
+#include <screen_retriever_windows/screen_retriever_windows_plugin_c_api.h>
+#include <tray_manager/tray_manager_plugin.h>
+#include <window_manager/window_manager_plugin.h>
 
 void RegisterPlugins(flutter::PluginRegistry* registry) {
   AudioplayersWindowsPluginRegisterWithRegistrar(
@@ -27,6 +29,10 @@ void RegisterPlugins(flutter::PluginRegistry* registry) {
       registry->GetRegistrarForPlugin("FileSaverPlugin"));
   ObjectboxFlutterLibsPluginRegisterWithRegistrar(
       registry->GetRegistrarForPlugin("ObjectboxFlutterLibsPlugin"));
-  SystemTrayPluginRegisterWithRegistrar(
-      registry->GetRegistrarForPlugin("SystemTrayPlugin"));
+  ScreenRetrieverWindowsPluginCApiRegisterWithRegistrar(
+      registry->GetRegistrarForPlugin("ScreenRetrieverWindowsPluginCApi"));
+  TrayManagerPluginRegisterWithRegistrar(
+      registry->GetRegistrarForPlugin("TrayManagerPlugin"));
+  WindowManagerPluginRegisterWithRegistrar(
+      registry->GetRegistrarForPlugin("WindowManagerPlugin"));
 }

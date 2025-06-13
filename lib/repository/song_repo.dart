@@ -1,0 +1,84 @@
+import 'package:musicplayer/database/objectBox.dart';
+import 'package:musicplayer/database/objectbox.g.dart';
+import 'package:musicplayer/entities/song.dart';
+
+class SongsRepository {
+  get songBox => ObjectBox.store.box<Song>();
+
+  void addSong(Song song)  {
+     songBox.put(song);
+  }
+
+  Stream watchAllSongs({bool triggerImmediately = true}) {
+    final query = songBox.query();
+    return query.watch();
+  }
+
+  Song? getSong(String path)  {
+    return songBox.query(Song_.path.equals(path)).build().findUnique();
+  }
+
+  List<Song> getSongs(String query, String sortField, bool flag)  {
+    var builderQuery;
+    if (flag == false) {
+      builderQuery = songBox
+          .query(Song_.name.contains(query, caseSensitive: false))
+          .order(
+        sortField == 'Name' ? Song_.name : Song_.duration,
+      ).build();
+    }
+    else {
+      builderQuery = songBox
+          .query(Song_.name.contains(query, caseSensitive: false))
+          .order(
+        sortField == 'Name' ? Song_.name : Song_.duration,
+        flags: Order.descending,
+      ).build();
+    }
+    return builderQuery.find();
+  }
+
+  List<Song> getSongsFromPaths(List<String> paths)  {
+    if (paths.isEmpty) {
+      return [];
+    }
+    List<Song> songs = [];
+    for (String path in paths) {
+      final song = getSong(path);
+      if (song != null) {
+        songs.add(song);
+      }
+    }
+    return songs;
+  }
+
+  List<Song> getAllSongs()  {
+    return songBox.query().order(Song_.name).build().find();
+  }
+
+  int getTotalSongsCount()  {
+    return songBox.count();
+  }
+
+  void deleteSong(Song song)  {
+     songBox.remove(song.id);
+  }
+
+  void updateSong(Song song)  {
+     songBox.put(song);
+  }
+
+  List<Song> getSongsWithLastPlayed()  {
+    return songBox.query(Song_.lastPlayed.notNull()).order(Song_.lastPlayed, flags: Order.descending)
+        ..limit(100)
+        .build()
+        .find();
+  }
+
+  List<Song> getSongsWithPlayCount()  {
+    return songBox.query(Song_.playCount.greaterThan(0)).order(Song_.playCount, flags: Order.descending)
+        ..limit(100)
+        .build()
+        .find();
+  }
+}
