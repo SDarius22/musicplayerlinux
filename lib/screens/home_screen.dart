@@ -40,7 +40,6 @@ class HomeScreen extends StatelessWidget {
                   ),
                 ),
               ),
-
             ],
           ),
           AnimatedContainer(

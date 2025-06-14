@@ -20,7 +20,7 @@ class Artist extends AbstractEntity with AbstractCollection {
 
   final _songs = ToMany<Song>();
   @override
-  List<Song> get songs => _songs.toList();
+  ToMany<Song> get songs => _songs;
 
   int duration = 0; // in seconds
 }

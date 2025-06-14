@@ -5,6 +5,7 @@ import 'package:musicplayer/providers/audio_provider.dart';
 import 'package:musicplayer/screens/home_screen.dart';
 import 'package:musicplayer/screens/welcome_screen.dart';
 import 'package:musicplayer/services/settings_service.dart';
+import 'package:musicplayer/services/song_service.dart';
 import 'package:provider/provider.dart';
 
 class LoadingScreen extends StatefulWidget {
@@ -29,7 +30,7 @@ class _LoadingScreenState extends State<LoadingScreen> with AfterLayoutMixin<Loa
     if (mounted) {
       // var infoProvider = Provider.of<InfoProvider>(context, listen: false);
       var pageProvider = Provider.of<AppStateProvider>(context, listen: false);
-      await Provider.of<AudioProvider>(context, listen: false).init(Provider.of<SettingsService>(context, listen: false));
+      await Provider.of<AudioProvider>(context, listen: false).init(Provider.of<SettingsService>(context, listen: false), Provider.of<SongService>(context, listen: false));
       // if (infoProvider.currentAudioInfo.unshuffledQueue.isEmpty){
       //   debugPrint("Queue is empty");
       //   var songs = await LocalDataProvider().getSongs('');

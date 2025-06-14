@@ -9,24 +9,36 @@ class ArtistRepository {
     artistBox.put(artist);
   }
 
+  Stream watchAllArtists() {
+    final query = artistBox.query();
+    return query.watch();
+  }
+
   Artist? getArtist(String name) {
     return artistBox.query(Artist_.name.equals(name)).build().findUnique();
   }
 
-  List<Artist> getArtists(String query, bool flag, int currentPage, int perPage)  {
-    return artistBox
-        .query(Artist_.name.contains(query, caseSensitive: false))
-        .order(Artist_.name,
-          flags: flag ? Order.descending : null,
-        )
-        ..offset((currentPage - 1) * perPage)
-        ..limit(perPage)
-        .build()
-        .find();
+  List<Artist> getArtists(String query, String sortField, bool flag)  {
+    var builderQuery;
+    if (flag == false) {
+      builderQuery = artistBox
+          .query(Artist_.name.contains(query, caseSensitive: false))
+          .order(
+        sortField == 'Name' ? Artist_.name : Artist_.duration,
+      ).build();
+    } else {
+      builderQuery = artistBox
+          .query(Artist_.name.contains(query, caseSensitive: false))
+          .order(
+        sortField == 'Name' ? Artist_.name : Artist_.duration,
+        flags: Order.descending,
+      ).build();
+    }
+    return builderQuery.find();
   }
 
   List<Artist> getAllArtists()  {
-    return artistBox.getAll();
+    return artistBox.query().order(Artist_.name).build().find();
   }
 
   void deleteArtist(Artist artist)  {

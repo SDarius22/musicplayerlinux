@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:musicplayer/components/actions_widget.dart';
 import 'package:musicplayer/providers/app_state_provider.dart';
+import 'package:musicplayer/screens/albums.dart';
+import 'package:musicplayer/screens/tracks.dart';
 import 'package:musicplayer/utils/hover_widget/hover_container.dart';
 import 'package:musicplayer/utils/fluenticons/fluenticons.dart';
 import 'package:provider/provider.dart';
@@ -13,7 +15,6 @@ class DrawerWidget extends StatefulWidget {
 }
 
 class _DrawerWidgetState extends State<DrawerWidget> {
-  bool _isBig = false;
   bool _finishedAnimation = false;
   int _selected = 5;
   late AppStateProvider _appStateProvider;
@@ -23,10 +24,8 @@ class _DrawerWidgetState extends State<DrawerWidget> {
       "tooltip": "Expand Menu",
       "icon": FluentIcons.menu,
       "onTap": (BuildContext context) {
-        if (_isBig == false) {
-          setState(() {
-            _isBig = true;
-          });
+        if (_appStateProvider.isDrawerOpen == false) {
+          _appStateProvider.setDrawerOpen(true);
           Future.delayed(const Duration(milliseconds: 300), () {
             if (mounted) {
               setState(() {
@@ -35,25 +34,21 @@ class _DrawerWidgetState extends State<DrawerWidget> {
             }
           });
         } else {
-          setState(() {
-            _isBig = false;
-          });
+          _appStateProvider.setDrawerOpen(false);
         }
       },
     },
-    // {
-    //   "text": "User Page",
-    //   "tooltip": "User Page",
-    //   "icon": OnlineController.loggedInNotifier.value
-    //       ? FluentIcons.circlePersonFilled
-    //       : FluentIcons.circlePerson,
-    //   "onTap": (BuildContext context) {
-    //     setState(() {
-    //       _selected = 1;
-    //     });
-    //     _appStateProvider.navigatorKey.currentState!.pushNamed('/user');
-    //   },
-    // },
+    {
+      "text": "User Page",
+      "tooltip": "User Page",
+      "icon": FluentIcons.circlePerson,
+      "onTap": (BuildContext context) {
+        setState(() {
+          _selected = 1;
+        });
+        _appStateProvider.navigatorKey.currentState!.pushNamed('/user');
+      },
+    },
     {
       "text": "Albums",
       "tooltip": "Albums",
@@ -62,7 +57,7 @@ class _DrawerWidgetState extends State<DrawerWidget> {
         setState(() {
           _selected = 2;
         });
-        _appStateProvider.navigatorKey.currentState!.pushNamed('/albums');
+        _appStateProvider.navigatorKey.currentState!.push(Albums.route());
       },
     },
     {
@@ -95,7 +90,7 @@ class _DrawerWidgetState extends State<DrawerWidget> {
         setState(() {
           _selected = 5;
         });
-        _appStateProvider.navigatorKey.currentState!.pushNamed('/music');
+        _appStateProvider.navigatorKey.currentState!.push(Tracks.route());
       }
     },
     {
@@ -192,7 +187,7 @@ class _DrawerWidgetState extends State<DrawerWidget> {
     return Consumer<AppStateProvider>(
         builder: (context, appState, child) {
           return AnimatedContainer(
-            width: _isBig ? width * 0.125 : width * 0.035,
+            width: appState.isDrawerOpen ? width * 0.125 : width * 0.035,
             duration: const Duration(milliseconds: 300),
             decoration: BoxDecoration(
               color: const Color(0xFF0E0E0E),
@@ -237,7 +232,7 @@ class _DrawerWidgetState extends State<DrawerWidget> {
                                         size: height * 0.025,
                                         color: Colors.white,
                                       ),
-                                      if (_isBig && _finishedAnimation)
+                                      if (appState.isDrawerOpen && _finishedAnimation)
                                         Expanded(
                                           child: AnimatedContainer(
                                             duration: const Duration(milliseconds: 500),

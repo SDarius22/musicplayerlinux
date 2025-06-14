@@ -15,13 +15,14 @@ class SongProvider with ChangeNotifier {
   SongProvider(this._songService) {
     songsFuture = Future(() => _songService.getAllSongs());
 
-    songsStream.delay(const Duration(seconds: 10)).listen((_) {
+
+    songsStream.throttleTime(const Duration(seconds: 10)).listen((_) {
       debugPrint("Songs stream updated");
       songsFuture = Future(() => _songService.getSongs(query, sortField, isAscending));
       notifyListeners();
     });
 
-    fileChangesStream.delay(const Duration(seconds: 10)).listen((event) {
+    fileChangesStream.throttleTime(const Duration(seconds: 10)).listen((event) {
       debugPrint("File changes detected $event");
       notifyListeners();
     });
@@ -31,6 +32,7 @@ class SongProvider with ChangeNotifier {
 
   Stream get songsStream => _songService.watchSongs();
   Stream get fileChangesStream => _songService.fileChangesStream();
+
   void setFlag(bool value) {
     isAscending = value;
     songsFuture = Future(() => _songService.getSongs(query, sortField, isAscending));

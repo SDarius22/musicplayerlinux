@@ -4,7 +4,9 @@ import 'package:musicplayer/components/image_widget.dart';
 import 'package:musicplayer/entities/abstract/abstract_collection.dart';
 import 'package:musicplayer/entities/abstract/abstract_entity.dart';
 import 'package:musicplayer/entities/song.dart';
+import 'package:musicplayer/providers/audio_provider.dart';
 import 'package:musicplayer/utils/hover_widget/hover_container.dart';
+import 'package:provider/provider.dart';
 
 class CustomListTile extends StatelessWidget {
   final AbstractEntity entity;
@@ -66,28 +68,61 @@ class CustomListTile extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    CustomTextScroll(
-                        text: entity.name,
-                        style: TextStyle(
-                          fontSize: normalSize,
-                        )
+                    entity is Song
+                        ? Consumer<AudioProvider>(
+                      builder: (_, audioProvider, __) {
+                        return CustomTextScroll(
+                          text: entity.name,
+                          style: TextStyle(
+                            color: audioProvider.currentSong.path ==
+                                (entity as Song).path ? Colors.blue : Colors.white,
+                            fontSize: normalSize,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        );
+                      },
+                    )
+                        : CustomTextScroll(
+                      text: entity.name,
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: normalSize,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     if (entity is Song)
-                      CustomTextScroll(
-                        text: (entity as Song).trackArtist,
-                        style: TextStyle(
-                          fontSize: smallSize,
-                        ),
-                      ),
+                      Consumer<AudioProvider>(
+                        builder: (_, audioProvider, __) {
+                          return CustomTextScroll(
+                            text: (entity as Song).trackArtist,
+                            style: TextStyle(
+                              color: audioProvider.currentSong.path ==
+                                  (entity as Song).path ? Colors.blue : Colors.white,
+                              fontSize: smallSize,
+                              fontWeight: FontWeight.normal,
+                            ),
+                          );
+                        },
+                      )
                   ],
                 ),
               ),
               const Spacer(),
               if (entity is Song)
-                Text (
-                  "${(entity as Song).duration ~/ 60}:${((entity as Song).duration % 60).toString().padLeft(2, '0')}",
-                  style: Theme.of(context).textTheme.bodyMedium,
+                Consumer<AudioProvider>(
+                  builder: (_, audioProvider, __) {
+                    return Text (
+                      "${(entity as Song).duration ~/ 60}:${((entity as Song).duration % 60).toString().padLeft(2, '0')}",
+                      style: TextStyle(
+                        color: audioProvider.currentSong.path ==
+                            (entity as Song).path ? Colors.blue : Colors.white,
+                        fontSize: normalSize,
+                        fontWeight: FontWeight.normal,
+                      ),
+                    );
+                  },
                 ),
+
               trailingAction!,
             ],
           ),

@@ -7,16 +7,20 @@ import 'package:flutter/cupertino.dart';
 import 'package:musicplayer/entities/song.dart';
 import 'package:musicplayer/services/file_service.dart';
 import 'package:musicplayer/services/settings_service.dart';
+import 'package:musicplayer/services/song_service.dart';
 
 class AppAudioService extends BaseAudioHandler {
   final AudioPlayer audioPlayer = AudioPlayer();
   AudioSettings audioSettings = AudioSettings();
   late final SettingsService settingsService;
+  late final SongService songService;
 
-  Song currentSong = Song();
+  int previousIndex = 0;
+
+  Song? currentSong = Song();
   Uint8List? image;
 
-  AppAudioService(this.settingsService) {
+  AppAudioService(this.settingsService, this.songService) {
     playbackState.add(playbackState.value.copyWith(
       controls: [
         MediaControl.skipToPrevious,
@@ -28,6 +32,9 @@ class AppAudioService extends BaseAudioHandler {
       playing: false,
     ));
     audioSettings = settingsService.getAudioSettings() ?? AudioSettings();
+    previousIndex = audioSettings.index - 1 < 0
+        ? audioSettings.queue.length - 1
+        : audioSettings.index - 1;
   }
 
   @override
@@ -62,6 +69,8 @@ class AppAudioService extends BaseAudioHandler {
     playbackState.add(playbackState.value.copyWith(
       controls: [MediaControl.skipToNext],
     ));
+    await seek(Duration.zero);
+    previousIndex = audioSettings.index;
     audioSettings.index = (audioSettings.index + 1) % audioSettings.queue.length;
     settingsService.updateAudioSettings(audioSettings);
     await updateCurrentSong();
@@ -73,10 +82,9 @@ class AppAudioService extends BaseAudioHandler {
     playbackState.add(playbackState.value.copyWith(
       controls: [MediaControl.skipToPrevious],
     ));
-    if (audioSettings.repeat) {
-      audioSettings.slider = 0; // Reset the slider to the beginning
-      audioPlayer.seek(const Duration(milliseconds: 0));
-    } else {
+    await seek(Duration.zero);
+    if (!audioSettings.repeat) {
+      previousIndex = audioSettings.index;
       audioSettings.index = (audioSettings.index - 1 + audioSettings.queue.length) % audioSettings.queue.length;
       settingsService.updateAudioSettings(audioSettings);
       await updateCurrentSong();
@@ -123,13 +131,17 @@ class AppAudioService extends BaseAudioHandler {
   }
 
   Future<void> updateCurrentSong() async {
+    if (audioSettings.queue.isEmpty) {
+      debugPrint("Queue is empty, cannot update current song.");
+      return;
+    }
     currentSong = Song();
     String path = audioSettings.shuffle ?
         audioSettings.shuffledQueue[audioSettings.index] :
         audioSettings.queue[audioSettings.index];
 
     var metadata = await FileService.retrieveSong(path);
-    currentSong.fromJson(metadata);
+    currentSong?.fromJson(metadata);
     image = metadata['image'] as Uint8List?;
     debugPrint("Image size: ${image?.lengthInBytes ?? 0} bytes");
   }
@@ -145,9 +157,9 @@ class AppAudioService extends BaseAudioHandler {
     var duration = await audioPlayer.getDuration();
     debugPrint("Duration: $duration");
     if (duration == null) {
-      debugPrint("Duration is null, using current song duration, ${currentSong.duration})");
-      return currentSong.duration > 0
-          ? Duration(seconds: currentSong.duration)
+      // debugPrint("Duration is null, using current song duration, ${currentSong.duration})");
+      return currentSong != null && currentSong!.duration > 0
+          ? Duration(seconds: currentSong!.duration)
           : Duration.zero;
     }
     return duration;
@@ -177,6 +189,24 @@ class AppAudioService extends BaseAudioHandler {
     audioSettings.queue = List.from(songs);
     audioSettings.shuffledQueue = List.from(songs);
     audioSettings.shuffledQueue.shuffle();
+  }
+
+  Future<List<Song>> getQueue() async {
+    List<Song> queueSongs = [];
+    for (String path in audioSettings.queue) {
+      Song? song = songService.getSong(path);
+      if (song != null) {
+        queueSongs.add(song);
+      } else {
+        debugPrint("Song not found in service: $path");
+        var metadata = await FileService.retrieveSong(path);
+        song = Song();
+        song.fromJson(metadata);
+        songService.songRepo.addSong(song);
+        queueSongs.add(song);
+      }
+    }
+    return queueSongs;
   }
 
 }

@@ -11,7 +11,7 @@ class WorkerService {
     debugPrint("Extracting colors from image of size: ${image.length} bytes");
     if (image.isEmpty) {
       debugPrint("Image is empty, returning default colors");
-      return [Colors.black, Colors.white];
+      return [Colors.white, Colors.black];
     }
     List<Color> result = [];
     DominantColors extractor = DominantColors(bytes: image, dominantColorsCount: 2);

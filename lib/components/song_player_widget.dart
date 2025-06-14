@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:audio_video_progress_bar/audio_video_progress_bar.dart';
 import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:flutter/material.dart';
+import 'package:musicplayer/components/animated_background.dart';
 import 'package:musicplayer/components/player_tabs/details_tab.dart';
 import 'package:musicplayer/components/player_tabs/lyrics_tab.dart';
 import 'package:musicplayer/components/player_tabs/queue_tab.dart';
@@ -34,14 +35,28 @@ class _SongPlayerWidgetState extends State<SongPlayerWidget> with TickerProvider
     appStateProvider = Provider.of<AppStateProvider>(context, listen: false);
     return Consumer<AudioProvider>(
       builder: (_, audioProvider, __) {
+        if (audioProvider.queue.isEmpty) {
+          debugPrint("Queue is empty, not showing player");
+          return const SizedBox.shrink();
+        }
+        if (appStateProvider.itemScrollController.hasClients) {
+          debugPrint("ItemScrollController has clients, animating to current index, index: ${audioProvider.currentIndex}");
+          Future.delayed(const Duration(milliseconds: 250), () {
+            appStateProvider.itemScrollController.jumpTo(height * 0.1 * audioProvider.previousIndex);
+            appStateProvider.itemScrollController.animateTo(height * 0.1 * audioProvider.currentIndex, duration: const Duration(milliseconds: 250), curve: Curves.easeInOut);
+          });
+        }
         return SlidingUpPanel(
           minHeight: height * 0.1,
           maxHeight: height - appWindow.titleBarHeight,
           controller: appStateProvider.panelController,
-          isDraggable: false,
-          color: const Color(0xFF0E0E0E),
           collapsed: _buildMinimizedPlayer(width, height, audioProvider),
           panel: _buildMaximizedPlayer(width, height, audioProvider),
+          onPanelOpened: () {
+            if (appStateProvider.itemScrollController.hasClients) {
+              appStateProvider.itemScrollController.jumpTo(height * 0.1 * audioProvider.currentIndex);
+            }
+          },
         );
       },
     );
@@ -877,20 +892,27 @@ class _SongPlayerWidgetState extends State<SongPlayerWidget> with TickerProvider
   }
 
   Widget _buildMinimizedPlayer(double width, double height, AudioProvider audioProvider){
-    return AnimatedContainer(
+    return AnimatedBackground(
       key: const Key("minimizedPlayer"),
-      duration: const Duration(milliseconds: 500),
-      curve: Curves.linear,
+      // duration: const Duration(milliseconds: 500),
+      // curve: Curves.linear,
       height: height * 0.15,
       width: width,
       alignment: Alignment.centerLeft,
+      // decoration: BoxDecoration(
+      //   gradient: LinearGradient(
+      //     begin: FractionalOffset.centerLeft,
+      //     end: FractionalOffset.centerRight,
+      //     colors: [
+      //       appStateProvider.darkColor,
+      //       Color(0xFF0E0E0E),
+      //
+      //     ],
+      //   ),
+      // ),
       padding: EdgeInsets.only(
         top: height * 0.01,
         bottom: height * 0.01,
-        left: width * 0.001,
-        right: width * 0.001,
-      ),
-      margin: EdgeInsets.only(
         left: width * 0.05,
         right: width * 0.05,
       ),
@@ -1206,8 +1228,10 @@ class _SongPlayerWidgetState extends State<SongPlayerWidget> with TickerProvider
                     //debugPrint("pressed pause play");
                     if (sliderProvider.playing) {
                       await audioProvider.pause();
+                      appStateProvider.stopAnimation();
                     } else {
                       await audioProvider.play();
+                      appStateProvider.startAnimation();
                     }
                   },
                   icon: Icon(

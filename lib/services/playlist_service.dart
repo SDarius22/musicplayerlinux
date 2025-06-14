@@ -8,9 +8,15 @@ class PlaylistService {
   final PlaylistRepository playlistRepo;
   final SongService songService;
 
-  PlaylistService(this.playlistRepo, this.songService);
+  PlaylistService(this.playlistRepo, this.songService) {
+    if (playlistRepo.getIndestructiblePlaylists().isEmpty) {
+      initializeIndestructible();
+    }
+  }
 
-  Future<void> addPlaylist(String name, List<String> songs) async {
+  Stream watchPlaylists() => playlistRepo.watchAllPlaylists();
+
+  void addPlaylist(String name, List<String> songs) {
     if (name.isEmpty) {
       throw ArgumentError("Playlist name cannot be empty");
     }
@@ -32,12 +38,12 @@ class PlaylistService {
     }
   }
 
-  Future<Playlist?> getPlaylist(String name) async {
+  Playlist? getPlaylist(String name) {
     if (name.isEmpty) {
       throw ArgumentError("Playlist name cannot be empty");
     }
     try {
-      return  playlistRepo.getPlaylist(name);
+      return playlistRepo.getPlaylist(name);
     } catch (e) {
       debugPrint("Error fetching playlist: $e");
       return null;
@@ -68,25 +74,34 @@ class PlaylistService {
     playlistRepo.addPlaylist(favorites);
   }
 
-  Future<List<Playlist>> getIndestructiblePlaylists() async {
+  List<Playlist> getIndestructiblePlaylists() {
     try {
-      return  playlistRepo.getIndestructiblePlaylists();
+      return playlistRepo.getIndestructiblePlaylists();
     } catch (e) {
       debugPrint("Error fetching indestructible playlists: $e");
       return [];
     }
   }
 
-  Future<List<Playlist>> getPlaylists(String query, String sortField, bool flag, int currentPage, int perPage) async {
+  List<Playlist> getPlaylists(String query, String sortField, bool flag) {
     try {
-      return  playlistRepo.getPlaylists(query, sortField, flag, currentPage, perPage);
+      return playlistRepo.getPlaylists(query, sortField, flag);
     } catch (e) {
       debugPrint("Error fetching playlists: $e");
       return [];
     }
   }
 
-  Future<void> addToPlaylist(Playlist playlist, List<Song> songs) async {
+  List<Playlist> getAllPlaylists() {
+    try {
+      return playlistRepo.getAllPlaylists();
+    } catch (e) {
+      debugPrint("Error fetching all playlists: $e");
+      return [];
+    }
+  }
+
+  void addToPlaylist(Playlist playlist, List<Song> songs) {
     if (playlist.nextAdded == 'last') {
       for (var song in songs) {
         if (playlist.pathsInOrder.contains(song.path)) {
@@ -137,16 +152,13 @@ class PlaylistService {
     // exportPlaylist(playlist);
   }
 
-  Future<void> deleteFromPlaylist(Playlist playlist, String song) async {
+  void deleteFromPlaylist(Playlist playlist, String song) {
     if (!playlist.pathsInOrder.contains(song)) {
       throw Exception("Song not found in playlist");
     }
     try {
+      Song songObj = playlist.songs.firstWhere((s) => s.path == song);
       playlist.pathsInOrder.remove(song);
-      Song? songObj = await songService.getSong(song);
-      if (songObj == null) {
-        throw Exception("Song object not found for path: $song");
-      }
       playlist.duration -= songObj.duration;
       for (var artistCountStr in playlist.artistCount){
         if (artistCountStr.contains(songObj.trackArtist)){
@@ -187,18 +199,15 @@ class PlaylistService {
      updateRecentlyPlayed();
   }
 
-  Future<void> updateMostPlayed() async {
+  void updateMostPlayed() {
     Playlist? mostPlayed =  playlistRepo.getPlaylist("Most Played");
     if (mostPlayed == null) {
       mostPlayed = Playlist();
       mostPlayed.name = "Most Played";
-      mostPlayed.pathsInOrder = [];
-      mostPlayed.artistCount = [];
-      mostPlayed.duration = 0;
     }
     // var query = songBox.query(Song_.playCount.greaterThan(0)).order(Song_.playCount, flags: Order.descending).build();
     // query.limit = 100;
-    var songs = await songService.getSongsWithPlayCount();
+    var songs = songService.getSongsWithPlayCount();
     mostPlayed.artistCount = [];
     mostPlayed.pathsInOrder = [];
     mostPlayed.duration = 0;
@@ -224,18 +233,15 @@ class PlaylistService {
     playlistRepo.updatePlaylist(mostPlayed);
   }
 
-  Future<void> updateRecentlyPlayed() async {
+  void updateRecentlyPlayed() {
     Playlist? recentlyPlayed =  playlistRepo.getPlaylist("Recently Played");
     if (recentlyPlayed == null) {
       recentlyPlayed = Playlist();
       recentlyPlayed.name = "Recently Played";
-      recentlyPlayed.pathsInOrder = [];
-      recentlyPlayed.artistCount = [];
-      recentlyPlayed.duration = 0;
     }
     // var query = songBox.query(Song_.lastPlayed.notNull()).order(Song_.lastPlayed, flags: Order.descending).build();
     // query.limit = 100;
-    var songs = await songService.getSongsWithLastPlayed();
+    var songs = songService.getSongsWithLastPlayed();
     recentlyPlayed.artistCount = [];
     recentlyPlayed.pathsInOrder = [];
     recentlyPlayed.duration = 0;

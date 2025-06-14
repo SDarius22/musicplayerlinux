@@ -5,77 +5,77 @@ import 'package:musicplayer/services/playlist_service.dart';
 
 class PlaylistProvider with ChangeNotifier {
   final PlaylistService _playlistService;
-  int currentPage = 1;
-  int perPage = 7;
-  bool flag = false;
-  String sortField = 'name'; // name or createdAt
 
-  PlaylistProvider(this._playlistService);
+  bool isAscending = false;
+  String query = '';
+  String sortField = 'Name'; // Name, Duration, Number of Songs, Created At
 
-  void resetPage() {
-    currentPage = 1;
-    notifyListeners();
+  late Future playlistsFuture;
+
+  PlaylistProvider(this._playlistService) {
+    playlistsFuture = Future(() => _playlistService.getAllPlaylists());
+
+    playlistsStream.listen((_) {
+      debugPrint("Playlists stream updated");
+      playlistsFuture = Future(() => _playlistService.getPlaylists(query, sortField, isAscending));
+      notifyListeners();
+    });
   }
 
-  void setPage(int page) {
-    currentPage = page;
-    notifyListeners();
-  }
-
-  void setPerPage(int count) {
-    perPage = count;
-    notifyListeners();
-  }
+  Stream get playlistsStream => _playlistService.watchPlaylists();
 
   void setFlag(bool value) {
-    flag = value;
+    isAscending = value;
+    playlistsFuture = Future(() => _playlistService.getPlaylists(query, sortField, isAscending));
     notifyListeners();
   }
 
   void setSortField(String field) {
     sortField = field;
+    playlistsFuture = Future(() => _playlistService.getPlaylists(query, sortField, isAscending));
     notifyListeners();
   }
 
-  void initializeIndestructible() {
-    _playlistService.initializeIndestructible();
+  void setQuery(String newQuery) {
+    query = newQuery;
+    playlistsFuture = Future(() => _playlistService.getPlaylists(query, sortField, isAscending));
     notifyListeners();
   }
 
-  Future<void> addPlaylist(String name, List<String> songs) async {
-    await _playlistService.addPlaylist(name, songs);
+  void addPlaylist(String name, List<String> songs) {
+    _playlistService.addPlaylist(name, songs);
     notifyListeners();
   }
 
-  Future<void> deletePlaylist(Playlist playlist) async {
-    await _playlistService.deletePlaylist(playlist);
+  void deletePlaylist(Playlist playlist) {
+    _playlistService.deletePlaylist(playlist);
     notifyListeners();
   }
 
-  Future<Playlist?> getPlaylist(String name) async {
-    return await _playlistService.getPlaylist(name);
+  Playlist? getPlaylist(String name) {
+    return _playlistService.getPlaylist(name);
   }
 
-  Future<List<Playlist>> getIndestructiblePlaylists() async {
-    return await _playlistService.getIndestructiblePlaylists();
+  List<Playlist> getIndestructiblePlaylists() {
+    return _playlistService.getIndestructiblePlaylists();
   }
 
-  Future<List<Playlist>> getPlaylists(String query) async {
-    return await _playlistService.getPlaylists(query, sortField, flag, currentPage, perPage);
+  List<Playlist> getPlaylists() {
+    return _playlistService.getPlaylists(query, sortField, isAscending);
   }
 
-  Future<void> addSongsToPlaylist(Playlist playlist, List<Song> songs) async {
-    await _playlistService.addToPlaylist(playlist, songs);
+  void addSongsToPlaylist(Playlist playlist, List<Song> songs) {
+    _playlistService.addToPlaylist(playlist, songs);
     notifyListeners();
   }
 
-  Future<void> deleteSongFromPlaylist(Playlist playlist, Song song) async {
-    await _playlistService.deleteFromPlaylist(playlist, song.path);
+  void deleteSongFromPlaylist(Playlist playlist, Song song) {
+    _playlistService.deleteFromPlaylist(playlist, song.path);
     notifyListeners();
   }
 
-  Future<void> updateIndestructiblePlaylists() async {
-    await _playlistService.updateIndestructible();
+  void updateIndestructiblePlaylists() {
+    _playlistService.updateIndestructible();
     notifyListeners();
   }
 

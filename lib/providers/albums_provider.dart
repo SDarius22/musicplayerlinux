@@ -1,60 +1,73 @@
 import 'package:flutter/cupertino.dart';
 import 'package:musicplayer/entities/album.dart';
 import 'package:musicplayer/services/album_service.dart';
+import 'package:rxdart/rxdart.dart';
 
 class AlbumProvider with ChangeNotifier {
   final AlbumService _albumService;
-  int currentPage = 1;
-  int perPage = 7;
-  bool flag = false;
 
-  AlbumProvider(this._albumService);
+  bool isAscending = false;
+  String query = '';
+  String sortField = 'Name'; // Name, Duration, Number of Songs
 
-  void resetPage() {
-    currentPage = 1;
-    notifyListeners();
+  late Future albumsFuture;
+
+  AlbumProvider(this._albumService) {
+    albumsFuture = Future(() => _albumService.getAllAlbums());
+
+    albumsStream.debounceTime(const Duration(seconds: 10)).listen((_) {
+      debugPrint("Albums stream updated");
+      albumsFuture = Future(() => _albumService.getAlbums(query, sortField, isAscending));
+      notifyListeners();
+    });
+
   }
 
-  void setPage(int page) {
-    currentPage = page;
-    notifyListeners();
-  }
-
-  void setPerPage(int count) {
-    perPage = count;
-    notifyListeners();
-  }
+  Stream get albumsStream => _albumService.watchAlbums();
 
   void setFlag(bool value) {
-    flag = value;
+    isAscending = value;
+    albumsFuture = Future(() => _albumService.getAlbums(query, sortField, isAscending));
     notifyListeners();
   }
 
-  Future<void> addAlbum(String name) async {
-    await _albumService.addAlbum(name);
+  void setSortField(String field) {
+    sortField = field;
+    albumsFuture = Future(() => _albumService.getAlbums(query, sortField, isAscending));
     notifyListeners();
   }
 
-  Future<void> deleteAlbum(Album album) async {
-    await _albumService.deleteAlbum(album);
+  void setQuery(String newQuery) {
+    query = newQuery;
+    albumsFuture = Future(() => _albumService.getAlbums(query, sortField, isAscending));
     notifyListeners();
   }
 
-  Future<void> updateAlbum(Album album) async {
-    await _albumService.updateAlbum(album);
+  void addAlbum(String name)  {
+    _albumService.addAlbum(name);
     notifyListeners();
   }
 
-  Future<Album?> getAlbum(String name) async {
-    return await _albumService.getAlbum(name);
+  void deleteAlbum(Album album)  {
+     _albumService.deleteAlbum(album);
+    notifyListeners();
   }
 
-  Future<List<Album>> getAlbums(String query) async {
-    return await _albumService.getAlbums(query, flag, currentPage, perPage);
+  void updateAlbum(Album album)  {
+    _albumService.updateAlbum(album);
+    notifyListeners();
   }
 
-  Future<List<Album>> getAllAlbums() async {
-    return await _albumService.getAllAlbums();
+  Album? getAlbum(String name)  {
+    return _albumService.getAlbum(name);
+  }
+
+  List<Album> getAlbums()  {
+    return _albumService.getAlbums(query, sortField, isAscending);
+  }
+
+  List<Album> getAllAlbums()  {
+    return _albumService.getAllAlbums();
   }
 
 

@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:musicplayer/entities/artist.dart';
+import 'package:musicplayer/entities/song.dart';
 import 'package:musicplayer/repository/artist_repo.dart';
 
 class ArtistService {
@@ -7,7 +8,9 @@ class ArtistService {
 
   ArtistService(this.artistRepo);
 
-  Future<void> addArtist(String name) async {
+  Stream watchArtists() => artistRepo.watchAllArtists();
+
+  void addArtist(String name) async {
     if (name.isEmpty) {
       throw ArgumentError("Artist name cannot be empty");
     }
@@ -25,7 +28,7 @@ class ArtistService {
     }
   }
 
-  Future<Artist?> getArtist(String name) async {
+  Artist? getArtist(String name) {
     if (name.isEmpty) {
       throw ArgumentError("Artist name cannot be empty");
     }
@@ -37,9 +40,9 @@ class ArtistService {
     }
   }
 
-  Future<List<Artist>> getArtists(String query, bool flag, int currentPage, int perPage) async {
+  List<Artist> getArtists(String query, String sortField, bool flag) {
     try{
-      return  artistRepo.getArtists(query, flag, currentPage, perPage);
+      return  artistRepo.getArtists(query, sortField, flag);
     }
     catch (e) {
       debugPrint("Error fetching artists: $e");
@@ -47,16 +50,16 @@ class ArtistService {
     }
   }
 
-  Future<List<Artist>> getAllArtists() async {
+  List<Artist> getAllArtists() {
     try {
-      return  artistRepo.getAllArtists();
+      return artistRepo.getAllArtists();
     } catch (e) {
       debugPrint("Error fetching all artists: $e");
       return [];
     }
   }
 
-  Future<void> updateArtist(Artist artist) async {
+  void updateArtist(Artist artist) {
     if (artist.name.isEmpty) {
       throw ArgumentError("Artist name cannot be empty");
     }
@@ -67,7 +70,7 @@ class ArtistService {
     }
   }
 
-  Future<void> deleteArtist(Artist artist) async {
+  void deleteArtist(Artist artist) {
     if (artist.id <= 0) {
       throw ArgumentError("Invalid artist ID");
     }
@@ -75,6 +78,22 @@ class ArtistService {
        artistRepo.deleteArtist(artist);
     } catch (e) {
       debugPrint("Error deleting artist: $e");
+    }
+  }
+
+  void addSongToArtist(Song song, String artistName) {
+    Artist? artist = artistRepo.getArtist(artistName);
+    if (artist == null) {
+      artist = Artist();
+      artist.name = artistName;
+      artist.songs.add(song);
+      artist.duration += song.duration;
+      artistRepo.addArtist(artist);
+    }
+    else {
+      artist.songs.add(song);
+      artist.duration += song.duration;
+      artistRepo.updateArtist(artist);
     }
   }
 }

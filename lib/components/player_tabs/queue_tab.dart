@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:musicplayer/components/custom_tiling/list_component.dart';
+import 'package:musicplayer/providers/app_state_provider.dart';
 import 'package:musicplayer/providers/audio_provider.dart';
-import 'package:musicplayer/providers/song_provider.dart';
 import 'package:provider/provider.dart';
 
 class QueueTab extends StatelessWidget {
-  QueueTab({super.key});
-  final ScrollController itemScrollController = ScrollController();
+  const QueueTab({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -14,10 +13,7 @@ class QueueTab extends StatelessWidget {
     var height = MediaQuery.of(context).size.height;
 
     return FutureBuilder(
-        future: Future(() async {
-        return Provider.of<SongProvider>(context, listen: false)
-            .getSongsFromPaths(Provider.of<AudioProvider>(context, listen: false).queue,);
-        }),
+        future: Provider.of<AudioProvider>(context, listen: false).queueFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(
@@ -32,28 +28,34 @@ class QueueTab extends StatelessWidget {
               child: Text("Queue is empty"),
             );
           }
-          return CustomScrollView(
-            slivers: [
-              SliverPadding(
-                padding: EdgeInsets.only(
-                  right: width * 0.01,
-                  left: width * 0.01,
-                  top: height * 0.01,
+          debugPrint("QueueTab: ${snapshot.data!.length} items loaded");
+          return Scrollbar(
+            controller: Provider.of<AppStateProvider>(context, listen: false).itemScrollController,
+            thumbVisibility: true,
+            child: CustomScrollView(
+              controller: Provider.of<AppStateProvider>(context, listen: false).itemScrollController,
+              slivers: [
+                SliverPadding(
+                  padding: EdgeInsets.only(
+                    right: width * 0.01,
+                    left: width * 0.01,
+                    top: height * 0.01,
+                  ),
+                  sliver: ListComponent(
+                    items: snapshot.data ?? [],
+                    itemExtent: height * 0.1,
+                    onTap: (entity) {
+                      debugPrint("Tapped on: ${entity.name}");
+                      // audioProvider.play(entity);
+                    },
+                    onLongPress: (entity) {
+                      debugPrint("Long pressed on: ${entity.name}");
+                      // audioProvider.showContextMenu(entity);
+                    },
+                  ),
                 ),
-                sliver: ListComponent(
-                  items: snapshot.data ?? [],
-                  itemExtent: height * 0.1,
-                  onTap: (entity) {
-                    debugPrint("Tapped on: ${entity.name}");
-                    // audioProvider.play(entity);
-                  },
-                  onLongPress: (entity) {
-                    debugPrint("Long pressed on: ${entity.name}");
-                    // audioProvider.showContextMenu(entity);
-                  },
-                ),
-              ),
-            ],
+              ],
+            ),
           );
         }
     );

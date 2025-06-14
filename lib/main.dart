@@ -57,7 +57,8 @@ void windowMain() {
 
 Future<void> onError() async {
   final docsDir = await getApplicationDocumentsDirectory();
-  File logFile = File(kDebugMode ? '${docsDir.path}/MusicPlayer-Debug${Platform.operatingSystem}/log.txt' : '${docsDir.path}/MusicPlayer${Platform.operatingSystem}/log.txt');
+  String platform = Platform.isWindows ? 'Windows' : Platform.isLinux ? 'Linux' : Platform.isMacOS ? 'macOS' : 'Other';
+  File logFile = File(kDebugMode ? '${docsDir.path}/MusicPlayer$platform-Debug/log.txt' : '${docsDir.path}/MusicPlayer$platform/log.txt');
   FlutterError.onError = (FlutterErrorDetails details) {
     FlutterError.dumpErrorToConsole(details, forceReport: true);
     try{
@@ -114,7 +115,12 @@ class MyApp extends StatelessWidget {
           create: (context) => SettingsService(context.read<SettingsRepo>()),
         ),
         Provider<SongService>(
-          create: (context) => SongService(context.read<SongsRepository>(), context.read<SettingsService>()),
+          create: (context) => SongService(
+              context.read<SongsRepository>(),
+              context.read<SettingsService>(),
+              context.read<AlbumService>(),
+              context.read<ArtistService>()
+          ),
         ),
         Provider<PlaylistService>(
           create: (context) => PlaylistService(context.read<PlaylistRepository>(), context.read<SongService>()),

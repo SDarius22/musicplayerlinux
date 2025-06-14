@@ -9,24 +9,36 @@ class AlbumRepository {
     albumBox.put(album);
   }
 
+  Stream watchAllAlbums() {
+    final query = albumBox.query();
+    return query.watch();
+  }
+
   Album? getAlbum(String name) {
     return albumBox.query(Album_.name.equals(name)).build().findUnique();
   }
 
-  List<Album> getAlbums(String query, bool flag, int currentPage, int perPage) {
-    return albumBox
-        .query(Album_.name.contains(query, caseSensitive: false))
-        .order(Album_.name,
-          flags: flag ? Order.descending : null,
-        )
-        ..offset((currentPage - 1) * perPage)
-        ..limit(perPage)
-        .build()
-        .find();
+  List<Album> getAlbums(String query, String sortField, bool flag) {
+    var builderQuery;
+    if (flag == false) {
+      builderQuery = albumBox
+          .query(Album_.name.contains(query, caseSensitive: false))
+          .order(
+        sortField == 'Name' ? Album_.name : Album_.duration,
+      ).build();
+    } else {
+      builderQuery = albumBox
+          .query(Album_.name.contains(query, caseSensitive: false))
+          .order(
+        sortField == 'Name' ? Album_.name : Album_.duration,
+        flags: Order.descending,
+      ).build();
+    }
+    return builderQuery.find();
   }
 
   List<Album> getAllAlbums() {
-    return albumBox.getAll();
+    return albumBox.query().order(Album_.name).build().find();
   }
 
   void deleteAlbum(Album album) {

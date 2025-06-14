@@ -5,6 +5,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:musicplayer/entities/song.dart';
 import 'package:musicplayer/services/app_audio_service.dart';
 import 'package:musicplayer/services/settings_service.dart';
+import 'package:musicplayer/services/song_service.dart';
 
 
 class AudioProvider with ChangeNotifier {
@@ -12,7 +13,8 @@ class AudioProvider with ChangeNotifier {
 
   Song get currentSong => _audioHandler?.currentSong ?? Song();
   Uint8List ? get image => _audioHandler?.image;
-
+  int get currentIndex => _audioHandler?.audioSettings.index ?? 0;
+  int get previousIndex => _audioHandler?.previousIndex ?? 0;
   bool get playing => _audioHandler?.audioSettings.playing ?? false;
   bool get repeat => _audioHandler?.audioSettings.repeat ?? false;
   bool get shuffle => _audioHandler?.audioSettings.shuffle ?? false;
@@ -21,10 +23,13 @@ class AudioProvider with ChangeNotifier {
   get audioPlayer => _audioHandler?.audioPlayer;
 
 
-  Future<void> init(SettingsService settingsService) async {
+  late Future queueFuture;
+
+
+  Future<void> init(SettingsService settingsService, SongService songService) async {
     if (Platform.isLinux) {
       _audioHandler = await PlatformService.AudioService.init(
-        builder: () => AppAudioService(settingsService),
+        builder: () => AppAudioService(settingsService, songService),
         config: const PlatformService.AudioServiceConfig(
           androidNotificationChannelId: 'com.example.musicplayer',
           androidNotificationChannelName: 'Music Player',
@@ -32,6 +37,7 @@ class AudioProvider with ChangeNotifier {
         ),
       );
       await _audioHandler?.updateCurrentSong();
+      queueFuture = Future(() => _audioHandler?.getQueue());
       notifyListeners();
     }
     // else if (Platform.isWindows) {
@@ -120,7 +126,8 @@ class AudioProvider with ChangeNotifier {
     // else if (Platform.isWindows){
     //   final apc = AudioPlayerController();
     //   await apc.skipToNext();
-    // }
+    //}
+    debugPrint("skipToNext called, new index: $currentIndex");
     notifyListeners();
   }
 
@@ -211,6 +218,7 @@ class AudioProvider with ChangeNotifier {
     //   final apc = AudioPlayerController();
     //   await apc.setQueue(songs);
     // }
+    queueFuture = Future(() => _audioHandler?.getQueue());
     notifyListeners();
   }
 
@@ -243,6 +251,7 @@ class AudioProvider with ChangeNotifier {
     //   final apc = AudioPlayerController();
     //   await apc.addToQueue(songPath);
     // }
+    queueFuture = Future(() => _audioHandler?.getQueue());
     notifyListeners();
   }
 
@@ -254,6 +263,7 @@ class AudioProvider with ChangeNotifier {
     //   final apc = AudioPlayerController();
     //   await apc.removeFromQueue(songPath);
     // }
+    queueFuture = Future(() => _audioHandler?.getQueue());
     notifyListeners();
   }
 

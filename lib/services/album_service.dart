@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:musicplayer/entities/album.dart';
+import 'package:musicplayer/entities/song.dart';
 import 'package:musicplayer/repository/album_repo.dart';
 
 class AlbumService {
@@ -7,7 +8,9 @@ class AlbumService {
 
   AlbumService(this.albumRepo);
 
-  Future<void> addAlbum(String name) async {
+  Stream watchAlbums() => albumRepo.watchAllAlbums();
+
+  void addAlbum(String name) {
     if (name.isEmpty) {
       throw ArgumentError("Album name cannot be empty");
     }
@@ -21,7 +24,7 @@ class AlbumService {
     }
   }
 
-  Future<Album?> getAlbum(String name) async {
+  Album? getAlbum(String name) {
     if (name.isEmpty) {
       throw ArgumentError("Album name cannot be empty");
     }
@@ -33,25 +36,25 @@ class AlbumService {
     }
   }
 
-  Future<List<Album>> getAlbums(String query, bool flag, int currentPage, int perPage) async {
+  List<Album> getAlbums(String query, String sortField, bool flag) {
     try {
-      return  albumRepo.getAlbums(query, flag, currentPage, perPage);
+      return albumRepo.getAlbums(query, sortField, flag);
     } catch (e) {
       debugPrint("Error fetching albums: $e");
       return [];
     }
   }
 
-  Future<List<Album>> getAllAlbums() async {
+  List<Album> getAllAlbums() {
     try {
-      return  albumRepo.getAllAlbums();
+      return albumRepo.getAllAlbums();
     } catch (e) {
       debugPrint("Error fetching all albums: $e");
       return [];
     }
   }
 
-  Future<void> deleteAlbum(Album album) async {
+  void deleteAlbum(Album album) {
     if (album.id == 0) {
       throw ArgumentError("Album ID cannot be zero");
     }
@@ -62,7 +65,7 @@ class AlbumService {
     }
   }
 
-  Future<void> updateAlbum(Album album) async {
+  void updateAlbum(Album album) {
     if (album.id == 0) {
       throw ArgumentError("Album ID cannot be zero");
     }
@@ -70,6 +73,22 @@ class AlbumService {
        albumRepo.updateAlbum(album);
     } catch (e) {
       debugPrint("Error updating album: $e");
+    }
+  }
+
+  void addSongToAlbum(Song song, String albumName) {
+    Album? album = albumRepo.getAlbum(albumName);
+    if (album == null) {
+      album = Album();
+      album.name = albumName;
+      album.songs.add(song);
+      album.duration += song.duration;
+      albumRepo.addAlbum(album);
+    }
+    else {
+      album.songs.add(song);
+      album.duration += song.duration;
+      albumRepo.updateAlbum(album);
     }
   }
 }

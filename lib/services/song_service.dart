@@ -4,14 +4,19 @@ import 'package:musicplayer/database/objectbox.g.dart';
 import 'package:musicplayer/entities/app_settings.dart';
 import 'package:musicplayer/entities/song.dart';
 import 'package:musicplayer/repository/song_repo.dart';
+import 'package:musicplayer/services/album_service.dart';
+import 'package:musicplayer/services/artist_service.dart';
 import 'package:musicplayer/services/file_service.dart';
 import 'package:musicplayer/services/settings_service.dart';
 
 class SongService {
   final SongsRepository songRepo;
   final SettingsService settingsService;
+  final AlbumService albumService;
+  final ArtistService artistService;
 
-  SongService(this.songRepo, this.settingsService);
+  SongService(this.songRepo, this.settingsService,
+      this.albumService, this.artistService);
 
   Stream watchSongs() => songRepo.watchAllSongs();
 
@@ -153,9 +158,11 @@ class SongService {
 
         compute(FileService.retrieveSong, file.path).then((metadata) {
           song.fromJson(metadata);
-          debugPrint("Retrieved metadata for ${file.path}: ${song.id}");
+          //debugPrint("Retrieved metadata for ${file.path}: ${song.id}");
           song.fullyLoaded = true;
           songRepo.updateSong(song);
+          albumService.addSongToAlbum(song, song.album);
+          artistService.addSongToArtist(song, song.trackArtist);
         })
             .catchError((error) {
           debugPrint("Error retrieving metadata for ${file.path}: $error");
@@ -164,9 +171,11 @@ class SongService {
       else if (song.fullyLoaded == false) {
         compute(FileService.retrieveSong, file.path).then((metadata) {
           song.fromJson(metadata);
-          debugPrint("Retrieved metadata for ${file.path}: ${song.id}");
+          //debugPrint("Retrieved metadata for ${file.path}: ${song.id}");
           song.fullyLoaded = true;
           songRepo.updateSong(song);
+          albumService.addSongToAlbum(song, song.album);
+          artistService.addSongToArtist(song, song.trackArtist);
         })
             .catchError((error) {
           debugPrint("Error retrieving metadata for ${file.path}: $error");

@@ -296,11 +296,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                   appStateProvider.appSettings.firstTime = false;
                   debugPrint(appStateProvider.appSettings.firstTime.toString());
                   appStateProvider.updateAppSettings();
-                  Provider.of<PlaylistProvider>(context, listen: false).initializeIndestructible();
-                  Navigator.push(
-                    context,
-                    HomeScreen.route()
-                  );
+                  Navigator.push(context, HomeScreen.route());
                 },
                 child: Icon(FluentIcons.forward, color: Colors.white, size: height * 0.03,),
               ),

@@ -43,7 +43,7 @@ class CustomGridTile extends StatelessWidget {
           child: ImageWidget(
             path: entity is Song
                 ? (entity as Song).path
-                : (entity as AbstractCollection).songs[0].path,
+                : (entity as AbstractCollection).songs.isNotEmpty ? (entity as AbstractCollection).songs.first.path : '',
             heroTag: entity is Song ? (entity as Song).path : entity.name,
             hoveredChild: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,

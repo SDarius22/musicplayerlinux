@@ -1,5 +1,6 @@
+import 'package:musicplayer/database/objectbox.g.dart';
 import 'package:musicplayer/entities/song.dart';
 
 mixin AbstractCollection {
-  List<Song> get songs;
+  ToMany<Song> get songs;
 }

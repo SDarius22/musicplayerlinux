@@ -10,7 +10,8 @@ class ObjectBox {
   /// Create an instance of ObjectBox to use throughout the app.
   static Future initialize() async {
     final docsDir = await getApplicationDocumentsDirectory();
-    final dbPath = kDebugMode ? '${docsDir.path}/MusicPlayer-Debug${Platform.operatingSystem}' : '${docsDir.path}/MusicPlayer${Platform.operatingSystem}';
+    String platform = Platform.isWindows ? 'Windows' : Platform.isLinux ? 'Linux' : Platform.isMacOS ? 'macOS' : 'Other';
+    final dbPath = kDebugMode ? '${docsDir.path}/MusicPlayer$platform-Debug' : '${docsDir.path}/MusicPlayer$platform';
     if (Store.isOpen(dbPath)) {
       store = Store.attach(getObjectBoxModel(),dbPath);
     }

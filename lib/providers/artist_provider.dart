@@ -1,59 +1,72 @@
 import 'package:flutter/cupertino.dart';
 import 'package:musicplayer/entities/artist.dart';
 import 'package:musicplayer/services/artist_service.dart';
+import 'package:rxdart/rxdart.dart';
 
 class ArtistProvider with ChangeNotifier {
   final ArtistService _artistService;
-  int currentPage = 1;
-  int perPage = 7;
-  bool flag = false;
 
-  ArtistProvider(this._artistService);
+  bool isAscending = false;
+  String query = '';
+  String sortField = 'Name'; // Name, Duration, Number of Songs
 
-  void resetPage() {
-    currentPage = 1;
-    notifyListeners();
+  late Future artistsFuture;
+
+  ArtistProvider(this._artistService) {
+    artistsFuture = Future(() => _artistService.getAllArtists());
+
+    artistsStream.debounceTime(const Duration(seconds: 10)).listen((_) {
+      debugPrint("Artists stream updated");
+      artistsFuture = Future(() => _artistService.getArtists(query, sortField, isAscending));
+      notifyListeners();
+    });
   }
 
-  void setPage(int page) {
-    currentPage = page;
-    notifyListeners();
-  }
-
-  void setPerPage(int count) {
-    perPage = count;
-    notifyListeners();
-  }
+  Stream get artistsStream => _artistService.watchArtists();
 
   void setFlag(bool value) {
-    flag = value;
+    isAscending = value;
+    artistsFuture = Future(() => _artistService.getArtists(query, sortField, isAscending));
     notifyListeners();
   }
 
-  Future<void> addArtist(String name) async {
-    await _artistService.addArtist(name);
+  void setSortField(String field) {
+    sortField = field;
+    artistsFuture = Future(() => _artistService.getArtists(query, sortField, isAscending));
     notifyListeners();
   }
 
-  Future<void> deleteArtist(Artist artist) async {
-    await _artistService.deleteArtist(artist);
+  void setQuery(String newQuery) {
+    query = newQuery;
+    artistsFuture = Future(() => _artistService.getArtists(query, sortField, isAscending));
     notifyListeners();
   }
 
-  Future<void> updateArtist(Artist artist) async {
-    await _artistService.updateArtist(artist);
+
+  void addArtist(String name) {
+    _artistService.addArtist(name);
     notifyListeners();
   }
 
-  Future<Artist?> getArtist(String name) async {
-    return await _artistService.getArtist(name);
+  void deleteArtist(Artist artist) {
+    _artistService.deleteArtist(artist);
+    notifyListeners();
   }
 
-  Future<List<Artist>> getArtists(String query) async {
-    return await _artistService.getArtists(query, flag, currentPage, perPage);
+  void updateArtist(Artist artist) {
+    _artistService.updateArtist(artist);
+    notifyListeners();
   }
 
-  Future<List<Artist>> getAllArtists() async {
-    return await _artistService.getAllArtists();
+  Artist? getArtist(String name) {
+    return _artistService.getArtist(name);
+  }
+
+  List<Artist> getArtists() {
+    return _artistService.getArtists(query, sortField, isAscending);
+  }
+
+  List<Artist> getAllArtists() {
+    return _artistService.getAllArtists();
   }
 }

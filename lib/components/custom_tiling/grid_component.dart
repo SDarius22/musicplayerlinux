@@ -3,7 +3,7 @@ import 'package:musicplayer/components/custom_tiling/grid_tile.dart';
 import 'package:musicplayer/entities/abstract/abstract_entity.dart';
 
 class GridComponent extends StatelessWidget {
-  final List<AbstractEntity> items;
+  final List items;
   final Function(AbstractEntity) onTap;
   final Function(AbstractEntity) onLongPress;
   final Widget? leftAction;

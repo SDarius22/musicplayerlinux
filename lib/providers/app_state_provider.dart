@@ -15,21 +15,49 @@ class AppStateProvider with ChangeNotifier, TrayListener {
   final SettingsService settingsService;
   final navigatorKey = GlobalKey<NavigatorState>();
   bool isDarkMode = true;
+  bool isDrawerOpen = false;
   List<String> appActions = [];
   PanelController panelController = PanelController();
+  ScrollController itemScrollController = ScrollController();
   AppSettings appSettings = AppSettings();
 
   Color lightColor = Colors.white;
   Color darkColor = Colors.black;
 
+  late AnimationController _controller;
+  late Animation<double> animation;
+
+  bool _isInitialized = false;
+
   AppStateProvider(this.audioProvider, this.settingsService) {
     appSettings = settingsService.getAppSettings() ?? AppSettings();
     audioProvider.addListener(() async {
       debugPrint('AudioProvider changed, updating tray and colors');
-      // await initTray();
+      initTray();
       await setColors();
     });
   }
+
+  void initController(TickerProvider vsync) {
+    if (_isInitialized) return;
+
+    _controller = AnimationController(
+      vsync: vsync,
+      duration: const Duration(seconds: 5),
+    );
+
+    animation = CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeInOut,
+    );
+
+    _isInitialized = true;
+  }
+
+  void startAnimation() => _controller.repeat(reverse: true);
+  void stopAnimation() => _controller.stop();
+
+  Animation<double> get gradientAnimation => animation;
 
   Future<void> initTray() async {
     MenuItem menuItemPlay = MenuItem(
@@ -162,6 +190,11 @@ class AppStateProvider with ChangeNotifier, TrayListener {
     lightColor = colors[0];
     darkColor = colors[1];
     debugPrint('Colors set: lightColor: $lightColor, darkColor: $darkColor');
+    notifyListeners();
+  }
+
+  void setDrawerOpen(bool isOpen) {
+    isDrawerOpen = isOpen;
     notifyListeners();
   }
 }
