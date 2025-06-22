@@ -1,8 +1,15 @@
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:musicplayer/components/custom_text_scroll.dart';
+import 'package:musicplayer/components/custom_tiling/grid_tile.dart';
+import 'package:musicplayer/components/image_widget.dart';
+import 'package:musicplayer/providers/albums_provider.dart';
 import 'package:musicplayer/providers/app_state_provider.dart';
+import 'package:musicplayer/providers/artist_provider.dart';
 import 'package:musicplayer/providers/audio_provider.dart';
+import 'package:musicplayer/screens/album_screen.dart';
+import 'package:musicplayer/screens/artist_screen.dart';
 import 'package:musicplayer/utils/fluenticons/fluenticons.dart';
 import 'package:musicplayer/utils/text_scroll/text_scroll.dart';
 import 'package:provider/provider.dart';
@@ -49,8 +56,8 @@ class DetailsTab extends StatelessWidget {
                        begin: FractionalOffset.center,
                        end: FractionalOffset.bottomCenter,
                        colors: [
-                         Colors.black.withOpacity(0.0),
-                         Colors.black.withOpacity(0.75),
+                         Colors.black.withValues(alpha: 0.0),
+                         Colors.black.withValues(alpha: 0.75),
                          Colors.black,
                        ],
                        stops: const [0.0, 0.5, 1.0]
@@ -83,10 +90,15 @@ class DetailsTab extends StatelessWidget {
                          // width: width * 0.13,
                          // alignment: Alignment.centerRight,
                          child: TextButton.icon(
-                           onPressed:audioProvider.currentSong.albumArtist != "Unknown album artist" ? () {
+                           onPressed: () async{
                              appStateProvider.panelController.close();
-                             // appStateProvider.navigatorKey.currentState!.pushNamed('/artist', arguments: DataController.artistBox.query(Artist_.name.equals(audioProvider.currentSong.albumArtist)).build().findFirst());
-                           } : null,
+                             var artistProvider = Provider.of<ArtistProvider>(context, listen: false);
+                             var artist = artistProvider.getArtist(audioProvider.currentSong.trackArtist);
+                              if (artist != null) {
+                                appStateProvider.navigatorKey.currentState!.push(ArtistScreen.route(artist: artist));
+                              }
+
+                           },
                            icon: Icon(
                              FluentIcons.open,
                              color: Colors.white,
@@ -118,7 +130,11 @@ class DetailsTab extends StatelessWidget {
                          child: TextButton.icon(
                            onPressed: () async {
                              appStateProvider.panelController.close();
-                             // am.navigatorKey.currentState!.pushNamed('/album', arguments:  DataController.albumBox.query(Album_.name.equals(audioProvider.currentSong.album)).build().findFirst());
+                             var albumProvider = Provider.of<AlbumProvider>(context, listen: false);
+                              var album = albumProvider.getAlbum(audioProvider.currentSong.album);
+                              if (album != null) {
+                                appStateProvider.navigatorKey.currentState!.push(AlbumScreen.route(album: album));
+                              }
                            },
                            icon: Icon(
                              FluentIcons.open,

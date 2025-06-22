@@ -39,7 +39,7 @@ class PlaylistRepository {
   }
 
   List<Playlist> getPlaylists(String query, String sortField, bool flag)  {
-    var builderQuery;
+    Query<Playlist> builderQuery;
     if (flag == false) {
       builderQuery = playlistBox
           .query(Playlist_.name.contains(query, caseSensitive: false))

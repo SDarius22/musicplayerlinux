@@ -4,10 +4,10 @@ import 'package:musicplayer/utils/dominant_color/dominant_color.dart';
 
 class WorkerService {
   static Future<List<Color>> getColorIsolate(Uint8List image) async {
-    return compute(_extractColors, image);
+    return compute(extractColors, image);
   }
 
-  static Future<List<Color>> _extractColors(Uint8List image) async {
+  static Future<List<Color>> extractColors(Uint8List image) async {
     debugPrint("Extracting colors from image of size: ${image.length} bytes");
     if (image.isEmpty) {
       debugPrint("Image is empty, returning default colors");

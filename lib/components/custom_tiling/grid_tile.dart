@@ -40,76 +40,80 @@ class CustomGridTile extends StatelessWidget {
         onLongPress: onLongPress,
         child: ClipRRect(
           borderRadius: BorderRadius.circular(width * 0.01),
-          child: ImageWidget(
-            path: entity is Song
+          child: Hero(
+            tag: entity is Song
                 ? (entity as Song).path
-                : (entity as AbstractCollection).songs.isNotEmpty ? (entity as AbstractCollection).songs.first.path : '',
-            heroTag: entity is Song ? (entity as Song).path : entity.name,
-            hoveredChild: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                SizedBox(
-                  width: width * 0.035,
-                  height: width * 0.035,
-                  child: leftAction,
-                ),
-                Expanded(
-                  child: FittedBox(
-                    fit: BoxFit.fill,
-                    child: mainAction,
+                : entity.name,
+            child: ImageWidget(
+              path: entity is Song
+                  ? (entity as Song).path
+                  : (entity as AbstractCollection).songs.isNotEmpty ? (entity as AbstractCollection).songs.first.path : '',
+              hoveredChild: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  SizedBox(
+                    width: width * 0.035,
+                    height: width * 0.035,
+                    child: leftAction,
                   ),
-                ),
-                SizedBox(
-                  width: width * 0.035,
-                  height: width * 0.035,
-                  child: rightAction,
-                ),
-              ],
-            ),
-            child: Container(
-              alignment: Alignment.bottomCenter,
-              padding: EdgeInsets.only(
-                bottom: height * 0.005,
+                  Expanded(
+                    child: FittedBox(
+                      fit: BoxFit.fill,
+                      child: mainAction,
+                    ),
+                  ),
+                  SizedBox(
+                    width: width * 0.035,
+                    height: width * 0.035,
+                    child: rightAction,
+                  ),
+                ],
               ),
-              decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                      begin: FractionalOffset.center,
-                      end: FractionalOffset.bottomCenter,
-                      colors: [
-                    Colors.black.withOpacity(0.0),
-                    Colors.black.withOpacity(0.5),
-                    Colors.black,
-                  ],
-                      stops: const [
-                    0.0,
-                    0.5,
-                    1.0
-                  ])),
-              child: entity is Song
-                  ? Consumer<AudioProvider>(
-                      builder: (_, audioProvider, __) {
-                        return CustomTextScroll(
-                          text: entity.name,
-                          style: TextStyle(
-                            color: audioProvider.currentSong.path ==
-                                (entity as Song).path ? Colors.blue : Colors.white,
-                            fontSize: normalSize,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        );
-                      },
-                    )
-                  : CustomTextScroll(
+              child: Container(
+                alignment: Alignment.bottomCenter,
+                padding: EdgeInsets.only(
+                  bottom: height * 0.005,
+                ),
+                decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                        begin: FractionalOffset.center,
+                        end: FractionalOffset.bottomCenter,
+                        colors: [
+                          Colors.black.withOpacity(0.0),
+                          Colors.black.withOpacity(0.5),
+                          Colors.black,
+                        ],
+                        stops: const [
+                          0.0,
+                          0.5,
+                          1.0
+                        ])),
+                child: entity is Song
+                    ? Consumer<AudioProvider>(
+                  builder: (_, audioProvider, __) {
+                    return CustomTextScroll(
                       text: entity.name,
                       style: TextStyle(
-                        color: Colors.white,
+                        color: audioProvider.currentSong.path ==
+                            (entity as Song).path ? Colors.blue : Colors.white,
                         fontSize: normalSize,
                         fontWeight: FontWeight.bold,
                       ),
-                    ),
+                    );
+                  },
+                )
+                    : CustomTextScroll(
+                  text: entity.name,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: normalSize,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
             ),
-          ),
+          )
         ),
       ),
     );

@@ -5,6 +5,7 @@ import 'package:musicplayer/components/custom_tiling/grid_component.dart';
 import 'package:musicplayer/entities/artist.dart';
 import 'package:musicplayer/providers/app_state_provider.dart';
 import 'package:musicplayer/providers/artist_provider.dart';
+import 'package:musicplayer/screens/artist_screen.dart';
 import 'package:musicplayer/utils/fluenticons/fluenticons.dart';
 import 'package:provider/provider.dart';
 
@@ -216,6 +217,7 @@ class _ArtistsState extends State<Artists>{
                                     if (entity is Artist) {
                                       // Navigate to album page
                                       debugPrint("Songs in artist: ${entity.songs.length}");
+                                      appStateProvider.navigatorKey.currentState!.push(ArtistScreen.route(artist: entity));
                                     } else {
                                       debugPrint("Entity is not an Artist");
                                     }

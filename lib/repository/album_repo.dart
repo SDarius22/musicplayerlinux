@@ -19,7 +19,7 @@ class AlbumRepository {
   }
 
   List<Album> getAlbums(String query, String sortField, bool flag) {
-    var builderQuery;
+    Query<Album> builderQuery;
     if (flag == false) {
       builderQuery = albumBox
           .query(Album_.name.contains(query, caseSensitive: false))

@@ -5,13 +5,15 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:musicplayer/entities/app_settings.dart';
 import 'package:musicplayer/providers/audio_provider.dart';
+import 'package:musicplayer/providers/slider_provider.dart';
 import 'package:musicplayer/services/settings_service.dart';
 import 'package:musicplayer/services/worker_service.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 import 'package:tray_manager/tray_manager.dart';
 
-class AppStateProvider with ChangeNotifier, TrayListener {
+class AppStateProvider with ChangeNotifier, TrayListener{
   final AudioProvider audioProvider;
+  final SliderProvider sliderProvider;
   final SettingsService settingsService;
   final navigatorKey = GlobalKey<NavigatorState>();
   bool isDarkMode = true;
@@ -21,6 +23,7 @@ class AppStateProvider with ChangeNotifier, TrayListener {
   ScrollController itemScrollController = ScrollController();
   AppSettings appSettings = AppSettings();
 
+
   Color lightColor = Colors.white;
   Color darkColor = Colors.black;
 
@@ -29,12 +32,13 @@ class AppStateProvider with ChangeNotifier, TrayListener {
 
   bool _isInitialized = false;
 
-  AppStateProvider(this.audioProvider, this.settingsService) {
+  AppStateProvider(this.audioProvider, this.sliderProvider, this.settingsService) {
+    trayManager.addListener(this);
+    initTray();
     appSettings = settingsService.getAppSettings() ?? AppSettings();
     audioProvider.addListener(() async {
-      debugPrint('AudioProvider changed, updating tray and colors');
-      initTray();
-      await setColors();
+      debugPrint('AudioProvider changed, updating colors');
+      setColors();
     });
   }
 
@@ -43,7 +47,7 @@ class AppStateProvider with ChangeNotifier, TrayListener {
 
     _controller = AnimationController(
       vsync: vsync,
-      duration: const Duration(seconds: 5),
+      duration: const Duration(seconds: 1),
     );
 
     animation = CurvedAnimation(
@@ -62,16 +66,16 @@ class AppStateProvider with ChangeNotifier, TrayListener {
   Future<void> initTray() async {
     MenuItem menuItemPlay = MenuItem(
       key: 'play',
-      label: audioProvider.playing ? 'Pause' : 'Play',
-      onClick: (menuItem) {
+      label: sliderProvider.playing ? 'Pause' : 'Play',
+      onClick: (menuItem) async {
         if (kDebugMode) {
           print('click item play');
         }
-        if (audioProvider.playing) {
-          audioProvider.pause();
+        if (sliderProvider.playing) {
+          await audioProvider.pause();
           menuItem.label = 'Play';
         } else {
-          audioProvider.play();
+          await audioProvider.play();
           menuItem.label = 'Pause';
         }
       },
@@ -87,22 +91,22 @@ class AppStateProvider with ChangeNotifier, TrayListener {
         MenuItem(
           key: 'previous',
           label: 'Previous',
-          onClick: (menuItem) {
+          onClick: (menuItem) async {
             if (kDebugMode) {
               print('click item previous');
             }
-            audioProvider.skipToPrevious();
+            await audioProvider.skipToPrevious();
           },
         ),
         menuItemPlay,
         MenuItem(
           key: 'next',
           label: 'Next',
-          onClick: (menuItem) {
+          onClick: (menuItem) async {
             if (kDebugMode) {
               print('click item next');
             }
-            audioProvider.skipToNext();
+            await audioProvider.skipToNext();
           },
         ),
         MenuItem.separator(),
@@ -115,7 +119,7 @@ class AppStateProvider with ChangeNotifier, TrayListener {
               print('click item 1');
             }
             menuItem.checked = !(menuItem.checked == true);
-            audioProvider.setRepeat(menuItem.checked == true);
+            sliderProvider.setRepeat(menuItem.checked == true);
           },
         ),
         MenuItem.checkbox(
@@ -155,20 +159,13 @@ class AppStateProvider with ChangeNotifier, TrayListener {
       ],
     );
 
-    await trayManager.setIcon(Platform.isLinux ? 'assets/logo.png' : 'assets/logo.ico');
+    trayManager.setIcon(Platform.isLinux ? 'assets/logo.png' : 'assets/logo.ico');
+    trayManager.setTitle('Music Player${kDebugMode ? ' Debug' : ''}');
     trayManager.setContextMenu(menu);
-    trayManager.addListener(this);
   }
 
   @override
-  void onTrayIconMouseDown() {
-    // Handle tray icon click
-    trayManager.popUpContextMenu();
-  }
-
-  @override
-  void onTrayIconRightMouseDown() {
-    // Handle right click on tray icon
+  void onTrayIconMouseDown() async {
     trayManager.popUpContextMenu();
   }
 
@@ -186,7 +183,7 @@ class AppStateProvider with ChangeNotifier, TrayListener {
 
   Future<void> setColors() async {
     debugPrint('Setting colors based on image, length: ${audioProvider.image?.length ?? 0}');
-    var colors = await WorkerService.getColorIsolate(audioProvider.image ?? Uint8List(0));
+    var colors = await WorkerService.extractColors(audioProvider.image ?? Uint8List(0));
     lightColor = colors[0];
     darkColor = colors[1];
     debugPrint('Colors set: lightColor: $lightColor, darkColor: $darkColor');

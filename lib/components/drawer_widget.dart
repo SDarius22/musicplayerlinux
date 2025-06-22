@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:musicplayer/components/actions_widget.dart';
 import 'package:musicplayer/providers/app_state_provider.dart';
 import 'package:musicplayer/screens/albums.dart';
+import 'package:musicplayer/screens/artists.dart';
+import 'package:musicplayer/screens/playlists.dart';
 import 'package:musicplayer/screens/tracks.dart';
 import 'package:musicplayer/utils/hover_widget/hover_container.dart';
 import 'package:musicplayer/utils/fluenticons/fluenticons.dart';
@@ -68,7 +70,7 @@ class _DrawerWidgetState extends State<DrawerWidget> {
         setState(() {
           _selected = 3;
         });
-        _appStateProvider.navigatorKey.currentState!.pushNamed('/artists');
+        _appStateProvider.navigatorKey.currentState!.push(Artists.route());
       },
     },
     {
@@ -101,7 +103,7 @@ class _DrawerWidgetState extends State<DrawerWidget> {
         setState(() {
           _selected = 6;
         });
-        _appStateProvider.navigatorKey.currentState!.pushNamed('/playlists');
+        _appStateProvider.navigatorKey.currentState!.push(Playlists.route());
       }
     },
     {

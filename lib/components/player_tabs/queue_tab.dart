@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:musicplayer/components/custom_tiling/list_component.dart';
+import 'package:musicplayer/entities/song.dart';
 import 'package:musicplayer/providers/app_state_provider.dart';
 import 'package:musicplayer/providers/audio_provider.dart';
 import 'package:provider/provider.dart';
@@ -44,9 +45,10 @@ class QueueTab extends StatelessWidget {
                   sliver: ListComponent(
                     items: snapshot.data ?? [],
                     itemExtent: height * 0.1,
-                    onTap: (entity) {
+                    onTap: (entity) async {
                       debugPrint("Tapped on: ${entity.name}");
-                      // audioProvider.play(entity);
+                      var audioProvider = Provider.of<AudioProvider>(context, listen: false);
+                      await audioProvider.setCurrentIndex((entity as Song).path);
                     },
                     onLongPress: (entity) {
                       debugPrint("Long pressed on: ${entity.name}");

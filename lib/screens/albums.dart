@@ -5,6 +5,7 @@ import 'package:musicplayer/components/custom_tiling/grid_component.dart';
 import 'package:musicplayer/entities/album.dart';
 import 'package:musicplayer/providers/albums_provider.dart';
 import 'package:musicplayer/providers/app_state_provider.dart';
+import 'package:musicplayer/screens/album_screen.dart';
 import 'package:musicplayer/utils/fluenticons/fluenticons.dart';
 import 'package:provider/provider.dart';
 
@@ -218,6 +219,7 @@ class _AlbumsState extends State<Albums>{
                                     if (entity is Album) {
                                       // Navigate to album page
                                       debugPrint("Songs in album: ${entity.songs.length}");
+                                      appStateProvider.navigatorKey.currentState!.push(AlbumScreen.route(album: entity));
                                     } else {
                                       debugPrint("Entity is not an Album");
                                     }

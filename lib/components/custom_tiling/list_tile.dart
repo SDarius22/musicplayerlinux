@@ -38,9 +38,9 @@ class CustomListTile extends StatelessWidget {
         onLongPress: onLongPress,
         child: HoverContainer(
           hoverColor: Theme.of(context).hoverColor,
-          width: width * 0.3,
-          margin: EdgeInsets.symmetric(
-            vertical: height * 0.005,
+          padding: EdgeInsets.symmetric(
+            horizontal: height * 0.02,
+            vertical: height * 0.01,
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.start,
@@ -48,14 +48,12 @@ class CustomListTile extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Container(
-                width: height * 0.07,
                 margin: EdgeInsets.only(
                   right: height * 0.01,
                 ),
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(8.0),
                   child: ImageWidget(
-                    heroTag: entity.name,
                     path: entity is Song ? (entity as Song).path
                         : (entity as AbstractCollection).songs[0].path,
                     hoveredChild: leadingAction,

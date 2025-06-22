@@ -15,8 +15,6 @@ class AppAudioService extends BaseAudioHandler {
   late final SettingsService settingsService;
   late final SongService songService;
 
-  int previousIndex = 0;
-
   Song? currentSong = Song();
   Uint8List? image;
 
@@ -32,9 +30,6 @@ class AppAudioService extends BaseAudioHandler {
       playing: false,
     ));
     audioSettings = settingsService.getAudioSettings() ?? AudioSettings();
-    previousIndex = audioSettings.index - 1 < 0
-        ? audioSettings.queue.length - 1
-        : audioSettings.index - 1;
   }
 
   @override
@@ -70,7 +65,6 @@ class AppAudioService extends BaseAudioHandler {
       controls: [MediaControl.skipToNext],
     ));
     await seek(Duration.zero);
-    previousIndex = audioSettings.index;
     audioSettings.index = (audioSettings.index + 1) % audioSettings.queue.length;
     settingsService.updateAudioSettings(audioSettings);
     await updateCurrentSong();
@@ -83,8 +77,7 @@ class AppAudioService extends BaseAudioHandler {
       controls: [MediaControl.skipToPrevious],
     ));
     await seek(Duration.zero);
-    if (!audioSettings.repeat) {
-      previousIndex = audioSettings.index;
+    if (audioSettings.slider < 3000) {
       audioSettings.index = (audioSettings.index - 1 + audioSettings.queue.length) % audioSettings.queue.length;
       settingsService.updateAudioSettings(audioSettings);
       await updateCurrentSong();
@@ -92,11 +85,11 @@ class AppAudioService extends BaseAudioHandler {
     }
   }
 
+  @override
   Future<void> seek(Duration position) async {
     debugPrint("seek to $position");
-    audioSettings.slider = position.inMilliseconds;
-    settingsService.updateAudioSettings(audioSettings);
-    await audioPlayer.seek(position);
+    setSlider(position.inMilliseconds);
+    audioPlayer.seek(position);
   }
 
   void setVolume(double volume) {
@@ -130,6 +123,16 @@ class AppAudioService extends BaseAudioHandler {
     settingsService.updateAudioSettings(audioSettings);
   }
 
+  Future<void> initSettings() async {
+    await audioPlayer.setSource(
+      DeviceFileSource(audioSettings.queue[audioSettings.index]),
+    );
+    await audioPlayer.seek(
+      Duration(milliseconds: audioSettings.slider),
+    );
+    debugPrint("Audio player: ${await audioPlayer.getCurrentPosition()}");
+  }
+
   Future<void> updateCurrentSong() async {
     if (audioSettings.queue.isEmpty) {
       debugPrint("Queue is empty, cannot update current song.");
@@ -143,14 +146,15 @@ class AppAudioService extends BaseAudioHandler {
     var metadata = await FileService.retrieveSong(path);
     currentSong?.fromJson(metadata);
     image = metadata['image'] as Uint8List?;
-    debugPrint("Image size: ${image?.lengthInBytes ?? 0} bytes");
+    //debugPrint("Image size: ${image?.lengthInBytes ?? 0} bytes");
   }
 
   Future<void> setCurrentIndex(String path) async {
     audioSettings.index = audioSettings.currentQueue.indexOf(path);
-    audioSettings.slider = 0; // Reset the slider to the beginning
     settingsService.updateAudioSettings(audioSettings);
     await updateCurrentSong();
+    await seek(Duration.zero);
+    await play();
   }
 
   Future<Duration> getDuration() async {
@@ -161,6 +165,9 @@ class AppAudioService extends BaseAudioHandler {
       return currentSong != null && currentSong!.duration > 0
           ? Duration(seconds: currentSong!.duration)
           : Duration.zero;
+    }
+    if (currentSong != null && currentSong!.duration <= 0) {
+      currentSong!.duration = duration.inSeconds;
     }
     return duration;
   }

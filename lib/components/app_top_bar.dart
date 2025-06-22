@@ -1,6 +1,7 @@
 import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:flutter/material.dart';
 import 'package:musicplayer/providers/app_state_provider.dart';
+import 'package:musicplayer/utils/fluenticons/fluenticons.dart';
 import 'package:provider/provider.dart';
 
 class AppBarWidget extends StatelessWidget implements PreferredSizeWidget {
@@ -43,6 +44,20 @@ class AppBarWidget extends StatelessWidget implements PreferredSizeWidget {
                         ),
                       )
                   ),
+                  if (actions.isNotEmpty)
+                    ...[
+                      ...actions,
+                      Icon(
+                        FluentIcons.divider,
+                        size: MediaQuery
+                            .of(context)
+                            .size
+                            .height * 0.02,
+                        color: Colors.white,
+                      ),
+
+                    ],
+
                   MinimizeWindowButton(
                     animate: true,
                     colors: WindowButtonColors(

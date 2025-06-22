@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:musicplayer/components/custom_tiling/grid_component.dart';
 import 'package:musicplayer/providers/app_state_provider.dart';
 import 'package:musicplayer/providers/playlist_provider.dart';
+import 'package:musicplayer/screens/playlist_screen.dart';
 import 'package:musicplayer/utils/fluenticons/fluenticons.dart';
 import 'package:flutter/material.dart';
 import 'package:musicplayer/entities/playlist.dart';
@@ -218,6 +219,7 @@ class _PlaylistsState extends State<Playlists>{
                                     if (entity is Playlist) {
                                       // Navigate to album page
                                       debugPrint("Songs in playlist: ${entity.songs.length}");
+                                      appStateProvider.navigatorKey.currentState!.push(PlaylistScreen.route(playlist: entity));
                                     } else {
                                       debugPrint("Entity is not a Playlist");
                                     }

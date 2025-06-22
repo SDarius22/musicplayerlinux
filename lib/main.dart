@@ -9,6 +9,7 @@ import 'package:musicplayer/providers/albums_provider.dart';
 import 'package:musicplayer/providers/app_state_provider.dart';
 import 'package:musicplayer/providers/artist_provider.dart';
 import 'package:musicplayer/providers/audio_provider.dart';
+import 'package:musicplayer/providers/lyrics_provider.dart';
 import 'package:musicplayer/providers/playlist_provider.dart';
 import 'package:musicplayer/providers/slider_provider.dart';
 import 'package:musicplayer/providers/song_provider.dart';
@@ -19,7 +20,6 @@ import 'package:musicplayer/repository/settings_repo.dart';
 import 'package:musicplayer/repository/song_repo.dart';
 import 'package:musicplayer/screens/loading_screen.dart';
 import 'package:musicplayer/services/album_service.dart';
-import 'package:musicplayer/services/app_audio_service.dart';
 import 'package:musicplayer/services/artist_service.dart';
 import 'package:musicplayer/services/playlist_service.dart';
 import 'package:musicplayer/services/settings_service.dart';
@@ -141,10 +141,13 @@ class MyApp extends StatelessWidget {
           create: (context) => SongProvider(context.read<SongService>()),
         ),
         ChangeNotifierProvider<SliderProvider>(
-          create: (context) => SliderProvider(context.read<AudioProvider>()),
+          create: (context) => SliderProvider(),
+        ),
+        ChangeNotifierProvider<LyricsProvider>(
+          create: (context) => LyricsProvider(),
         ),
         ChangeNotifierProvider<AppStateProvider>(
-          create: (context) => AppStateProvider(context.read<AudioProvider>(), context.read<SettingsService>()),
+          create: (context) => AppStateProvider(context.read<AudioProvider>(), context.read<SliderProvider>(), context.read<SettingsService>()),
         ),
         
       ],

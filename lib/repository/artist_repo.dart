@@ -19,7 +19,7 @@ class ArtistRepository {
   }
 
   List<Artist> getArtists(String query, String sortField, bool flag)  {
-    var builderQuery;
+    Query<Artist> builderQuery;
     if (flag == false) {
       builderQuery = artistBox
           .query(Artist_.name.contains(query, caseSensitive: false))

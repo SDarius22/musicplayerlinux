@@ -1,9 +1,12 @@
 import 'package:musicplayer/components/custom_tiling/grid_component.dart';
-import 'package:musicplayer/entities/abstract/abstract_entity.dart';
+import 'package:musicplayer/entities/album.dart';
 import 'package:musicplayer/entities/song.dart';
+import 'package:musicplayer/providers/albums_provider.dart';
 import 'package:musicplayer/providers/app_state_provider.dart';
 import 'package:musicplayer/providers/audio_provider.dart';
+import 'package:musicplayer/providers/slider_provider.dart';
 import 'package:musicplayer/providers/song_provider.dart';
+import 'package:musicplayer/screens/album_screen.dart';
 import 'package:musicplayer/utils/fluenticons/fluenticons.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
@@ -36,13 +39,11 @@ class _TracksState extends State<Tracks>{
     audioProvider = Provider.of<AudioProvider>(context, listen: false);
   }
 
-
   @override
   void dispose() {
     _debounce?.cancel();
     super.dispose();
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -58,7 +59,7 @@ class _TracksState extends State<Tracks>{
             duration: const Duration(milliseconds: 300),
             padding: EdgeInsets.only(
                 top: height * 0.02,
-                left: appStateProvider.isDrawerOpen ? width * 0.125 : width * 0.035,
+                left: width * 0.01,
                 right: width * 0.01,
                 bottom: height * 0.02
             ),
@@ -78,31 +79,6 @@ class _TracksState extends State<Tracks>{
                           mainAxisAlignment: MainAxisAlignment.center,
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
-                            IconButton(
-                              style: ButtonStyle(
-                                shape: WidgetStateProperty.all<CircleBorder>(
-                                  const CircleBorder(
-                                    side: BorderSide(
-                                      color: Colors.grey,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              icon: Icon(
-                                appStateProvider.appSettings.gridView ? FluentIcons.gridView : FluentIcons.listView,
-                                color: Colors.white,
-                                size: height * 0.03,
-                              ),
-                              onPressed: (){
-                                setState(() {
-                                  appStateProvider.appSettings.gridView = !appStateProvider.appSettings.gridView;
-                                });
-                                debugPrint("Grid view set to ${appStateProvider.appSettings.gridView}");
-                              },
-                            ),
-                            SizedBox(
-                              width: width * 0.01,
-                            ),
                             Expanded(
                               child: TextFormField(
                                 initialValue: '',
@@ -232,20 +208,17 @@ class _TracksState extends State<Tracks>{
                                           //debugPrint("path match");
                                           List<String> songPaths = (snapshot.data as List<Song>).map((e) => e.path).toList();
                                           audioProvider.setQueue(songPaths);
-                                          audioProvider.setCurrentIndex(song.path);
-                                          // if (SettingsController.queue.equals(songPaths) == false) {
-                                          //   debugPrint("Updating playing songs");
-                                          //   dc.updatePlaying(songPaths, index);
-                                          // }
-                                          // SettingsController.index = SettingsController.currentQueue.indexOf(song.path);
-                                          await audioProvider.play();
+                                          await audioProvider.setCurrentIndex(song.path);
                                         }
                                         else {
-                                          if (audioProvider.playing == true) {
+                                          var sliderProvider = Provider.of<SliderProvider>(context, listen: false);
+                                          if (sliderProvider.playing == true) {
                                             await audioProvider.pause();
+                                            appStateProvider.stopAnimation();
                                           }
                                           else {
                                             await audioProvider.play();
+                                            appStateProvider.startAnimation();
                                           }
                                         }
                                         try {
@@ -253,14 +226,99 @@ class _TracksState extends State<Tracks>{
                                         }
                                         catch (e) {
                                           debugPrint(e.toString());
-                                          // var songPaths = snapshot.data!.map((e) => e.path).toList();
-                                          // dc.updatePlaying(songPaths, index);
-                                          // SettingsController.index = index;
-                                          // await AppAudioHandler.play();
+                                          List<String> songPaths = (snapshot.data as List<Song>).map((e) => e.path).toList();
+                                          audioProvider.setQueue(songPaths);
+                                          await audioProvider.setCurrentIndex(song.path);
                                         }
                                       },
                                       onLongPress: (entity) {
                                         debugPrint("long pressed ${entity.name}");
+                                      },
+                                      buildLeftAction: (entity) {
+                                        return IconButton(
+                                          tooltip: "Go to Album",
+                                          onPressed: (){
+                                            Song song = entity as Song;
+                                            var albumProvider = Provider.of<AlbumProvider>(context, listen: false);
+                                            Album? album = albumProvider.getAlbum(song.album);
+                                            if (album == null) {
+                                              debugPrint("Album not found for song: ${song.album}");
+                                              return;
+                                            }
+                                            appStateProvider.navigatorKey.currentState!.push(AlbumScreen.route(album: album));
+                                          },
+                                          padding: const EdgeInsets.all(0),
+                                          icon: Icon(
+                                            FluentIcons.album,
+                                            color: Colors.white,
+                                            size: height * 0.03,
+                                          ),
+                                        );
+                                      },
+                                      buildMainAction: (entity) {
+                                        return Consumer2<AudioProvider, SliderProvider>(
+                                          builder: (_, audioProvider, sliderProvider, __) {
+                                            Song song = entity as Song;
+                                            return Icon(
+                                              audioProvider.currentSong.path == song.path && sliderProvider.playing == true ?
+                                              FluentIcons.pause : FluentIcons.play,
+                                              color: Colors.white,
+                                            );
+                                          },
+                                        );
+                                      },
+                                      buildRightAction: (entity) {
+                                        return PopupMenuButton<String>(
+                                          icon: Icon(
+                                            FluentIcons.moreVertical,
+                                            color: Colors.white,
+                                            size: height * 0.03,
+                                          ),
+                                          onSelected: (String value){
+                                            switch(value){
+                                              case 'add':
+                                                // debugPrint("Add $index");
+                                                // Navigator.pushNamed(context, '/add', arguments: [song]);
+                                                break;
+                                              case 'playNext':
+                                                //debugPrint("Play Next: $index");
+                                                // dc.addNextToQueue([song.path]);
+                                                break;
+                                              case 'select':
+                                                //debugPrint("Select $index");
+                                                // if (DataController.selected.contains(song.path)){
+                                                //   DataController.selected = List.from(DataController.selected)..remove(song.path);
+                                                //   return;
+                                                // }
+                                                // DataController.selected = List.from(DataController.selected)..add(song.path);
+                                                break;
+                                              case 'details':
+                                                // debugPrint("Details $index");
+                                                // Navigator.pushNamed(context, '/track', arguments: song);
+                                                break;
+                                            }
+                                          },
+                                          itemBuilder: (context){
+                                            return [
+                                              const PopupMenuItem<String>(
+                                                value: 'add',
+                                                child: Text("Add to Playlist"),
+                                              ),
+                                              const PopupMenuItem<String>(
+                                                value: 'playNext',
+                                                child: Text("Play Next"),
+                                              ),
+                                              const PopupMenuItem<String>(
+                                                value: 'select',
+                                                child: Text("Select"),
+                                              ),
+                                              const PopupMenuItem<String>(
+                                                value: 'details',
+                                                child: Text("Track Details"),
+                                              ),
+                                            ];
+                                          },
+                                        );
                                       },
                                     ),
                                     // sliver: SliverGrid.builder(

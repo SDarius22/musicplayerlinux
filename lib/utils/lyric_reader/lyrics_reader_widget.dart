@@ -471,10 +471,10 @@ class LyricReaderState extends State<LyricsReader>
   /// if playing status is null,no highlight.
   void handleHighlight() {
     var lyrics = widget.model?.lyrics;
-    if (!widget.ui.enableHighlight() ||
-        widget.playing == null ||
-        widget.model.isNullOrEmpty ||
-        lyricPaint.playingIndex >= lyrics!.length) return;
+    if (!widget.ui.enableHighlight() || widget.playing == null ||
+        widget.model.isNullOrEmpty || lyricPaint.playingIndex >= lyrics!.length) {
+      return;
+    }
     var line = lyrics[lyricPaint.playingIndex];
     List<TweenSequenceItem> items = [];
     var width = 0.0;

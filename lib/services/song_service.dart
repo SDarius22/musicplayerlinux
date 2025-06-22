@@ -1,6 +1,4 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
-import 'package:musicplayer/database/objectbox.g.dart';
 import 'package:musicplayer/entities/app_settings.dart';
 import 'package:musicplayer/entities/song.dart';
 import 'package:musicplayer/repository/song_repo.dart';

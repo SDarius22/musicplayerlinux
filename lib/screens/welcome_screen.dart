@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:musicplayer/components/app_top_bar.dart';
 import 'package:musicplayer/providers/app_state_provider.dart';
-import 'package:musicplayer/providers/playlist_provider.dart';
-import 'package:musicplayer/screens/home_screen.dart';
+import 'package:musicplayer/screens/loading_screen.dart';
 import 'package:musicplayer/utils/fluenticons/fluenticons.dart';
 import 'package:provider/provider.dart';
 
@@ -34,7 +33,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
     var height = MediaQuery.of(context).size.height;
     var boldSize = height * 0.025;
     var normalSize = height * 0.02;
-    var smallSize = height * 0.015;
+    // var smallSize = height * 0.015;
     return Scaffold(
       appBar: AppBarWidget(),
       body: Container(
@@ -296,7 +295,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                   appStateProvider.appSettings.firstTime = false;
                   debugPrint(appStateProvider.appSettings.firstTime.toString());
                   appStateProvider.updateAppSettings();
-                  Navigator.push(context, HomeScreen.route());
+                  Navigator.push(context, LoadingScreen.route());
                 },
                 child: Icon(FluentIcons.forward, color: Colors.white, size: height * 0.03,),
               ),

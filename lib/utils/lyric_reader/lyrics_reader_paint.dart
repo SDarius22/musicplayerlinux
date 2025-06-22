@@ -250,9 +250,7 @@ class LyricsReaderPaint extends ChangeNotifier implements CustomPainter {
         return (mSize.width - textPainter.width) / 2;
       case LyricAlign.RIGHT:
         return mSize.width - textPainter.width;
-      default:
-        return (mSize.width - textPainter.width) / 2;
-    }
+      }
   }
 
   @override
