@@ -1,18 +1,20 @@
 import 'dart:typed_data';
+import 'dart:ui';
 
 import 'package:audio_video_progress_bar/audio_video_progress_bar.dart';
 import 'package:bitsdojo_window/bitsdojo_window.dart';
+import 'package:bot_toast/bot_toast.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_miniplayer/flutter_miniplayer.dart';
 import 'package:musicplayer/components/animated_background.dart';
 import 'package:musicplayer/components/player_tabs/details_tab.dart';
 import 'package:musicplayer/components/player_tabs/lyrics_tab.dart';
 import 'package:musicplayer/components/player_tabs/queue_tab.dart';
 import 'package:musicplayer/providers/app_state_provider.dart';
 import 'package:musicplayer/providers/audio_provider.dart';
-import 'package:musicplayer/providers/slider_provider.dart';
+import 'package:musicplayer/providers/song_provider.dart';
 import 'package:musicplayer/utils/fluenticons/fluenticons.dart';
 import 'package:provider/provider.dart';
-import 'package:sliding_up_panel/sliding_up_panel.dart';
 
 class SongPlayerWidget extends StatefulWidget{
   const SongPlayerWidget({super.key});
@@ -27,59 +29,88 @@ class _SongPlayerWidgetState extends State<SongPlayerWidget> with TickerProvider
 
   ValueNotifier<bool> likedNotifier = ValueNotifier<bool>(false);
 
+  double valueFromPercentageInRange({required final double min, max, percentage}) {
+    return percentage * (max - min) + min;
+  }
+
+  double percentageFromValueInRange({required final double min, max, value}) {
+    return (value - min) / (max - min);
+  }
+
   @override
   Widget build(BuildContext context) {
-    var width = MediaQuery.of(context).size.width;
     var height = MediaQuery.of(context).size.height;
 
     appStateProvider = Provider.of<AppStateProvider>(context, listen: false);
+
     return Consumer<AudioProvider>(
       builder: (_, audioProvider, __) {
+        debugPrint("Building SongPlayerWidget, current song: ${audioProvider.currentSong.name}");
         if (audioProvider.queue.isEmpty) {
           debugPrint("Queue is empty, not showing player");
           return const SizedBox.shrink();
         }
-        if (appStateProvider.itemScrollController.hasClients) {
-          debugPrint("ItemScrollController has clients, animating to current index, index: ${audioProvider.currentIndex}");
-          Future.delayed(const Duration(milliseconds: 250), () {
-            appStateProvider.itemScrollController.animateTo(height * 0.1 * audioProvider.currentIndex, duration: const Duration(milliseconds: 250), curve: Curves.easeInOut);
-          });
-        }
-        return SlidingUpPanel(
+        final ValueNotifier<double> playerExpandProgress = ValueNotifier<double>(height * 0.1);
+        return Miniplayer(
+          valueNotifier: playerExpandProgress,
           minHeight: height * 0.1,
           maxHeight: height - appWindow.titleBarHeight,
-          controller: appStateProvider.panelController,
-          collapsed: _buildMinimizedPlayer(width, height, audioProvider),
-          panel: _buildMaximizedPlayer(width, height, audioProvider),
-          onPanelOpened: () {
-            if (appStateProvider.itemScrollController.hasClients) {
-              appStateProvider.itemScrollController.jumpTo(height * 0.1 * audioProvider.currentIndex);
+          controller: appStateProvider.miniPlayerController,
+          elevation: 4,
+          curve: Curves.easeOut,
+          tapToCollapse: false,
+          duration: const Duration(milliseconds: 500),
+          builder: (_, percentage) {
+            final bool minimized = percentage < 0.25;
+
+            if (minimized) {
+              return _buildMinimizedPlayer(audioProvider, percentage);
             }
+
+            if (appStateProvider.itemScrollController.hasClients) {
+              int currentSongIndex = audioProvider.queue.indexOf(audioProvider.currentSong.path);
+              Future.delayed(const Duration(milliseconds: 500), () {
+                try {
+                  appStateProvider.itemScrollController.animateTo(height * 0.1 * currentSongIndex, duration: const Duration(milliseconds: 250), curve: Curves.easeInOut);
+                }
+                catch (e) {
+                  debugPrint("Error animating to current song index: $e");
+                }
+              });
+            }
+
+            return _buildMaximizedPlayer(audioProvider, percentage);
           },
         );
       },
     );
   }
 
-  Widget _buildMinimizedPlayer(double width, double height, AudioProvider audioProvider){
+  Widget _buildMinimizedPlayer(AudioProvider audioProvider, double percentage){
+    var height = MediaQuery.of(context).size.height;
+    var width = MediaQuery.of(context).size.width;
+
+    double minLeftMargin = 0;
+    double maxLeftMargin = width * 0.75;
+    double imageLeftMargin = lerpDouble(minLeftMargin, maxLeftMargin, percentage) ?? 0.0;
+    if (imageLeftMargin < 0) {
+      imageLeftMargin = 0;
+    }
+
+    double minRadius = width * 0.0075;
+    double maxRadius = width * 0.01;
+    double borderRadius = lerpDouble(maxRadius, minRadius, percentage) ?? 0.0;
+
+
+    double normalized = (1.0 - (percentage / 0.25).clamp(0.0, 1.0));
+    double progressBarOpacity = normalized;
+
+
     return AnimatedBackground(
       key: const Key("minimizedPlayer"),
-      // duration: const Duration(milliseconds: 500),
-      // curve: Curves.linear,
       height: height * 0.15,
       width: width,
       alignment: Alignment.centerLeft,
-      // decoration: BoxDecoration(
-      //   gradient: LinearGradient(
-      //     begin: FractionalOffset.centerLeft,
-      //     end: FractionalOffset.centerRight,
-      //     colors: [
-      //       appStateProvider.darkColor,
-      //       Color(0xFF0E0E0E),
-      //
-      //     ],
-      //   ),
-      // ),
       padding: EdgeInsets.only(
         top: height * 0.005,
         bottom: height * 0.005,
@@ -88,18 +119,16 @@ class _SongPlayerWidgetState extends State<SongPlayerWidget> with TickerProvider
       ),
       child: Row(
         children: [
-          // Album Art
-          AnimatedContainer(
-            duration: const Duration(milliseconds: 500),
-            curve: Curves.easeInOut,
+          Container(
             alignment: Alignment.center,
+            margin: EdgeInsets.only(left: imageLeftMargin),
             child: AspectRatio(
               aspectRatio: 1.0,
               child: Container(
                 decoration: BoxDecoration(
                     shape: BoxShape.rectangle,
                     color: Colors.black,
-                    borderRadius: BorderRadius.circular(width * 0.01),
+                    borderRadius: BorderRadius.circular(borderRadius),
                     image: DecorationImage(
                       fit: BoxFit.cover,
                       image: Image.memory(audioProvider.image ?? Uint8List(0)).image,
@@ -109,281 +138,383 @@ class _SongPlayerWidgetState extends State<SongPlayerWidget> with TickerProvider
             ),
           ),
 
-          SizedBox(
-            width: width * 0.3,
-            child: _buildPlayerButtons(width, height, audioProvider)
+          Opacity(
+            opacity: progressBarOpacity,
+            child: SizedBox(
+              width: width * 0.3,
+              height: height * 0.15,
+              child: _buildPlayerButtons(audioProvider)
+            ),
           ),
 
           const Spacer(),
 
-          IconButton(
-              padding: const EdgeInsets.all(0),
-              onPressed: () async {
-                appStateProvider.panelController.open();
-                // Future.delayed(const Duration(milliseconds: 250), (){
-                //   final contentSize = itemScrollController.position.viewportDimension + itemScrollController.position.maxScrollExtent;
-                //   itemScrollController.jumpTo(
-                //     contentSize * (SettingsController.index / SettingsController.queue.length),
-                //   );
-                // });
-              },
-              icon: Icon(
-                FluentIcons.maximize, color: Colors.white,
-                size: width * 0.01,
-              )
+          Opacity(
+            opacity: progressBarOpacity,
+            child: IconButton(
+                onPressed: () async {
+                  appStateProvider.miniPlayerController.animateToHeight(
+                    state: PanelState.MAX,
+                  );
+                },
+                icon: Icon(
+                  FluentIcons.maximize, color: Colors.white,
+                  size: width * 0.01,
+                )
+            ),
           ),
+
         ],
       ),
     );
   }
 
-  Widget _buildMaximizedPlayer(double width, double height, AudioProvider audioProvider){
-    return Container(
+  Widget _buildMaximizedPlayer(AudioProvider audioProvider, double percentage){
+    var height = MediaQuery.of(context).size.height;
+    var width = MediaQuery.of(context).size.width;
+    double normalizedPercentage = ((percentage - 0.25) / 0.75).clamp(0.0, 1.0);
+
+    double fadeStart = 0.5;
+    double fadeEnd = 1.0;
+    double normalized = ((percentage - fadeStart) / (fadeEnd - fadeStart)).clamp(0.0, 1.0);
+
+    double progressBarHeight = lerpDouble(0.0, height * 0.05, normalized)!;
+    double buttonsHeight = lerpDouble(0.0, height * 0.15, normalized)!;
+    double progressBarOpacity = normalized;
+
+    double topPadding = lerpDouble(height * 0.005, height * 0.02, percentage)!;
+    double bottomPadding = lerpDouble(height * 0.005, height * 0.02, percentage)!;
+
+    final showSidePanels = normalizedPercentage > 0.7;
+    final sidePanelsOpacity = ((normalizedPercentage - 0.7) / 0.3).clamp(0.0, 1.0);
+
+
+    final maxRightMargin = width * 0.45;
+    final imageRightMargin = showSidePanels
+        ? 0.0
+        : lerpDouble(maxRightMargin, 0.0, normalizedPercentage.clamp(0.0, 0.7) / 0.7)!; // Only moves when panels are gone
+
+    final detailsOpacity = ((percentage - 0.7) / 0.3).clamp(0.0, 1.0);
+
+    if (showSidePanels) {
+      if (appStateProvider.itemScrollController.hasClients) {
+        debugPrint("Jumping to current song index in queue");
+        int currentSongIndex = audioProvider.queue.indexOf(audioProvider.currentSong.path);
+        if (currentSongIndex > 15) {
+          appStateProvider.itemScrollController.jumpTo(height * 0.1 * (currentSongIndex - 10));
+        }
+        appStateProvider.itemScrollController.animateTo(height * 0.1 * currentSongIndex, duration: const Duration(milliseconds: 250), curve: Curves.easeInOut);
+      }
+    }
+
+    return AnimatedBackground(
       key: const Key("maximizedPlayer"),
-      child: AnimatedContainer(
-          duration: const Duration(milliseconds: 500),
-          curve: Curves.linear,
-          height: MediaQuery.of(context).size.height - appWindow.titleBarHeight,
-          width: width,
-          alignment: Alignment.center,
-          padding: EdgeInsets.only(
-            top: height * 0.02,
-            bottom: height * 0.02,
-            left: width * 0.01,
-            right: width * 0.01,
-          ),
-          decoration: BoxDecoration(
-            color: const Color(0xFF0E0E0E),
-          ),
-          child: Wrap(
-            alignment: WrapAlignment.center,
-            crossAxisAlignment: WrapCrossAlignment.start,
-            children: [
-              // Queue
-              AnimatedContainer(
-                duration: const Duration(milliseconds: 500),
-                curve: Curves.easeInOut,
-                height: width * 0.3,
-                width: width * 0.3,
-                // color: Colors.transparent,
-                child: QueueTab(),
-              ),
-
-              // Album Art
-              AnimatedContainer(
-                duration: const Duration(milliseconds: 500),
-                curve: Curves.easeInOut,
-                alignment: Alignment.center,
-                height: width * 0.3,
-                width: width * 0.3,
-                child: DetailsTab(),
-              ),
-
-              // Lyrics
-              AnimatedContainer(
-                duration: const Duration(milliseconds: 500),
-                curve: Curves.easeInOut,
-                height: width * 0.3,
-                width: width * 0.3,
-                // color: Colors.transparent,
-                child: LyricsTab(),
-              ),
-
-
-              Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  SizedBox(
-                    height: height * 0.03,
-                    width: width,
+      height: MediaQuery.of(context).size.height - appWindow.titleBarHeight,
+      width: width,
+      alignment: Alignment.center,
+      padding: EdgeInsets.only(
+        top: topPadding,
+        bottom: bottomPadding,
+        left: width * 0.01,
+        right: width * 0.01,
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Expanded(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                // Queue
+                if (showSidePanels)
+                  Opacity(
+                    opacity: sidePanelsOpacity,
+                    child: SizedBox(
+                      width: width * 0.3,
+                      height: width * 0.31,
+                      child: QueueTab(),
+                    ),
                   ),
 
-                  // ProgressBar
-                  AnimatedContainer(
-                    duration: const Duration(milliseconds: 500),
-                    curve: Curves.easeInOut,
-                    width:  width * 0.92,
-                    padding: EdgeInsets.symmetric(
-                      horizontal: width * 0.02,
-                      vertical:  height * 0.05,
+
+                // Album Art
+                Container(
+                  alignment: Alignment.center,
+                  constraints: BoxConstraints(
+                    maxWidth: width * 0.325
+                  ),
+                  margin: EdgeInsets.only(right: imageRightMargin),
+                  // width: width * 0.325,
+                  child: DetailsTab(opacity: detailsOpacity,),
+                ),
+
+                // Lyrics
+                if (showSidePanels)
+                  Opacity(
+                    opacity: sidePanelsOpacity,
+                    child: SizedBox(
+                      width: width * 0.3,
+                      height: width * 0.31,
+                      child: LyricsTab(),
                     ),
-                    alignment: Alignment.center,
-                    child: FutureBuilder(
-                      future: audioProvider.getDuration(),
-                      builder: (context, snapshot){
-                        return Consumer<SliderProvider>(
-                          builder: (_, sliderProvider, __){
-                            if (snapshot.connectionState == ConnectionState.waiting) {
-                              return SizedBox(
-                                height: height * 0.02,
-                                child: Center(
-                                  child: LinearProgressIndicator(
-                                    color: Colors.white,
-                                    backgroundColor: Colors.white24,
-                                  ),
-                                ),
-                              );
-                            }
-                            return ProgressBar(
-                              progress: Duration(milliseconds: sliderProvider.slider),
-                              total: snapshot.hasData ? snapshot.data as Duration : Duration.zero,
-                              progressBarColor: appStateProvider.darkColor,
-                              baseBarColor: Colors.white.withValues(alpha: 0.25),
-                              bufferedBarColor: Colors.white.withValues(alpha: 0.25),
-                              thumbColor: Colors.white,
-                              barHeight: 4.0,
-                              thumbRadius: 7.0,
-                              timeLabelLocation:  TimeLabelLocation.sides,
-                              timeLabelTextStyle: TextStyle(
-                                color: Colors.white,
-                                fontSize: height * 0.02,
-                                fontWeight: FontWeight.normal,
-                              ),
-                              onSeek: (duration) {
-                                sliderProvider.setSlider(
-                                  duration.inMilliseconds,
-                                );
-                              },
-                            );
+                  ),
+
+              ],
+            ),
+          ),
+
+          // ProgressBar
+          Opacity(
+            opacity: progressBarOpacity,
+            child: SizedBox(
+              height: progressBarHeight,
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: width * 0.03),
+                child: percentage > 0.9
+                    ? FutureBuilder(
+                  future: audioProvider.getDuration(),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return Center(
+                        child: LinearProgressIndicator(
+                          color: Colors.white,
+                          backgroundColor: Colors.white24,
+                        ),
+                      );
+                    }
+                    return ValueListenableBuilder(
+                      valueListenable: audioProvider.sliderNotifier,
+                      builder: (context, value, child) {
+                        return ProgressBar(
+                          progress: Duration(milliseconds: value),
+                          total: snapshot.hasData
+                              ? snapshot.data as Duration
+                              : Duration.zero,
+                          progressBarColor: appStateProvider.darkColor,
+                          thumbColor: Colors.white,
+                          barHeight: 4.0,
+                          thumbRadius: 7.0,
+                          timeLabelLocation: TimeLabelLocation.sides,
+                          timeLabelTextStyle: TextStyle(
+                            color: Colors.white,
+                            fontSize: height * 0.02,
+                            fontWeight: FontWeight.normal,
+                          ),
+                          onSeek: (duration) {
+                            audioProvider.seek(duration);
                           },
                         );
                       },
-                    ),
+                    );
+                  },
+                )
+                    : Center(
+                  child: LinearProgressIndicator(
+                    color: Colors.white,
+                    backgroundColor: Colors.white24,
+                  ),
+                ),
+              ),
+            ),
+          ),
+
+          // Player Controls - Previous, Play/Pause, Next
+          Opacity(
+            opacity: progressBarOpacity,
+            child: SizedBox(
+              width: width * 0.9,
+              height: buttonsHeight,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  IconButton(
+                      onPressed: () async {
+                        debugPrint("Liked");
+                        var songProvider = Provider.of<SongProvider>(context, listen: false);
+                        audioProvider.currentSong.liked = !audioProvider.currentSong.liked;
+                        songProvider.updateSong(audioProvider.currentSong);
+                        likedNotifier.value = !likedNotifier.value;
+                        String message = audioProvider.currentSong.liked
+                            ? "Added ${audioProvider.currentSong.name} to Favorites"
+                            : "Removed ${audioProvider.currentSong.name} from Favorites";
+                        BotToast.showText(
+                          text: message,
+                          duration: const Duration(seconds: 3),
+                          contentColor: Colors.black,
+                          textStyle: TextStyle(
+                            color: Colors.white,
+                            fontSize: height * 0.02,
+                          ),
+                        );
+                      },
+                      icon: Icon(
+                        audioProvider.currentSong.liked ? FluentIcons.liked : FluentIcons.unliked,
+                        size: height * 0.025,
+                        color: Colors.white,
+                        shadows: [
+                          Shadow(
+                            color: Colors.black.withValues(alpha: 0.5),
+                            offset: const Offset(1, 2),
+                            blurRadius: 7,
+                          ),
+                        ],
+                      )
                   ),
 
                   SizedBox(
-                    height: height * 0.01,
-                    width: width,
+                    width: width * 0.5,
+                    child: _buildPlayerButtons(audioProvider),
                   ),
 
-                  // Player Controls - Previous, Play/Pause, Next
-                  AnimatedContainer(
-                    duration: const Duration(milliseconds: 500),
-                    width: width * 0.9,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        IconButton(
-                          padding: const EdgeInsets.all(0),
-                          onPressed: () async {
-                            debugPrint("Liked");
-                            var currentSong = audioProvider.currentSong;
-                            // await dc.updateLiked(currentSong); TODO
-                            likedNotifier.value = !likedNotifier.value;
-                            if (currentSong.liked) {
-                              // am.showNotification("Added ${currentSong.title} to Favorites", 3000);
-                            }
-                            else {
-                              // am.showNotification("Removed ${currentSong.title} from Favorites", 3000);
-                            }
-                          },
-                          icon: Icon(
-                              audioProvider.currentSong.liked ? FluentIcons.liked : FluentIcons.unliked,
-                              size: height * 0.025,
-                              color: Colors.white,
-                          )
-                        ),
 
-                        SizedBox(
-                          width: width * 0.5,
-                          child: _buildPlayerButtons(width, height, audioProvider),
-                        ),
-
-
-                        IconButton(
-                          padding: const EdgeInsets.all(0),
-                          onPressed: (){
-                            appStateProvider.panelController.close();
-                          },
-                          icon: Icon(FluentIcons.minimize,
-                            color: Colors.white,
-                            size: width * 0.01,
-                          )
-                        ),
-                      ],
-                    ),
+                  IconButton(
+                      onPressed: () async {
+                        appStateProvider.miniPlayerController.animateToHeight(
+                          state: PanelState.MIN,
+                        );
+                      },
+                      icon: Icon(FluentIcons.minimize,
+                        color: Colors.white,
+                        size: width * 0.01,
+                        shadows: [
+                          Shadow(
+                            color: Colors.black.withValues(alpha: 0.5),
+                            offset: const Offset(1, 2),
+                            blurRadius: 7,
+                          ),
+                        ],
+                      )
                   ),
-
                 ],
               ),
-            ],
+            ),
           ),
+
+        ],
       ),
     );
   }
 
-  Widget _buildPlayerButtons(double width, double height, AudioProvider audioProvider){
-    return Consumer<SliderProvider>(
-      builder: (context, sliderProvider, child) {
-        return Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            IconButton(
+  Widget _buildPlayerButtons(AudioProvider audioProvider){
+    var height = MediaQuery.of(context).size.height;
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        ValueListenableBuilder(
+          valueListenable: audioProvider.shuffleNotifier,
+          builder: (context, shuffle, child) {
+            return IconButton(
               onPressed: () {
-                sliderProvider.setShuffle(!sliderProvider.shuffle);
+                audioProvider.setShuffle(!audioProvider.shuffleNotifier.value);
               },
               icon: Icon(
-                sliderProvider.shuffle == false ? FluentIcons.shuffleOff : FluentIcons.shuffleOn,
+                shuffle == false ? FluentIcons.shuffleOff : FluentIcons.shuffleOn,
                 size: height * 0.025,
                 color: Colors.white,
+                shadows: [
+                  Shadow(
+                    color: Colors.black.withValues(alpha: 0.5),
+                    offset: const Offset(1, 2),
+                    blurRadius: 7,
+                  ),
+                ],
               ),
-            ),
-            IconButton(
-              onPressed: () async {
-                await audioProvider.skipToPrevious();
-              },
-              icon: Icon(
-                FluentIcons.previous,
-                color: Colors.white,
-                size: height * 0.025,
+            );
+          },
+        ),
+        IconButton(
+          onPressed: () async {
+            await audioProvider.skipToPrevious();
+          },
+          icon: Icon(
+            FluentIcons.previous,
+            color: Colors.white,
+            size: height * 0.025,
+            shadows: [
+              Shadow(
+                color: Colors.black.withValues(alpha: 0.5),
+                offset: const Offset(1, 2),
+                blurRadius: 7,
               ),
-            ),
-            IconButton(
+            ],
+          ),
+        ),
+        ValueListenableBuilder(
+          valueListenable: audioProvider.playingNotifier,
+          builder: (context, value, child) {
+            return IconButton(
               onPressed: () async {
                 //debugPrint("pressed pause play");
-                if (sliderProvider.playing) {
+                if (audioProvider.playingNotifier.value) {
                   await audioProvider.pause();
-                  appStateProvider.stopAnimation();
                 } else {
                   await audioProvider.play();
-                  appStateProvider.startAnimation();
                 }
               },
               icon: Icon(
-                sliderProvider.playing ?
+                value ?
                 FluentIcons.pause :
                 FluentIcons.play,
                 color: Colors.white,
                 size: height * 0.025,
+                shadows: [
+                  Shadow(
+                    color: Colors.black.withValues(alpha: 0.5),
+                    offset: const Offset(1, 2),
+                    blurRadius: 7,
+                  ),
+                ],
               ),
-            ),
-            IconButton(
-              onPressed: () async {
-                debugPrint("next");
-                return await audioProvider.skipToNext();
-              },
-              icon: Icon(
-                FluentIcons.next,
-                color: Colors.white,
-                size: height * 0.025,
+            );
+          }
+        ),
+
+        IconButton(
+          onPressed: () async {
+            debugPrint("next");
+            return await audioProvider.skipToNext();
+          },
+          icon: Icon(
+            FluentIcons.next,
+            color: Colors.white,
+            size: height * 0.025,
+            shadows: [
+              Shadow(
+                color: Colors.black.withValues(alpha: 0.5),
+                offset: const Offset(1, 2),
+                blurRadius: 7,
               ),
-            ),
-            IconButton(
-              onPressed: () {
-                sliderProvider.setRepeat(!sliderProvider.repeat);
-              },
-              icon:
-              Icon(
-                sliderProvider.repeat == false ? FluentIcons.repeatOff: FluentIcons.repeatOn,
-                size: height * 0.025,
-                color: Colors.white,
-              )
-            ),
-          ],
-        );
-      }
+            ],
+          ),
+        ),
+        ValueListenableBuilder(
+          valueListenable: audioProvider.repeatNotifier,
+          builder: (context, value, child) {
+            return IconButton(
+                onPressed: () {
+                  audioProvider.setRepeat(!audioProvider.repeatNotifier.value);
+                },
+                icon: Icon(
+                  value == false ? FluentIcons.repeatOff: FluentIcons.repeatOn,
+                  size: height * 0.025,
+                  color: Colors.white,
+                  shadows: [
+                    Shadow(
+                      color: Colors.black.withValues(alpha: 0.5),
+                      offset: const Offset(1, 2),
+                      blurRadius: 7,
+                    ),
+                  ],
+                )
+            );
+          }
+        ),
+
+      ],
     );
 
   }

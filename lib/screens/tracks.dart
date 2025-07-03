@@ -4,9 +4,10 @@ import 'package:musicplayer/entities/song.dart';
 import 'package:musicplayer/providers/albums_provider.dart';
 import 'package:musicplayer/providers/app_state_provider.dart';
 import 'package:musicplayer/providers/audio_provider.dart';
-import 'package:musicplayer/providers/slider_provider.dart';
 import 'package:musicplayer/providers/song_provider.dart';
+import 'package:musicplayer/screens/add_screen.dart';
 import 'package:musicplayer/screens/album_screen.dart';
+import 'package:musicplayer/screens/track_screen.dart';
 import 'package:musicplayer/utils/fluenticons/fluenticons.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
@@ -14,9 +15,11 @@ import 'package:provider/provider.dart';
 
 class Tracks extends StatefulWidget{
   static Route<dynamic> route() {
-    return MaterialPageRoute(
-      builder: (_) => const Tracks(),
-      settings: const RouteSettings(name: '/tracks'),
+    return PageRouteBuilder(
+      settings: const RouteSettings(name: '/songs'),
+      pageBuilder: (context, animation, secondaryAnimation) {
+        return Tracks();
+      },
     );
   }
 
@@ -28,16 +31,9 @@ class Tracks extends StatefulWidget{
 
 
 class _TracksState extends State<Tracks>{
+  ValueNotifier<List<Song>> selected = ValueNotifier<List<Song>>([]);
   FocusNode searchNode = FocusNode();
   Timer? _debounce;
-
-  late final AudioProvider audioProvider;
-
-  @override
-  void initState(){
-    super.initState();
-    audioProvider = Provider.of<AudioProvider>(context, listen: false);
-  }
 
   @override
   void dispose() {
@@ -53,691 +49,414 @@ class _TracksState extends State<Tracks>{
     var normalSize = height * 0.02;
     var smallSize = height * 0.015;
 
-    return Consumer<AppStateProvider>(
-      builder: (_, appStateProvider, __) {
-        return AnimatedContainer(
-            duration: const Duration(milliseconds: 300),
-            padding: EdgeInsets.only(
-                top: height * 0.02,
-                left: width * 0.01,
-                right: width * 0.01,
-                bottom: height * 0.02
-            ),
-            child: Consumer<SongProvider>(
-                builder: (context, songProvider, child) {
-                  return Column(
-                    children: [
-                      Container(
-                        height: height * 0.05,
-                        width: width,
-                        margin: EdgeInsets.only(
-                          left: width * 0.01,
-                          right: width * 0.01,
-                          bottom: height * 0.01,
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Expanded(
-                              child: TextFormField(
-                                initialValue: '',
-                                focusNode: searchNode,
-                                onChanged: (value) {
-                                  if (_debounce?.isActive ?? false) _debounce?.cancel();
-                                  _debounce = Timer(const Duration(milliseconds: 500), () {
-                                    songProvider.setQuery(value);
-                                  });
-                                },
-                                cursorColor: Colors.white,
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: normalSize,
-                                ),
-                                decoration: InputDecoration(
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(width * 0.02),
-                                    borderSide: const BorderSide(
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                  contentPadding: EdgeInsets.only(
-                                    left: width * 0.01,
-                                    right: width * 0.01,
-                                  ),
-                                  floatingLabelBehavior: FloatingLabelBehavior.never,
-                                  labelStyle: TextStyle(
+    return Scaffold(
+      body: Container(
+          padding: EdgeInsets.only(
+              top: height * 0.02,
+              left: width * 0.01,
+              right: width * 0.01,
+              bottom: height * 0.02
+          ),
+          child: Consumer<SongProvider>(
+              builder: (context, songProvider, child) {
+                return Column(
+                  children: [
+                    Container(
+                      height: height * 0.05,
+                      width: width,
+                      margin: EdgeInsets.only(
+                        left: width * 0.01,
+                        right: width * 0.01,
+                        bottom: height * 0.01,
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Expanded(
+                            child: TextFormField(
+                              initialValue: '',
+                              focusNode: searchNode,
+                              onChanged: (value) {
+                                if (_debounce?.isActive ?? false) _debounce?.cancel();
+                                _debounce = Timer(const Duration(milliseconds: 500), () {
+                                  songProvider.setQuery(value);
+                                });
+                              },
+                              cursorColor: Colors.white,
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: normalSize,
+                              ),
+                              decoration: InputDecoration(
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(width * 0.02),
+                                  borderSide: const BorderSide(
                                     color: Colors.white,
-                                    fontSize: smallSize,
                                   ),
-                                  labelText: 'Search', suffixIcon: Icon(FluentIcons.search, color: Colors.white, size: height * 0.02,),
                                 ),
+                                contentPadding: EdgeInsets.only(
+                                  left: width * 0.01,
+                                  right: width * 0.01,
+                                ),
+                                floatingLabelBehavior: FloatingLabelBehavior.never,
+                                labelStyle: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: smallSize,
+                                ),
+                                labelText: 'Search', suffixIcon: Icon(FluentIcons.search, color: Colors.white, size: height * 0.02,),
                               ),
                             ),
-                            SizedBox(
-                              width: width * 0.01,
+                          ),
+                          SizedBox(
+                            width: width * 0.01,
+                          ),
+                          Container(
+                            padding: EdgeInsets.only(
+                              left: width * 0.01,
+                              right: width * 0.01,
                             ),
-                            Container(
-                              padding: EdgeInsets.only(
-                                left: width * 0.01,
-                                right: width * 0.01,
-                              ),
-                              decoration: BoxDecoration(
-                                border: Border.all(color: Colors.grey),
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  PopupMenuButton<String>(
-                                    onSelected: (value) {
-                                      songProvider.setSortField(value);
-                                    },
-                                    tooltip: "Sort by",
-                                    itemBuilder: (context) => [
-                                      PopupMenuItem(value: "Name", child: Text("Name")),
-                                      PopupMenuItem(value: "Duration", child: Text("Duration")),
-                                    ],
-                                    child: Padding(
-                                      padding: const EdgeInsets.symmetric(vertical: 8.0),
-                                      child: Text(
-                                        songProvider.sortField,
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: smallSize,
-                                        ),
+                            decoration: BoxDecoration(
+                              border: Border.all(color: Colors.grey),
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                PopupMenuButton<String>(
+                                  onSelected: (value) {
+                                    songProvider.setSortField(value);
+                                  },
+                                  tooltip: "Sort by",
+                                  itemBuilder: (context) => [
+                                    PopupMenuItem(value: "Name", child: Text("Name")),
+                                    PopupMenuItem(value: "Duration", child: Text("Duration")),
+                                  ],
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(vertical: 8.0),
+                                    child: Text(
+                                      songProvider.sortField,
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: smallSize,
                                       ),
                                     ),
                                   ),
-                                  Container(
-                                    width: 1, // Divider thickness
-                                    height: double.maxFinite, // Divider height
-                                    margin: EdgeInsets.only(
-                                      right: width * 0.01,
-                                      left: width * 0.01,
-                                    ),
-                                    color: Colors.grey,
+                                ),
+                                Container(
+                                  width: 1, // Divider thickness
+                                  height: double.maxFinite, // Divider height
+                                  margin: EdgeInsets.only(
+                                    right: width * 0.01,
+                                    left: width * 0.01,
                                   ),
-                                  IconButton(
-                                    icon: Icon(songProvider.isAscending ? FluentIcons.sortAscending : FluentIcons.sortDescending),
-                                    onPressed: () {
-                                      songProvider.setFlag(!songProvider.isAscending);
-                                      debugPrint("Sort order set to ${songProvider.isAscending}");
-                                    },
-                                  ),
-                                ],
-                              ),
-                            )
-                          ],
-                        ),
+                                  color: Colors.grey,
+                                ),
+                                IconButton(
+                                  icon: Icon(songProvider.isAscending ? FluentIcons.sortAscending : FluentIcons.sortDescending),
+                                  onPressed: () {
+                                    songProvider.setFlag(!songProvider.isAscending);
+                                    debugPrint("Sort order set to ${songProvider.isAscending}");
+                                  },
+                                ),
+                              ],
+                            ),
+                          )
+                        ],
                       ),
-                      Expanded(
-                        child: FutureBuilder(
-                            future: songProvider.songsFuture,
-                            builder: (context, snapshot){
-                              if (snapshot.connectionState == ConnectionState.waiting) {
-                                return Center(
-                                  child: CircularProgressIndicator(),
-                                );
-                              }
-                              if (snapshot.hasError) {
-                                debugPrint(snapshot.error.toString());
-                                debugPrintStack();
-                                return Center(
-                                  child: Text(
-                                    "Error loading songs",
-                                    style: TextStyle(color: Colors.white, fontSize: smallSize),
+                    ),
+                    Expanded(
+                      child: FutureBuilder(
+                          future: songProvider.songsFuture,
+                          builder: (context, snapshot){
+                            if (snapshot.connectionState == ConnectionState.waiting) {
+                              return Center(
+                                child: CircularProgressIndicator(),
+                              );
+                            }
+                            if (snapshot.hasError) {
+                              debugPrint(snapshot.error.toString());
+                              debugPrintStack();
+                              return Center(
+                                child: Text(
+                                  "Error loading songs",
+                                  style: TextStyle(color: Colors.white, fontSize: smallSize),
+                                ),
+                              );
+                            }
+                            debugPrint("Songs loaded: ${snapshot.data?.length ?? 0}");
+                            return CustomScrollView(
+                              slivers: [
+                                SliverPadding(
+                                  padding: EdgeInsets.only(
+                                    left: width * 0.01,
+                                    right: width * 0.01,
                                   ),
-                                );
-                              }
-                              debugPrint("Songs loaded: ${snapshot.data?.length ?? 0}");
-                              return CustomScrollView(
-                                slivers: [
-                                  SliverPadding(
-                                    padding: EdgeInsets.only(
-                                      left: width * 0.01,
-                                      right: width * 0.01,
-                                    ),
-                                    sliver: GridComponent(
-                                      items: snapshot.data ?? [],
-                                      onTap: (entity) async {
-                                        debugPrint("tapped ${entity.name}");
-                                        Song song = entity as Song;
-                                        var audioProvider = Provider.of<AudioProvider>(context, listen: false);
-                                        if (audioProvider.currentSong.path != song.path) {
-                                          //debugPrint("path match");
-                                          List<String> songPaths = (snapshot.data as List<Song>).map((e) => e.path).toList();
-                                          audioProvider.setQueue(songPaths);
-                                          await audioProvider.setCurrentIndex(song.path);
-                                        }
-                                        else {
-                                          var sliderProvider = Provider.of<SliderProvider>(context, listen: false);
-                                          if (sliderProvider.playing == true) {
-                                            await audioProvider.pause();
-                                            appStateProvider.stopAnimation();
-                                          }
-                                          else {
-                                            await audioProvider.play();
-                                            appStateProvider.startAnimation();
-                                          }
-                                        }
-                                        try {
+                                  sliver: ValueListenableBuilder(
+                                    valueListenable: selected,
+                                    builder: (context, value, child) {
+                                      return GridComponent(
+                                        items: snapshot.data ?? [],
+                                        isSelected: (entity) {
+                                          Song song = entity as Song;
+                                          return selected.value.contains(song);
+                                        },
+                                        onTap: (entity) async {
+                                          debugPrint("tapped ${entity.name}");
+                                          Song song = entity as Song;
 
-                                        }
-                                        catch (e) {
-                                          debugPrint(e.toString());
-                                          List<String> songPaths = (snapshot.data as List<Song>).map((e) => e.path).toList();
-                                          audioProvider.setQueue(songPaths);
-                                          await audioProvider.setCurrentIndex(song.path);
-                                        }
-                                      },
-                                      onLongPress: (entity) {
-                                        debugPrint("long pressed ${entity.name}");
-                                      },
-                                      buildLeftAction: (entity) {
-                                        return IconButton(
-                                          tooltip: "Go to Album",
-                                          onPressed: (){
-                                            Song song = entity as Song;
-                                            var albumProvider = Provider.of<AlbumProvider>(context, listen: false);
-                                            Album? album = albumProvider.getAlbum(song.album);
-                                            if (album == null) {
-                                              debugPrint("Album not found for song: ${song.album}");
-                                              return;
+                                          if (selected.value.isNotEmpty) {
+                                            if (selected.value.contains(song)) {
+                                              selected.value = List<Song>.from(selected.value)..remove(song);
+                                            } else {
+                                              selected.value = List<Song>.from(selected.value)..add(song);
                                             }
-                                            appStateProvider.navigatorKey.currentState!.push(AlbumScreen.route(album: album));
-                                          },
-                                          padding: const EdgeInsets.all(0),
-                                          icon: Icon(
-                                            FluentIcons.album,
-                                            color: Colors.white,
-                                            size: height * 0.03,
-                                          ),
-                                        );
-                                      },
-                                      buildMainAction: (entity) {
-                                        return Consumer2<AudioProvider, SliderProvider>(
-                                          builder: (_, audioProvider, sliderProvider, __) {
-                                            Song song = entity as Song;
+                                            return;
+                                          }
+
+                                          var audioProvider = Provider.of<AudioProvider>(context, listen: false);
+                                          try {
+                                            if (audioProvider.currentSong.path != song.path) {
+                                              List<String> songPaths = (snapshot.data as List<Song>).map((e) => e.path).toList();
+                                              audioProvider.setQueue(songPaths);
+                                              await audioProvider.setCurrentIndex(song.path);
+                                            }
+                                            else {
+                                              if (audioProvider.playingNotifier.value == true) {
+                                                await audioProvider.pause();
+                                              }
+                                              else {
+                                                await audioProvider.play();
+                                              }
+                                            }
+                                          }
+                                          catch (e) {
+                                            debugPrint(e.toString());
+                                            List<String> songPaths = (snapshot.data as List<Song>).map((e) => e.path).toList();
+                                            audioProvider.setQueue(songPaths);
+                                            await audioProvider.setCurrentIndex(song.path);
+                                          }
+                                        },
+                                        onLongPress: (entity) {
+                                          debugPrint("long pressed ${entity.name}");
+                                          Song song = entity as Song;
+                                          if (selected.value.contains(song)) {
+                                            selected.value = List<Song>.from(selected.value)..remove(song);
+                                          } else {
+                                            selected.value = List<Song>.from(selected.value)..add(song);
+                                          }
+                                        },
+                                        buildLeftAction: (entity) {
+                                          return IconButton(
+                                            tooltip: "Go to Album",
+                                            onPressed: (){
+                                              Song song = entity as Song;
+                                              var albumProvider = Provider.of<AlbumProvider>(context, listen: false);
+                                              Album? album = albumProvider.getAlbum(song.album);
+                                              if (album == null) {
+                                                debugPrint("Album not found for song: ${song.album}");
+                                                return;
+                                              }
+                                              Navigator.push(
+                                                context,
+                                                AlbumScreen.route(album: album),
+                                              );
+                                            },
+                                            padding: const EdgeInsets.all(0),
+                                            icon: Icon(
+                                              FluentIcons.album,
+                                              color: Colors.white,
+                                              size: height * 0.03,
+                                            ),
+                                          );
+                                        },
+                                        buildMainAction: (entity) {
+                                          if (selected.value.contains(entity)) {
                                             return Icon(
-                                              audioProvider.currentSong.path == song.path && sliderProvider.playing == true ?
-                                              FluentIcons.pause : FluentIcons.play,
+                                              FluentIcons.checkCircleOn,
                                               color: Colors.white,
                                             );
-                                          },
-                                        );
-                                      },
-                                      buildRightAction: (entity) {
-                                        return PopupMenuButton<String>(
-                                          icon: Icon(
-                                            FluentIcons.moreVertical,
-                                            color: Colors.white,
-                                            size: height * 0.03,
-                                          ),
-                                          onSelected: (String value){
-                                            switch(value){
-                                              case 'add':
+                                          }
+                                          if (selected.value.isNotEmpty) {
+                                            return Icon(
+                                              FluentIcons.checkCircleOff,
+                                              color: Colors.white,
+                                            );
+                                          }
+                                          return Consumer<AudioProvider>(
+                                            builder: (_, audioProvider, __) {
+                                              Song song = entity as Song;
+                                              return Icon(
+                                                audioProvider.currentSong.path == song.path && audioProvider.playingNotifier.value == true ?
+                                                FluentIcons.pause : FluentIcons.play,
+                                                color: Colors.white,
+                                              );
+                                            },
+                                          );
+                                        },
+                                        buildRightAction: (entity) {
+                                          return PopupMenuButton<String>(
+                                            icon: Icon(
+                                              FluentIcons.moreVertical,
+                                              color: Colors.white,
+                                              size: height * 0.03,
+                                            ),
+                                            onSelected: (String value){
+                                              switch(value){
+                                                case 'add':
                                                 // debugPrint("Add $index");
-                                                // Navigator.pushNamed(context, '/add', arguments: [song]);
-                                                break;
-                                              case 'playNext':
+                                                  var appState = Provider.of<AppStateProvider>(context, listen: false);
+                                                  appState.navigatorKey.currentState?.push(AddScreen.route(songs: [entity as Song]));
+                                                  break;
+                                                case 'playNext':
                                                 //debugPrint("Play Next: $index");
                                                 // dc.addNextToQueue([song.path]);
-                                                break;
-                                              case 'select':
-                                                //debugPrint("Select $index");
-                                                // if (DataController.selected.contains(song.path)){
-                                                //   DataController.selected = List.from(DataController.selected)..remove(song.path);
-                                                //   return;
-                                                // }
-                                                // DataController.selected = List.from(DataController.selected)..add(song.path);
-                                                break;
-                                              case 'details':
-                                                // debugPrint("Details $index");
-                                                // Navigator.pushNamed(context, '/track', arguments: song);
-                                                break;
-                                            }
-                                          },
-                                          itemBuilder: (context){
-                                            return [
-                                              const PopupMenuItem<String>(
-                                                value: 'add',
-                                                child: Text("Add to Playlist"),
-                                              ),
-                                              const PopupMenuItem<String>(
-                                                value: 'playNext',
-                                                child: Text("Play Next"),
-                                              ),
-                                              const PopupMenuItem<String>(
-                                                value: 'select',
-                                                child: Text("Select"),
-                                              ),
-                                              const PopupMenuItem<String>(
-                                                value: 'details',
-                                                child: Text("Track Details"),
-                                              ),
-                                            ];
-                                          },
-                                        );
-                                      },
-                                    ),
-                                    // sliver: SliverGrid.builder(
-                                    //   gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
-                                    //     maxCrossAxisExtent: width * 0.125,
-                                    //     crossAxisSpacing: width * 0.0125,
-                                    //     mainAxisSpacing: width * 0.0125,
-                                    //   ),
-                                    //   itemCount: snapshot.hasData ? snapshot.data!.length : 0,
-                                    //   itemBuilder: (BuildContext context, int index) {
-                                    //     if (index >= snapshot.data!.length) {
-                                    //       return Container(
-                                    //         height: height * 0.125,
-                                    //         padding: EdgeInsets.symmetric(
-                                    //           horizontal: width * 0.01,
-                                    //           vertical: height * 0.01,
-                                    //         ),
-                                    //         child: snapshot.connectionState == ConnectionState.waiting ?
-                                    //         Center(
-                                    //           child: CircularProgressIndicator(),
-                                    //         ) : Center(
-                                    //           child: Text("No more songs to load"),
-                                    //         ),
-                                    //       );
-                                    //     }
-                                    //     Song song = snapshot.data![index];
-                                    //     return MouseRegion(
-                                    //       cursor: SystemMouseCursors.click,
-                                    //       child: GestureDetector(
-                                    //         onTap: () async {
-                                    //           //debugPrint("Playing ${widget.controller.indexNotifier.value}");
-                                    //           // try {
-                                    //           //   if (SettingsController.currentSongPath != song.path) {
-                                    //           //     //debugPrint("path match");
-                                    //           //     var songPaths = snapshot.data!.map((e) => e.path).toList();
-                                    //           //     if (SettingsController.queue.equals(songPaths) == false) {
-                                    //           //       debugPrint("Updating playing songs");
-                                    //           //       dc.updatePlaying(songPaths, index);
-                                    //           //     }
-                                    //           //     SettingsController.index = SettingsController.currentQueue.indexOf(song.path);
-                                    //           //     await AppAudioHandler.play();
-                                    //           //   }
-                                    //           //   else {
-                                    //           //     if (SettingsController.playing == true) {
-                                    //           //       await AppAudioHandler.pause();
-                                    //           //     }
-                                    //           //     else {
-                                    //           //       await AppAudioHandler.play();
-                                    //           //     }
-                                    //           //   }
-                                    //           // }
-                                    //           // catch (e) {
-                                    //           //   debugPrint(e.toString());
-                                    //           //   var songPaths = snapshot.data!.map((e) => e.path).toList();
-                                    //           //   dc.updatePlaying(songPaths, index);
-                                    //           //   SettingsController.index = index;
-                                    //           //   await AppAudioHandler.play();
-                                    //           // }
-                                    //         },
-                                    //         onLongPress: (){
-                                    //           debugPrint("Select song $index");
-                                    //           // DataController.selected = List.from(DataController.selected)..add(song.path);
-                                    //         },
-                                    //         child: ClipRRect(
-                                    //           borderRadius: BorderRadius.circular(width * 0.01),
-                                    //           child: ImageWidget(
-                                    //             path: song.path,
-                                    //             heroTag: song.path,
-                                    //             hoveredChild: Row(
-                                    //               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                                    //               crossAxisAlignment: CrossAxisAlignment.center,
-                                    //               children: [
-                                    //                 SizedBox(
-                                    //                   width: width * 0.035,
-                                    //                   height: width * 0.035,
-                                    //                   child: IconButton(
-                                    //                     tooltip: "Go to Album",
-                                    //                     onPressed: (){
-                                    //                       // Navigator.pushNamed(context, '/album', arguments: DataController.albumBox.query(Album_.name.equals(song.album)).build().findFirst());
-                                    //                     },
-                                    //                     padding: const EdgeInsets.all(0),
-                                    //                     icon: Icon(
-                                    //                       FluentIcons.album,
-                                    //                       color: Colors.white,
-                                    //                       size: height * 0.03,
-                                    //                     ),
-                                    //                   ),
-                                    //                 ),
-                                    //                 Expanded(
-                                    //                   child: Consumer<AudioProvider>(
-                                    //                     builder: (_, audioProvider, __){
-                                    //                       return FittedBox(
-                                    //                         fit: BoxFit.fill,
-                                    //                         child: Icon(
-                                    //                           audioProvider.currentSong.path  == song.path && audioProvider.audioSettings.playing == true ?
-                                    //                           FluentIcons.pause : FluentIcons.play,
-                                    //                           color: Colors.white,
-                                    //                         ),
-                                    //                       );
-                                    //                     },
-                                    //                   ),
-                                    //                 ),
-                                    //                 SizedBox(
-                                    //                   width: width * 0.035,
-                                    //                   height: width * 0.035,
-                                    //                   child: PopupMenuButton<String>(
-                                    //                     icon: Icon(
-                                    //                       FluentIcons.moreVertical,
-                                    //                       color: Colors.white,
-                                    //                       size: height * 0.03,
-                                    //                     ),
-                                    //                     onSelected: (String value){
-                                    //                       switch(value){
-                                    //                         case 'add':
-                                    //                           debugPrint("Add $index");
-                                    //                           Navigator.pushNamed(context, '/add', arguments: [song]);
-                                    //                           break;
-                                    //                         case 'playNext':
-                                    //                           debugPrint("Play Next: $index");
-                                    //                           // dc.addNextToQueue([song.path]);
-                                    //                           break;
-                                    //                         case 'select':
-                                    //                           debugPrint("Select $index");
-                                    //                           // if (DataController.selected.contains(song.path)){
-                                    //                           //   DataController.selected = List.from(DataController.selected)..remove(song.path);
-                                    //                           //   return;
-                                    //                           // }
-                                    //                           // DataController.selected = List.from(DataController.selected)..add(song.path);
-                                    //                           break;
-                                    //                         case 'details':
-                                    //                           debugPrint("Details $index");
-                                    //                           Navigator.pushNamed(context, '/track', arguments: song);
-                                    //                           break;
-                                    //                       }
-                                    //                     },
-                                    //                     itemBuilder: (context){
-                                    //                       return [
-                                    //                         const PopupMenuItem<String>(
-                                    //                           value: 'add',
-                                    //                           child: Text("Add to Playlist"),
-                                    //                         ),
-                                    //                         const PopupMenuItem<String>(
-                                    //                           value: 'playNext',
-                                    //                           child: Text("Play Next"),
-                                    //                         ),
-                                    //                         const PopupMenuItem<String>(
-                                    //                           value: 'select',
-                                    //                           child: Text("Select"),
-                                    //                         ),
-                                    //                         const PopupMenuItem<String>(
-                                    //                           value: 'details',
-                                    //                           child: Text("Track Details"),
-                                    //                         ),
-                                    //                       ];
-                                    //                     },
-                                    //                   ),
-                                    //                 ),
-                                    //               ],
-                                    //             ),
-                                    //             child: Container(
-                                    //               alignment: Alignment.bottomCenter,
-                                    //               padding: EdgeInsets.only(
-                                    //                 bottom: height * 0.005,
-                                    //               ),
-                                    //               decoration: BoxDecoration(
-                                    //                   gradient: LinearGradient(
-                                    //                       begin: FractionalOffset.center,
-                                    //                       end: FractionalOffset.bottomCenter,
-                                    //                       colors: [
-                                    //                         Colors.black.withOpacity(0.0),
-                                    //                         Colors.black.withOpacity(0.5),
-                                    //                         Colors.black,
-                                    //                       ],
-                                    //                       stops: const [0.0, 0.5, 1.0]
-                                    //                   )
-                                    //               ),
-                                    //               child: Consumer<AudioProvider>(
-                                    //                 builder: (_, audioProvider, __) {
-                                    //                   return TextScroll(
-                                    //                     song.name,
-                                    //                     mode: TextScrollMode.bouncing,
-                                    //                     velocity: const Velocity(pixelsPerSecond: Offset(20, 0)),
-                                    //                     style: TextStyle(
-                                    //                       color: audioProvider.currentSong.path == song.path ? Colors.blue : Colors.white,
-                                    //                       fontSize: normalSize,
-                                    //                       fontWeight: FontWeight.bold,
-                                    //                     ),
-                                    //                     pauseOnBounce: const Duration(seconds: 2),
-                                    //                     delayBefore: const Duration(seconds: 2),
-                                    //                     pauseBetween: const Duration(seconds: 2),
-                                    //                   );
-                                    //                 },
-                                    //               ),
-                                    //             ),
-                                    //           ),
-                                    //         ),
-                                    //       ),
-                                    //
-                                    //     );
-                                    //   },
-                                    // ),
+                                                  break;
+                                                case 'select':
+                                                  debugPrint("Select ${entity.name}");
+                                                  Song song = entity as Song;
+                                                  if (selected.value.contains(entity)) {
+                                                    selected.value = List<Song>.from(selected.value)..remove(song);
+                                                  } else {
+                                                    selected.value = List<Song>.from(selected.value)..add(song);
+                                                  }
+                                                  break;
+                                                case 'details':
+                                                  debugPrint("Details ${entity.name}");
+                                                  var appState = Provider.of<AppStateProvider>(context, listen: false);
+                                                  appState.navigatorKey.currentState?.push(TrackScreen.route(song: entity as Song));
+                                                  break;
+                                              }
+                                            },
+                                            itemBuilder: (context){
+                                              return [
+                                                const PopupMenuItem<String>(
+                                                  value: 'add',
+                                                  child: Text("Add to Playlist"),
+                                                ),
+                                                const PopupMenuItem<String>(
+                                                  value: 'playNext',
+                                                  child: Text("Play Next"),
+                                                ),
+                                                const PopupMenuItem<String>(
+                                                  value: 'select',
+                                                  child: Text("Select"),
+                                                ),
+                                                const PopupMenuItem<String>(
+                                                  value: 'details',
+                                                  child: Text("Track Details"),
+                                                ),
+                                              ];
+                                            },
+                                          );
+                                        },
+                                      );
+                                    },
                                   ),
-                                ],
-                              );
-                              // return GridView.builder(
-                              //   padding: EdgeInsets.only(
-                              //     left: width * 0.01,
-                              //     right: width * 0.01,
-                              //     top: height * 0.01,
-                              //     bottom: width * 0.125,
-                              //   ),
-                              //   itemCount: songProvider.loadedSongs.length,
-                              //   controller: songProvider.scrollController,
-                              //   gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
-                              //     maxCrossAxisExtent: width * 0.125,
-                              //     crossAxisSpacing: width * 0.0125,
-                              //     mainAxisSpacing: width * 0.0125,
-                              //   ),
-                              //   itemBuilder: (BuildContext context, int index) {
-                              //     if (index >= songProvider.loadedSongs.length) {
-                              //       return Container(
-                              //         height: height * 0.125,
-                              //         padding: EdgeInsets.symmetric(
-                              //           horizontal: width * 0.01,
-                              //           vertical: height * 0.01,
-                              //         ),
-                              //         child: snapshot.connectionState == ConnectionState.waiting ?
-                              //         Center(
-                              //           child: CircularProgressIndicator(),
-                              //         ) : Center(
-                              //           child: Text("No more songs to load"),
-                              //         ),
-                              //       );
-                              //     }
-                              //     Song song = snapshot.data![index];
-                              //     return MouseRegion(
-                              //       cursor: SystemMouseCursors.click,
-                              //       child: GestureDetector(
-                              //         onTap: () async {
-                              //           //debugPrint("Playing ${widget.controller.indexNotifier.value}");
-                              //           // try {
-                              //           //   if (SettingsController.currentSongPath != song.path) {
-                              //           //     //debugPrint("path match");
-                              //           //     var songPaths = snapshot.data!.map((e) => e.path).toList();
-                              //           //     if (SettingsController.queue.equals(songPaths) == false) {
-                              //           //       debugPrint("Updating playing songs");
-                              //           //       dc.updatePlaying(songPaths, index);
-                              //           //     }
-                              //           //     SettingsController.index = SettingsController.currentQueue.indexOf(song.path);
-                              //           //     await AppAudioHandler.play();
-                              //           //   }
-                              //           //   else {
-                              //           //     if (SettingsController.playing == true) {
-                              //           //       await AppAudioHandler.pause();
-                              //           //     }
-                              //           //     else {
-                              //           //       await AppAudioHandler.play();
-                              //           //     }
-                              //           //   }
-                              //           // }
-                              //           // catch (e) {
-                              //           //   debugPrint(e.toString());
-                              //           //   var songPaths = snapshot.data!.map((e) => e.path).toList();
-                              //           //   dc.updatePlaying(songPaths, index);
-                              //           //   SettingsController.index = index;
-                              //           //   await AppAudioHandler.play();
-                              //           // }
-                              //         },
-                              //         onLongPress: (){
-                              //           debugPrint("Select song $index");
-                              //           // DataController.selected = List.from(DataController.selected)..add(song.path);
-                              //         },
-                              //         child: ClipRRect(
-                              //           borderRadius: BorderRadius.circular(width * 0.01),
-                              //           child: ImageWidget(
-                              //             path: song.path,
-                              //             heroTag: song.path,
-                              //             hoveredChild: Row(
-                              //               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                              //               crossAxisAlignment: CrossAxisAlignment.center,
-                              //               children: [
-                              //                 SizedBox(
-                              //                   width: width * 0.035,
-                              //                   height: width * 0.035,
-                              //                   child: IconButton(
-                              //                     tooltip: "Go to Album",
-                              //                     onPressed: (){
-                              //                       // Navigator.pushNamed(context, '/album', arguments: DataController.albumBox.query(Album_.name.equals(song.album)).build().findFirst());
-                              //                     },
-                              //                     padding: const EdgeInsets.all(0),
-                              //                     icon: Icon(
-                              //                       FluentIcons.album,
-                              //                       color: Colors.white,
-                              //                       size: height * 0.03,
-                              //                     ),
-                              //                   ),
-                              //                 ),
-                              //                 Expanded(
-                              //                   child: Consumer<AudioProvider>(
-                              //                     builder: (_, audioProvider, __){
-                              //                       return FittedBox(
-                              //                         fit: BoxFit.fill,
-                              //                         child: Icon(
-                              //                           audioProvider.currentSong.path  == song.path && audioProvider.audioSettings.playing == true ?
-                              //                           FluentIcons.pause : FluentIcons.play,
-                              //                           color: Colors.white,
-                              //                         ),
-                              //                       );
-                              //                     },
-                              //                   ),
-                              //                 ),
-                              //                 SizedBox(
-                              //                   width: width * 0.035,
-                              //                   height: width * 0.035,
-                              //                   child: PopupMenuButton<String>(
-                              //                     icon: Icon(
-                              //                       FluentIcons.moreVertical,
-                              //                       color: Colors.white,
-                              //                       size: height * 0.03,
-                              //                     ),
-                              //                     onSelected: (String value){
-                              //                       switch(value){
-                              //                         case 'add':
-                              //                           debugPrint("Add $index");
-                              //                           Navigator.pushNamed(context, '/add', arguments: [song]);
-                              //                           break;
-                              //                         case 'playNext':
-                              //                           debugPrint("Play Next: $index");
-                              //                           // dc.addNextToQueue([song.path]);
-                              //                           break;
-                              //                         case 'select':
-                              //                           debugPrint("Select $index");
-                              //                           // if (DataController.selected.contains(song.path)){
-                              //                           //   DataController.selected = List.from(DataController.selected)..remove(song.path);
-                              //                           //   return;
-                              //                           // }
-                              //                           // DataController.selected = List.from(DataController.selected)..add(song.path);
-                              //                           break;
-                              //                         case 'details':
-                              //                           debugPrint("Details $index");
-                              //                           Navigator.pushNamed(context, '/track', arguments: song);
-                              //                           break;
-                              //                       }
-                              //                     },
-                              //                     itemBuilder: (context){
-                              //                       return [
-                              //                         const PopupMenuItem<String>(
-                              //                           value: 'add',
-                              //                           child: Text("Add to Playlist"),
-                              //                         ),
-                              //                         const PopupMenuItem<String>(
-                              //                           value: 'playNext',
-                              //                           child: Text("Play Next"),
-                              //                         ),
-                              //                         const PopupMenuItem<String>(
-                              //                           value: 'select',
-                              //                           child: Text("Select"),
-                              //                         ),
-                              //                         const PopupMenuItem<String>(
-                              //                           value: 'details',
-                              //                           child: Text("Track Details"),
-                              //                         ),
-                              //                       ];
-                              //                     },
-                              //                   ),
-                              //                 ),
-                              //               ],
-                              //             ),
-                              //             child: Container(
-                              //               alignment: Alignment.bottomCenter,
-                              //               padding: EdgeInsets.only(
-                              //                 bottom: height * 0.005,
-                              //               ),
-                              //               decoration: BoxDecoration(
-                              //                   gradient: LinearGradient(
-                              //                       begin: FractionalOffset.center,
-                              //                       end: FractionalOffset.bottomCenter,
-                              //                       colors: [
-                              //                         Colors.black.withOpacity(0.0),
-                              //                         Colors.black.withOpacity(0.5),
-                              //                         Colors.black,
-                              //                       ],
-                              //                       stops: const [0.0, 0.5, 1.0]
-                              //                   )
-                              //               ),
-                              //               child: Consumer<AudioProvider>(
-                              //                 builder: (_, audioProvider, __) {
-                              //                   return TextScroll(
-                              //                     song.title,
-                              //                     mode: TextScrollMode.bouncing,
-                              //                     velocity: const Velocity(pixelsPerSecond: Offset(20, 0)),
-                              //                     style: TextStyle(
-                              //                       color: audioProvider.currentSong.path == song.path ? Colors.blue : Colors.white,
-                              //                       fontSize: normalSize,
-                              //                       fontWeight: FontWeight.bold,
-                              //                     ),
-                              //                     pauseOnBounce: const Duration(seconds: 2),
-                              //                     delayBefore: const Duration(seconds: 2),
-                              //                     pauseBetween: const Duration(seconds: 2),
-                              //                   );
-                              //                 },
-                              //               ),
-                              //             ),
-                              //           ),
-                              //         ),
-                              //       ),
-                              //
-                              //     );
-                              //   },
-                              // );
-                            }
+                                ),
+                              ],
+                            );
+                          }
+                      ),
+                    ),
+                  ],
+                );
+              }
+          )
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.miniCenterFloat,
+      floatingActionButton: ValueListenableBuilder(
+        valueListenable: selected,
+        builder: (context, value, child) {
+          return Visibility(
+            visible: value.isNotEmpty,
+            child: Container(
+              width: MediaQuery.of(context).size.width * 0.1,
+              height: MediaQuery.of(context).size.height * 0.05,
+              margin: EdgeInsets.only(
+                bottom: MediaQuery.of(context).size.height * 0.1,
+              ),
+              decoration: BoxDecoration(
+                color: Colors.blue,
+                borderRadius: BorderRadius.circular(30),
+              ),
+              foregroundDecoration: BoxDecoration(
+                border: Border.all(color: Colors.grey, width: 1),
+                borderRadius: BorderRadius.circular(30),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Expanded(
+                    child: TextButton.icon(
+                      icon: Icon(FluentIcons.add, color: Colors.white, size: MediaQuery.of(context).size.height * 0.02,),
+                      label: Text(
+                        "Add",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: normalSize,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      onPressed: () {
+                        debugPrint("Add button pressed");
+                        if (selected.value.isEmpty) {
+                          return;
+                        }
+                        var appState = Provider.of<AppStateProvider>(context, listen: false);
+                        appState.navigatorKey.currentState?.push(
+                          AddScreen.route(songs: selected.value),
+                        ).then((value) {
+                          selected.value = [];
+                        });
+                      },
+                      style: TextButton.styleFrom(
+                        backgroundColor: Colors.blue,
+                        padding: EdgeInsets.zero,
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.only(
+                              topLeft: Radius.circular(30),
+                              bottomLeft: Radius.circular(30),
+                            )
                         ),
                       ),
-                    ],
-                  );
-                }
-            )
-        );
-      },
+                    ),
+                  ),
+                  Container(
+                    width: 1,
+                    height: MediaQuery.of(context).size.height * 0.05,
+                    color: Colors.grey,
+                  ),
+                  IconButton(
+                    onPressed: () {
+                      debugPrint("Delete button pressed");
+                      if (selected.value.isEmpty) {
+                        return;
+                      }
+                      selected.value = [];
+                    },
+                    icon: Icon(
+                      FluentIcons.trash,
+                      color: Colors.white,
+                      size: MediaQuery.of(context).size.height * 0.02,
+                    ),
+                    style: IconButton.styleFrom(
+                      backgroundColor: Colors.red,
+                      padding: EdgeInsets.zero,
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.only(
+                            topRight: Radius.circular(30),
+                            bottomRight: Radius.circular(30),
+                          )
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
     );
   }
 

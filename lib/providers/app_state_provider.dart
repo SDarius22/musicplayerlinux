@@ -3,36 +3,35 @@ import 'dart:io';
 import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_miniplayer/flutter_miniplayer.dart';
+import 'package:mesh_gradient/mesh_gradient.dart';
 import 'package:musicplayer/entities/app_settings.dart';
 import 'package:musicplayer/providers/audio_provider.dart';
-import 'package:musicplayer/providers/slider_provider.dart';
 import 'package:musicplayer/services/settings_service.dart';
 import 'package:musicplayer/services/worker_service.dart';
-import 'package:sliding_up_panel/sliding_up_panel.dart';
 import 'package:tray_manager/tray_manager.dart';
 
 class AppStateProvider with ChangeNotifier, TrayListener{
   final AudioProvider audioProvider;
-  final SliderProvider sliderProvider;
   final SettingsService settingsService;
   final navigatorKey = GlobalKey<NavigatorState>();
   bool isDarkMode = true;
   bool isDrawerOpen = false;
   List<String> appActions = [];
-  PanelController panelController = PanelController();
+
+  MiniplayerController miniPlayerController = MiniplayerController();
+  AnimatedMeshGradientController animatedMeshGradientController = AnimatedMeshGradientController();
   ScrollController itemScrollController = ScrollController();
+
   AppSettings appSettings = AppSettings();
 
+  ValueNotifier<bool> isPanelOpen = ValueNotifier(false);
 
   Color lightColor = Colors.white;
   Color darkColor = Colors.black;
 
-  late AnimationController _controller;
-  late Animation<double> animation;
 
-  bool _isInitialized = false;
-
-  AppStateProvider(this.audioProvider, this.sliderProvider, this.settingsService) {
+  AppStateProvider(this.audioProvider, this.settingsService) {
     trayManager.addListener(this);
     initTray();
     appSettings = settingsService.getAppSettings() ?? AppSettings();
@@ -40,42 +39,28 @@ class AppStateProvider with ChangeNotifier, TrayListener{
       debugPrint('AudioProvider changed, updating colors');
       setColors();
     });
+    audioProvider.playingNotifier.addListener(() {
+      if (audioProvider.playingNotifier.value) {
+        animatedMeshGradientController.start();
+      } else {
+        animatedMeshGradientController.stop();
+      }
+    });
   }
-
-  void initController(TickerProvider vsync) {
-    if (_isInitialized) return;
-
-    _controller = AnimationController(
-      vsync: vsync,
-      duration: const Duration(seconds: 1),
-    );
-
-    animation = CurvedAnimation(
-      parent: _controller,
-      curve: Curves.easeInOut,
-    );
-
-    _isInitialized = true;
-  }
-
-  void startAnimation() => _controller.repeat(reverse: true);
-  void stopAnimation() => _controller.stop();
-
-  Animation<double> get gradientAnimation => animation;
 
   Future<void> initTray() async {
     MenuItem menuItemPlay = MenuItem(
       key: 'play',
-      label: sliderProvider.playing ? 'Pause' : 'Play',
-      onClick: (menuItem) async {
+      label: audioProvider.playingNotifier.value ? 'Pause' : 'Play',
+      onClick: (menuItem) {
         if (kDebugMode) {
           print('click item play');
         }
-        if (sliderProvider.playing) {
-          await audioProvider.pause();
+        if (audioProvider.playingNotifier.value) {
+          audioProvider.pause();
           menuItem.label = 'Play';
         } else {
-          await audioProvider.play();
+          audioProvider.play();
           menuItem.label = 'Pause';
         }
       },
@@ -119,7 +104,7 @@ class AppStateProvider with ChangeNotifier, TrayListener{
               print('click item 1');
             }
             menuItem.checked = !(menuItem.checked == true);
-            sliderProvider.setRepeat(menuItem.checked == true);
+            audioProvider.setRepeat(menuItem.checked == true);
           },
         ),
         MenuItem.checkbox(

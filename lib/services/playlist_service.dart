@@ -12,11 +12,15 @@ class PlaylistService {
     if (playlistRepo.getIndestructiblePlaylists().isEmpty) {
       initializeIndestructible();
     }
+    songService.watchSongs().listen((_) {
+      debugPrint("Songs updated, updating indestructible playlists");
+      updateIndestructible();
+    });
   }
 
   Stream watchPlaylists() => playlistRepo.watchAllPlaylists();
 
-  void addPlaylist(String name, List<String> songs) {
+  void addPlaylist(String name, List<String> songs, String whereToAdd) {
     if (name.isEmpty) {
       throw ArgumentError("Playlist name cannot be empty");
     }
@@ -30,7 +34,17 @@ class PlaylistService {
     }
     Playlist newPlaylist = Playlist();
     newPlaylist.name = name;
-    newPlaylist.pathsInOrder = List<String>.from(songs);
+    newPlaylist.nextAdded = whereToAdd;
+    List<Song> songObjects = [];
+    for (var songPath in songs) {
+      Song? song = songService.getSong(songPath);
+      if (song != null) {
+        songObjects.add(song);
+      } else {
+        debugPrint("Song not found: $songPath");
+      }
+    }
+    addToPlaylist(newPlaylist, songObjects);
     try {
        playlistRepo.addPlaylist(newPlaylist);
     } catch (e) {
@@ -83,6 +97,15 @@ class PlaylistService {
     }
   }
 
+  List<Playlist> getNormalPlaylists() {
+    try {
+      return playlistRepo.getNormalPlaylists();
+    } catch (e) {
+      debugPrint("Error fetching normal playlists: $e");
+      return [];
+    }
+  }
+
   List<Playlist> getPlaylists(String query, String sortField, bool flag) {
     try {
       return playlistRepo.getPlaylists(query, sortField, flag);
@@ -104,11 +127,13 @@ class PlaylistService {
   void addToPlaylist(Playlist playlist, List<Song> songs) {
     if (playlist.nextAdded == 'last') {
       for (var song in songs) {
+        debugPrint("Adding song: ${song.name}, play count: ${song.playCount} to playlist: ${playlist.name}");
         if (playlist.pathsInOrder.contains(song.path)) {
           continue;
         }
         playlist.pathsInOrder.add(song.path);
         playlist.duration += song.duration;
+        playlist.songs.add(song);
         bool found = false;
         for (var artistCountStr in playlist.artistCount){
           if (artistCountStr.contains(song.trackArtist)){
@@ -132,6 +157,7 @@ class PlaylistService {
         }
         playlist.pathsInOrder.insert(0, songs[i].path);
         playlist.duration += songs[i].duration;
+        playlist.songs.insert(0, songs[i]);
         bool found = false;
         for (var artistCountStr in playlist.artistCount){
           if (artistCountStr.contains(songs[i].trackArtist)){
@@ -194,9 +220,26 @@ class PlaylistService {
     }
   }
 
-  Future<void> updateIndestructible() async {
-     updateMostPlayed();
-     updateRecentlyPlayed();
+  void updateIndestructible() {
+    updateFavorites();
+    updateMostPlayed();
+    updateRecentlyPlayed();
+  }
+
+  void updateFavorites() {
+    Playlist? favorites =  playlistRepo.getPlaylist("Favorites");
+    if (favorites == null) {
+      favorites = Playlist();
+      favorites.name = "Favorites";
+    }
+    // var query = songBox.query(Song_.isFavorite.equals(true)).build();
+    var songs = songService.getFavoriteSongs();
+    favorites.artistCount = [];
+    favorites.pathsInOrder = [];
+    favorites.songs.clear();
+    favorites.duration = 0;
+    addToPlaylist(favorites, songs);
+    playlistRepo.updatePlaylist(favorites);
   }
 
   void updateMostPlayed() {
@@ -210,26 +253,9 @@ class PlaylistService {
     var songs = songService.getSongsWithPlayCount();
     mostPlayed.artistCount = [];
     mostPlayed.pathsInOrder = [];
+    mostPlayed.songs.clear();
     mostPlayed.duration = 0;
-    for (var song in songs) {
-      mostPlayed.pathsInOrder.add(song.path);
-      int duration = song.duration + mostPlayed.duration;
-      mostPlayed.duration = duration;
-      bool found = false;
-      for (var artistCountStr in mostPlayed.artistCount){
-        if (artistCountStr.contains(song.trackArtist)){
-          int count = int.parse(artistCountStr.split(" - ")[1]);
-          count += 1;
-          mostPlayed.artistCount.remove(artistCountStr);
-          mostPlayed.artistCount.add("${song.trackArtist} - $count");
-          found = true;
-          break;
-        }
-      }
-      if (!found){
-        mostPlayed.artistCount.add("${song.trackArtist} - 1");
-      }
-    }
+    addToPlaylist(mostPlayed, songs);
     playlistRepo.updatePlaylist(mostPlayed);
   }
 
@@ -244,26 +270,9 @@ class PlaylistService {
     var songs = songService.getSongsWithLastPlayed();
     recentlyPlayed.artistCount = [];
     recentlyPlayed.pathsInOrder = [];
+    recentlyPlayed.songs.clear();
     recentlyPlayed.duration = 0;
-    for (var song in songs) {
-      recentlyPlayed.pathsInOrder.add(song.path);
-      int duration = song.duration + recentlyPlayed.duration;
-      recentlyPlayed.duration = duration;
-      bool found = false;
-      for (var artistCountStr in recentlyPlayed.artistCount){
-        if (artistCountStr.contains(song.trackArtist)){
-          int count = int.parse(artistCountStr.split(" - ")[1]);
-          count += 1;
-          recentlyPlayed.artistCount.remove(artistCountStr);
-          recentlyPlayed.artistCount.add("${song.trackArtist} - $count");
-          found = true;
-          break;
-        }
-      }
-      if (!found){
-        recentlyPlayed.artistCount.add("${song.trackArtist} - 1");
-      }
-    }
+    addToPlaylist(recentlyPlayed, songs);
     playlistRepo.updatePlaylist(recentlyPlayed);
   }
 }

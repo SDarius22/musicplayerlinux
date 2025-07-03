@@ -1,3 +1,6 @@
+import 'dart:async';
+import 'dart:isolate';
+
 import 'package:flutter/foundation.dart';
 import 'package:musicplayer/entities/app_settings.dart';
 import 'package:musicplayer/entities/song.dart';
@@ -13,8 +16,7 @@ class SongService {
   final AlbumService albumService;
   final ArtistService artistService;
 
-  SongService(this.songRepo, this.settingsService,
-      this.albumService, this.artistService);
+  SongService(this.songRepo, this.settingsService, this.albumService, this.artistService);
 
   Stream watchSongs() => songRepo.watchAllSongs();
 
@@ -110,6 +112,15 @@ class SongService {
     }
   }
 
+  List<Song> getFavoriteSongs() {
+    try {
+      return songRepo.getFavoriteSongs();
+    } catch (e) {
+      debugPrint("Error fetching favorite songs: $e");
+      return [];
+    }
+  }
+
   List<Song> getSongsWithPlayCount() {
     try {
       return  songRepo.getSongsWithPlayCount();
@@ -154,7 +165,21 @@ class SongService {
         song.name = file.path.split('/').last;
         songRepo.addSong(song);
 
-        compute(FileService.retrieveSong, file.path).then((metadata) {
+        // try {
+        //   debugPrint("Retrieving metadata for ${file.path}");
+        //   final metadata = await retrieveMetadata(file.path);
+        //   debugPrint("Retrieved metadata for ${file.path}.");
+        //   song.fromJson(metadata);
+        //   //debugPrint("Retrieved metadata for ${file.path}: ${song.id}");
+        //   song.fullyLoaded = true;
+        //   songRepo.updateSong(song);
+        //   albumService.addSongToAlbum(song, song.album);
+        //   artistService.addSongToArtist(song, song.trackArtist);
+        // } catch (e) {
+        //   debugPrint("Error retrieving metadata for ${file.path}: $e");
+        // }
+
+        Isolate.run(() => FileService.retrieveSong(file.path)).then((metadata) {
           song.fromJson(metadata);
           //debugPrint("Retrieved metadata for ${file.path}: ${song.id}");
           song.fullyLoaded = true;
@@ -167,17 +192,44 @@ class SongService {
         });
       }
       else if (song.fullyLoaded == false) {
-        compute(FileService.retrieveSong, file.path).then((metadata) {
+        // try {
+        //   debugPrint("Retrieving metadata for ${file.path}");
+        //   final metadata = await retrieveMetadata(file.path);
+        //   debugPrint("Retrieved metadata for ${file.path}.");
+        //   song.fromJson(metadata);
+        //   //debugPrint("Retrieved metadata for ${file.path}: ${song.id}");
+        //   song.fullyLoaded = true;
+        //   songRepo.updateSong(song);
+        //   albumService.addSongToAlbum(song, song.album);
+        //   artistService.addSongToArtist(song, song.trackArtist);
+        // } catch (e) {
+        //   debugPrint("Error retrieving metadata for ${file.path}: $e");
+        // }
+        songRepo.updateSong(song);
+        Isolate.run(() => FileService.retrieveSong(file.path)).then((metadata) {
           song.fromJson(metadata);
           //debugPrint("Retrieved metadata for ${file.path}: ${song.id}");
           song.fullyLoaded = true;
           songRepo.updateSong(song);
           albumService.addSongToAlbum(song, song.album);
           artistService.addSongToArtist(song, song.trackArtist);
-        })
-            .catchError((error) {
+        }).catchError((error) {
           debugPrint("Error retrieving metadata for ${file.path}: $error");
         });
+      }
+      song?.existsExternally = true;
+      songRepo.updateSong(song!);
+    }
+
+    List<Song> nonExistingSongs = songRepo.getNonExistingSongs();
+    for (final song in nonExistingSongs) {
+      //debugPrint("Checking if song ${song.name} exists externally.");
+      if (FileService.fileExists(song.path) == false) {
+        debugPrint("Song ${song.name} does not exist anymore, deleting it.");
+        songRepo.deleteSong(song);
+      } else {
+        song.existsExternally = true;
+        songRepo.updateSong(song);
       }
     }
   }

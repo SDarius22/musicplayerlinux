@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mesh_gradient/mesh_gradient.dart';
 import 'package:musicplayer/providers/app_state_provider.dart';
 import 'package:provider/provider.dart';
 
@@ -34,44 +35,35 @@ class AnimatedBackground extends StatefulWidget {
 class _AnimatedBackgroundState extends State<AnimatedBackground> with SingleTickerProviderStateMixin {
 
   @override
-  void initState() {
-    super.initState();
-    final appState = Provider.of<AppStateProvider>(context, listen: false);
-    appState.initController(this);
-  }
-
-  @override
   Widget build(BuildContext context) {
     return Consumer<AppStateProvider>(
       builder: (context, appState, child) {
-        return AnimatedBuilder(
-          animation: appState.gradientAnimation,
-          builder: (context, child) {
-            final color1 = Color.lerp(appState.darkColor, Color(0xFF0E0E0E), appState.gradientAnimation.value)!;
-            final color2 = Color.lerp(Color(0xFF0E0E0E), appState.darkColor, appState.gradientAnimation.value)!;
-
-            return AnimatedContainer(
-              duration: const Duration(milliseconds: 500),
-              curve: Curves.easeInOut,
-              alignment: widget.alignment,
-              padding: widget.padding,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.bottomLeft,
-                  end: Alignment.bottomRight,
-                  colors: [color2, color1],
-                  stops: const [0.0, 1.0],
-                ),
-              ),
-              foregroundDecoration: widget.foregroundDecoration,
-              constraints: widget.constraints,
-              margin: widget.margin,
-              transform: widget.transform,
-              transformAlignment: widget.transformAlignment,
-              clipBehavior: widget.clipBehavior,
-              child: widget.child,
-            );
-          },
+        return AnimatedMeshGradient(
+          controller: appState.animatedMeshGradientController,
+          colors: [
+            appState.darkColor.withValues(
+              alpha: 0.8,
+            ),
+            Colors.black,
+            Color(0xFF0E0E0E),
+            appState.darkColor,
+          ],
+          options: AnimatedMeshGradientOptions(
+            speed: 5,
+            grain: 0.1,
+            amplitude: 25,
+          ),
+          child: Container(
+            alignment: widget.alignment,
+            padding: widget.padding,
+            foregroundDecoration: widget.foregroundDecoration,
+            constraints: widget.constraints,
+            margin: widget.margin,
+            transform: widget.transform,
+            transformAlignment: widget.transformAlignment,
+            clipBehavior: widget.clipBehavior,
+            child: widget.child,
+          ),
         );
       },
     );

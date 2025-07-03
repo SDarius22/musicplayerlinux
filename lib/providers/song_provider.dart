@@ -56,6 +56,16 @@ class SongProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  void removeSong(Song song) {
+    _songService.deleteSong(song);
+    notifyListeners();
+  }
+
+  void updateSong(Song song) {
+    _songService.updateSong(song);
+    notifyListeners();
+  }
+
   Song? getSong(String songPath) {
     return _songService.getSong(songPath);
   }

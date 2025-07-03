@@ -37,6 +37,8 @@ class Song extends AbstractEntity{
   int playCount = 0;
   bool liked = false;
   bool fullyLoaded = false;
+  @Transient()
+  bool existsExternally = false;
 
   @override
   bool operator ==(Object other) =>

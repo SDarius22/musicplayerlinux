@@ -73,6 +73,13 @@ apply_standard_settings(${BINARY_NAME})
 # Add dependency libraries. Add any application-specific dependencies here.
 target_link_libraries(${BINARY_NAME} PRIVATE flutter)
 target_link_libraries(${BINARY_NAME} PRIVATE PkgConfig::GTK)
+#
+## Add include directories for TagLib headers
+#target_include_directories(${BINARY_NAME} PRIVATE /usr/local/include/taglib)
+#
+## Link statically against libtag.a and any dependencies
+#target_link_libraries(${BINARY_NAME} PRIVATE /usr/local/lib64/libtag.a)
+
 
 # Run the Flutter tool portions of the build. This must not be removed.
 add_dependencies(${BINARY_NAME} flutter_assemble)

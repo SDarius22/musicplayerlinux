@@ -1,10 +1,14 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:musicplayer/components/custom_text_scroll.dart';
 import 'package:musicplayer/components/image_widget.dart';
 import 'package:musicplayer/entities/abstract/abstract_collection.dart';
 import 'package:musicplayer/entities/abstract/abstract_entity.dart';
+import 'package:musicplayer/entities/playlist.dart';
 import 'package:musicplayer/entities/song.dart';
 import 'package:musicplayer/providers/audio_provider.dart';
+import 'package:musicplayer/utils/fluenticons/fluenticons.dart';
 import 'package:provider/provider.dart';
 
 class CustomGridTile extends StatelessWidget {
@@ -13,6 +17,7 @@ class CustomGridTile extends StatelessWidget {
   final Widget rightAction;
   final GestureTapCallback onTap;
   final GestureTapCallback onLongPress;
+  final bool isSelected;
   final AbstractEntity entity;
 
   const CustomGridTile({
@@ -20,10 +25,31 @@ class CustomGridTile extends StatelessWidget {
     required this.onTap,
     required this.onLongPress,
     required this.entity,
+    required this.isSelected,
     this.leftAction = const SizedBox.shrink(),
     this.mainAction = const SizedBox.shrink(),
     this.rightAction = const SizedBox.shrink(),
   });
+
+  String _pathForImageWidget(AbstractEntity entity) {
+    if (entity is Song) {
+      return (entity).path;
+    }
+    if (entity is Playlist) {
+      if (entity.name == 'Current Queue' && entity.indestructible) {
+        return 'assets/current_queue.png';
+      }
+      return (entity).pathsInOrder.isNotEmpty
+          ? (entity).pathsInOrder.first
+          : '';
+    }
+    if (entity is AbstractCollection) {
+      return (entity as AbstractCollection).songs.isNotEmpty
+          ? (entity as AbstractCollection).songs.first.path
+          : '';
+    }
+    return '';
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -38,16 +64,17 @@ class CustomGridTile extends StatelessWidget {
       child: GestureDetector(
         onTap: onTap,
         onLongPress: onLongPress,
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(width * 0.01),
-          child: Hero(
-            tag: entity is Song
-                ? (entity as Song).path
-                : entity.name,
+        child: Hero(
+          tag: entity is Song
+              ? (entity as Song).path
+              : entity.name,
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(width * 0.01),
             child: ImageWidget(
-              path: entity is Song
-                  ? (entity as Song).path
-                  : (entity as AbstractCollection).songs.isNotEmpty ? (entity as AbstractCollection).songs.first.path : '',
+              path: _pathForImageWidget(entity),
+              type: entity is Playlist && (entity as Playlist).name == 'Current Queue' && (entity as Playlist).indestructible
+                  ? ImageWidgetType.asset
+                  : ImageWidgetType.song,
               hoveredChild: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 crossAxisAlignment: CrossAxisAlignment.center,
@@ -70,7 +97,22 @@ class CustomGridTile extends StatelessWidget {
                   ),
                 ],
               ),
-              child: Container(
+              child: isSelected
+                  ? ClipRect(
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                  child: Container(
+                    color: Colors.black.withValues(alpha: 0.4),
+                    alignment: Alignment.center,
+                    child:  Icon(
+                      FluentIcons.check,
+                      color: Colors.white,
+                      size: height * 0.05,
+                    ),
+                  ),
+                ),
+              )
+                  : Container(
                 alignment: Alignment.bottomCenter,
                 padding: EdgeInsets.only(
                   bottom: height * 0.005,
@@ -80,8 +122,8 @@ class CustomGridTile extends StatelessWidget {
                         begin: FractionalOffset.center,
                         end: FractionalOffset.bottomCenter,
                         colors: [
-                          Colors.black.withOpacity(0.0),
-                          Colors.black.withOpacity(0.5),
+                          Colors.black.withValues(alpha: 0.0),
+                          Colors.black.withValues(alpha: 0.5),
                           Colors.black,
                         ],
                         stops: const [
@@ -113,8 +155,10 @@ class CustomGridTile extends StatelessWidget {
                 ),
               ),
             ),
-          )
+
+          ),
         ),
+
       ),
     );
   }

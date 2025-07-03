@@ -11,7 +11,6 @@ import 'package:musicplayer/providers/artist_provider.dart';
 import 'package:musicplayer/providers/audio_provider.dart';
 import 'package:musicplayer/providers/lyrics_provider.dart';
 import 'package:musicplayer/providers/playlist_provider.dart';
-import 'package:musicplayer/providers/slider_provider.dart';
 import 'package:musicplayer/providers/song_provider.dart';
 import 'package:musicplayer/repository/album_repo.dart';
 import 'package:musicplayer/repository/artist_repo.dart';
@@ -140,14 +139,11 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider<SongProvider> (
           create: (context) => SongProvider(context.read<SongService>()),
         ),
-        ChangeNotifierProvider<SliderProvider>(
-          create: (context) => SliderProvider(),
-        ),
         ChangeNotifierProvider<LyricsProvider>(
           create: (context) => LyricsProvider(),
         ),
         ChangeNotifierProvider<AppStateProvider>(
-          create: (context) => AppStateProvider(context.read<AudioProvider>(), context.read<SliderProvider>(), context.read<SettingsService>()),
+          create: (context) => AppStateProvider(context.read<AudioProvider>(), context.read<SettingsService>()),
         ),
         
       ],
@@ -158,6 +154,7 @@ class MyApp extends StatelessWidget {
           brightness: Brightness.dark,
           scaffoldBackgroundColor: const Color(0xFF0E0E0E),
         ),
+        checkerboardOffscreenLayers: true,
         home: LoadingScreen(),
       ),
     );

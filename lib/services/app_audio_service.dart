@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 
+import 'package:collection/collection.dart';
 import 'package:audio_service/audio_service.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:musicplayer/entities/audio_settings.dart';
@@ -17,6 +18,7 @@ class AppAudioService extends BaseAudioHandler {
 
   Song? currentSong = Song();
   Uint8List? image;
+
 
   AppAudioService(this.settingsService, this.songService) {
     playbackState.add(playbackState.value.copyWith(
@@ -41,7 +43,9 @@ class AppAudioService extends BaseAudioHandler {
     ));
     if (audioSettings.queue.isNotEmpty) {
       await audioPlayer.play(
-        DeviceFileSource(audioSettings.queue[audioSettings.index]),
+        DeviceFileSource(audioSettings.currentQueue[
+          audioSettings.index
+        ]),
         position: Duration(milliseconds: audioSettings.slider),
         volume: audioSettings.volume,
         balance: audioSettings.balance,
@@ -64,11 +68,14 @@ class AppAudioService extends BaseAudioHandler {
     playbackState.add(playbackState.value.copyWith(
       controls: [MediaControl.skipToNext],
     ));
-    await seek(Duration.zero);
-    audioSettings.index = (audioSettings.index + 1) % audioSettings.queue.length;
-    settingsService.updateAudioSettings(audioSettings);
-    await updateCurrentSong();
-    await play();
+    // await seek(Duration.zero);
+    // audioSettings.index = (audioSettings.index + 1) % audioSettings.queue.length;
+    // settingsService.updateAudioSettings(audioSettings);
+    // await updateCurrentSong();
+    // await play();
+    await setCurrentIndex(audioSettings.currentQueue[
+      (audioSettings.index + 1) % audioSettings.currentQueue.length
+    ]);
   }
 
   @override
@@ -76,13 +83,23 @@ class AppAudioService extends BaseAudioHandler {
     playbackState.add(playbackState.value.copyWith(
       controls: [MediaControl.skipToPrevious],
     ));
-    await seek(Duration.zero);
     if (audioSettings.slider < 3000) {
-      audioSettings.index = (audioSettings.index - 1 + audioSettings.queue.length) % audioSettings.queue.length;
-      settingsService.updateAudioSettings(audioSettings);
-      await updateCurrentSong();
-      await play();
+      await setCurrentIndex(audioSettings.currentQueue[
+        (audioSettings.index - 1 + audioSettings.currentQueue.length) %
+        audioSettings.currentQueue.length
+      ]);
     }
+    else {
+      await seek(Duration.zero);
+    }
+  }
+
+  Future<void> setCurrentIndex(String path) async {
+    audioSettings.index = audioSettings.currentQueue.indexOf(path);
+    settingsService.updateAudioSettings(audioSettings);
+    await updateCurrentSong();
+    await seek(Duration.zero);
+    await play();
   }
 
   @override
@@ -90,6 +107,14 @@ class AppAudioService extends BaseAudioHandler {
     debugPrint("seek to $position");
     setSlider(position.inMilliseconds);
     audioPlayer.seek(position);
+  }
+
+  Future<void> repeat() async {
+    currentSong?.lastPlayed = DateTime.now();
+    currentSong?.playCount = (currentSong?.playCount ?? 0) + 1;
+    songService.updateSong(currentSong!);
+    await seek(Duration.zero);
+    await play();
   }
 
   void setVolume(double volume) {
@@ -124,13 +149,18 @@ class AppAudioService extends BaseAudioHandler {
   }
 
   Future<void> initSettings() async {
-    await audioPlayer.setSource(
-      DeviceFileSource(audioSettings.queue[audioSettings.index]),
-    );
-    await audioPlayer.seek(
-      Duration(milliseconds: audioSettings.slider),
-    );
-    debugPrint("Audio player: ${await audioPlayer.getCurrentPosition()}");
+    try {
+      await audioPlayer.setSource(
+        DeviceFileSource(currentSong?.path ?? ''),
+      );
+      await audioPlayer.seek(
+        Duration(milliseconds: audioSettings.slider),
+      );
+      debugPrint("Audio player: ${await audioPlayer.getCurrentPosition()}");
+    }
+    catch (e) {
+      debugPrint("Error initializing audio player: $e");
+    }
   }
 
   Future<void> updateCurrentSong() async {
@@ -146,15 +176,12 @@ class AppAudioService extends BaseAudioHandler {
     var metadata = await FileService.retrieveSong(path);
     currentSong?.fromJson(metadata);
     image = metadata['image'] as Uint8List?;
-    //debugPrint("Image size: ${image?.lengthInBytes ?? 0} bytes");
-  }
-
-  Future<void> setCurrentIndex(String path) async {
-    audioSettings.index = audioSettings.currentQueue.indexOf(path);
-    settingsService.updateAudioSettings(audioSettings);
-    await updateCurrentSong();
-    await seek(Duration.zero);
-    await play();
+    Song? existingSong = songService.getSong(path);
+    currentSong?.id = existingSong?.id ?? 0;
+    currentSong?.lastPlayed = DateTime.now();
+    currentSong?.playCount = (existingSong?.playCount ?? 0) + 1;
+    debugPrint("Current song updated: ${currentSong?.name}, play count: ${currentSong?.playCount}");
+    songService.updateSong(currentSong!);
   }
 
   Future<Duration> getDuration() async {
@@ -175,7 +202,7 @@ class AppAudioService extends BaseAudioHandler {
   void addToQueue(String songPath) {
     if (!audioSettings.queue.contains(songPath)) {
       audioSettings.queue.add(songPath);
-      audioSettings.shuffledQueue = List.from(audioSettings.queue);
+      audioSettings.shuffledQueue.add(songPath);
       settingsService.updateAudioSettings(audioSettings);
     }
   }
@@ -183,14 +210,14 @@ class AppAudioService extends BaseAudioHandler {
   void removeFromQueue(String songPath) {
     if (audioSettings.queue.contains(songPath)) {
       audioSettings.queue.remove(songPath);
-      audioSettings.shuffledQueue = List.from(audioSettings.queue);
+      audioSettings.shuffledQueue.remove(songPath);
       settingsService.updateAudioSettings(audioSettings);
 
     }
   }
 
   void setQueue(List<String> songs) async {
-    if (audioSettings.queue == songs) {
+    if (audioSettings.queue.equals(songs)) {
       return;
     }
     audioSettings.queue = List.from(songs);

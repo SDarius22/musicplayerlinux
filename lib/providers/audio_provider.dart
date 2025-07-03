@@ -1,9 +1,11 @@
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:audio_service/audio_service.dart' as platform_service;
+import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:musicplayer/entities/song.dart';
 import 'package:musicplayer/services/app_audio_service.dart';
+import 'package:musicplayer/services/file_service.dart';
 import 'package:musicplayer/services/settings_service.dart';
 import 'package:musicplayer/services/song_service.dart';
 
@@ -13,9 +15,15 @@ class AudioProvider with ChangeNotifier {
 
   Song get currentSong => _audioHandler?.currentSong ?? Song();
   Uint8List ? get image => _audioHandler?.image;
-  int get currentIndex => _audioHandler?.audioSettings.index ?? 0;
-  get queue => _audioHandler?.audioSettings.queue;
+  List<String> get queue => _audioHandler?.audioSettings.queue ?? [];
   get audioPlayer => _audioHandler?.audioPlayer;
+
+  ValueNotifier<bool> playingNotifier = ValueNotifier<bool>(false);
+  ValueNotifier<bool> repeatNotifier = ValueNotifier<bool>(false);
+  ValueNotifier<bool> shuffleNotifier = ValueNotifier<bool>(false);
+  ValueNotifier<int> sliderNotifier = ValueNotifier<int>(0);
+  ValueNotifier<double> balanceNotifier = ValueNotifier<double>(0.0);
+  ValueNotifier<double> volumeNotifier = ValueNotifier<double>(0.5);
 
   late Future queueFuture;
 
@@ -31,7 +39,28 @@ class AudioProvider with ChangeNotifier {
       );
       await _audioHandler?.updateCurrentSong();
       await _audioHandler?.initSettings();
+      await changeMediaItem();
       queueFuture = Future(() => _audioHandler?.getQueue());
+      repeatNotifier.value = _audioHandler?.audioSettings.repeat ?? false;
+      shuffleNotifier.value = _audioHandler?.audioSettings.shuffle ?? false;
+      sliderNotifier.value = _audioHandler?.audioSettings.slider ?? 0;
+      balanceNotifier.value = _audioHandler?.audioSettings.balance ?? 0.0;
+      volumeNotifier.value = _audioHandler?.audioSettings.volume ?? 0.5;
+
+      audioPlayer.onPositionChanged.listen((Duration event) {
+        sliderNotifier.value = event.inMilliseconds;
+        _audioHandler?.setSlider(event.inMilliseconds);
+      });
+      audioPlayer.onPlayerStateChanged.listen((PlayerState state) {
+        playingNotifier.value = state == PlayerState.playing;
+        if (state == PlayerState.completed) {
+          if (repeatNotifier.value) {
+            repeat();
+          } else {
+            skipToNext();
+          }
+        }
+      });
       notifyListeners();
     }
     // else if (Platform.isWindows) {
@@ -122,7 +151,7 @@ class AudioProvider with ChangeNotifier {
     //   final apc = AudioPlayerController();
     //   await apc.skipToNext();
     //}
-    debugPrint("skipToNext called, new index: $currentIndex");
+    await changeMediaItem();
     notifyListeners();
   }
 
@@ -134,6 +163,7 @@ class AudioProvider with ChangeNotifier {
     //   final apc = AudioPlayerController();
     //   await apc.skipToPrevious();
     // }
+    await changeMediaItem();
     notifyListeners();
   }
 
@@ -151,6 +181,7 @@ class AudioProvider with ChangeNotifier {
   }
 
   Future<void> seek(Duration position) async {
+    sliderNotifier.value = position.inMilliseconds;
     if (Platform.isLinux){
       await _audioHandler?.seek(position);
     }
@@ -158,10 +189,16 @@ class AudioProvider with ChangeNotifier {
     //   final apc = AudioPlayerController();
     //   await apc.seek(position);
     // }
-    notifyListeners();
+  }
+
+  Future<void> repeat() async {
+    if (Platform.isLinux){
+      await _audioHandler?.repeat();
+    }
   }
 
   void setVolume(double volume) {
+    volumeNotifier.value = volume;
     if (Platform.isLinux){
       _audioHandler?.setVolume(volume);
     }
@@ -171,18 +208,8 @@ class AudioProvider with ChangeNotifier {
     // }
   }
 
-  double getVolume() {
-    if (Platform.isLinux){
-      return _audioHandler?.audioSettings.volume ?? 0.5;
-    }
-    // else if (Platform.isWindows){
-    //   final apc = AudioPlayerController();
-    //   return apc.getVolume();
-    // }
-    return 0.5;
-  }
-
   void setBalance(double balance) {
+    balanceNotifier.value = balance;
     if (Platform.isLinux){
       _audioHandler?.setBalance(balance);
     }
@@ -193,6 +220,7 @@ class AudioProvider with ChangeNotifier {
   }
 
   void setRepeat(bool repeat) {
+    repeatNotifier.value = repeat;
     if (Platform.isLinux){
       _audioHandler?.setRepeat(repeat);
     }
@@ -202,18 +230,8 @@ class AudioProvider with ChangeNotifier {
     // }
   }
 
-  bool getRepeat() {
-    if (Platform.isLinux){
-      return _audioHandler?.audioSettings.repeat ?? false;
-    }
-    // else if (Platform.isWindows){
-    //   final apc = AudioPlayerController();
-    //   return apc.getRepeat();
-    // }
-    return false;
-  }
-
   void setShuffle(bool shuffle) {
+    shuffleNotifier.value = shuffle;
     if (Platform.isLinux){
       _audioHandler?.setShuffle(shuffle);
     }
@@ -221,17 +239,6 @@ class AudioProvider with ChangeNotifier {
     //   final apc = AudioPlayerController();
     //   await apc.setShuffle(shuffle);
     // }
-  }
-
-  bool getShuffle() {
-    if (Platform.isLinux){
-      return _audioHandler?.audioSettings.shuffle ?? false;
-    }
-    // else if (Platform.isWindows){
-    //   final apc = AudioPlayerController();
-    //   return apc.getShuffle();
-    // }
-    return false;
   }
 
   void setQueue(List<String> songs) {
@@ -244,27 +251,6 @@ class AudioProvider with ChangeNotifier {
     // }
     queueFuture = Future(() => _audioHandler?.getQueue());
     notifyListeners();
-  }
-
-  void setSlider(int slider) {
-    if (Platform.isLinux){
-      _audioHandler?.setSlider(slider);
-    }
-    // else if (Platform.isWindows){
-    //   final apc = AudioPlayerController();
-    //   await apc.setSlider(slider);
-    // }
-  }
-
-  int getSlider() {
-    if (Platform.isLinux){
-      return _audioHandler?.audioSettings.slider ?? 0;
-    }
-    // else if (Platform.isWindows){
-    //   final apc = AudioPlayerController();
-    //   return apc.getSlider();
-    // }
-    return 0;
   }
 
   Future<Duration> getDuration() async {
@@ -310,11 +296,44 @@ class AudioProvider with ChangeNotifier {
     //   final apc = AudioPlayerController();
     //   await apc.updateCurrentSong();
     // }
+    await changeMediaItem();
     notifyListeners();
   }
 
+  Future<void> changeMediaItem() async {
+    File tempFile = await FileService.createWorkaroundFile(
+        _audioHandler?.image ?? Uint8List(0), currentSong.id);
+    if (Platform.isLinux) {
+      platform_service.MediaItem item = platform_service.MediaItem(
+          id: currentSong.id.toString(),
+          album: currentSong.album,
+          title: currentSong.name,
+          artist: currentSong.trackArtist,
+          duration: Duration(milliseconds: currentSong.duration),
+          artUri: tempFile.uri
+      );
+      _audioHandler?.mediaItem.add(item);
+    }
+    // else if (Platform.isWindows){
+    //   AppAudioHandler.audioHandler.updateMetadata(
+    //     MusicMetadata(
+    //       title: song.title,
+    //       album: song.album,
+    //       albumArtist: song.albumArtist,
+    //       artist: song.trackArtist,
+    //     ),
+    //   );
+    // }
+  }
 
-
-
-
+    // try{
+    //   File lastFile = File(_filePath);
+    //   if (lastFile.existsSync()) {
+    //     lastFile.deleteSync();
+    //   }
+    //   _filePath = path;
+    // }
+    // catch(e){
+    //   debugPrint(e.toString());
+    // }
 }

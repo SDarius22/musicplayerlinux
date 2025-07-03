@@ -52,6 +52,17 @@ class SongsRepository {
     return songs;
   }
 
+  List<Song> getNonExistingSongs() {
+    List<Song> allSongs = getAllSongs();
+    List<Song> nonExistingSongs = [];
+    for (Song song in allSongs) {
+      if (song.existsExternally == false) {
+        nonExistingSongs.add(song);
+      }
+    }
+    return nonExistingSongs;
+  }
+
   List<Song> getAllSongs()  {
     return songBox.query().order(Song_.name).build().find();
   }
@@ -68,17 +79,19 @@ class SongsRepository {
      songBox.put(song);
   }
 
+  List<Song> getFavoriteSongs()  {
+    return songBox.query(Song_.liked.equals(true)).order(Song_.name).build().find();
+  }
+
   List<Song> getSongsWithLastPlayed()  {
-    return songBox.query(Song_.lastPlayed.notNull()).order(Song_.lastPlayed, flags: Order.descending)
-        ..limit(100)
-        .build()
-        .find();
+    Query<Song> query = songBox.query(Song_.lastPlayed.notNull()).order(Song_.lastPlayed, flags: Order.descending).build();
+    query.limit = 100;
+    return query.find();
   }
 
   List<Song> getSongsWithPlayCount()  {
-    return songBox.query(Song_.playCount.greaterThan(0)).order(Song_.playCount, flags: Order.descending)
-        ..limit(100)
-        .build()
-        .find();
+    Query<Song> query = songBox.query(Song_.playCount.greaterThan(0)).order(Song_.playCount, flags: Order.descending).build();
+    query.limit = 100;
+    return query.find();
   }
 }

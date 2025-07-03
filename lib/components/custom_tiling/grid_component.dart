@@ -7,11 +7,21 @@ class GridComponent extends StatelessWidget {
   final List items;
   final Function(AbstractEntity) onTap;
   final Function(AbstractEntity) onLongPress;
+  final bool Function(AbstractEntity) isSelected;
   final Widget Function(AbstractEntity)? buildLeftAction;
   final Widget Function(AbstractEntity)? buildMainAction;
   final Widget Function(AbstractEntity)? buildRightAction;
 
-  const GridComponent({super.key, required this.items, required this.onTap, required this.onLongPress, this.buildLeftAction, this.buildMainAction, this.buildRightAction});
+  const GridComponent({
+    super.key,
+    required this.items,
+    required this.onTap,
+    required this.onLongPress,
+    required this.isSelected,
+    this.buildLeftAction,
+    this.buildMainAction,
+    this.buildRightAction
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -33,6 +43,7 @@ class GridComponent extends StatelessWidget {
             onLongPress(items[index]);
           },
           entity: items[index],
+          isSelected: isSelected(items[index]),
           leftAction: buildLeftAction != null
               ? buildLeftAction!(items[index])
               : const SizedBox.shrink(),

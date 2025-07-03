@@ -4,14 +4,16 @@ import 'package:musicplayer/components/drawer_widget.dart';
 import 'package:musicplayer/components/song_player_widget.dart';
 import 'package:musicplayer/components/volume_widget.dart';
 import 'package:musicplayer/providers/app_state_provider.dart';
-import 'package:musicplayer/providers/song_provider.dart';
 import 'package:musicplayer/screens/tracks.dart';
 import 'package:provider/provider.dart';
 
 class HomeScreen extends StatelessWidget {
   static Route<dynamic> route() {
-    return MaterialPageRoute(
-      builder: (_) => const HomeScreen(),
+    return PageRouteBuilder(
+      settings: const RouteSettings(name: '/home'),
+      pageBuilder: (context, animation, secondaryAnimation) {
+        return HomeScreen();
+      },
     );
   }
 
@@ -20,13 +22,13 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     AppStateProvider appStateProvider = Provider.of<AppStateProvider>(context, listen: false);
-    Provider.of<SongProvider>(context, listen: false).startLoadingSongs();
     return Scaffold(
       appBar: AppBarWidget(
         actions: [
           VolumeWidget(),
         ],
       ),
+
       body: Stack(
         children: [
           Row(

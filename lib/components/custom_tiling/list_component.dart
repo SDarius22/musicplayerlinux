@@ -8,6 +8,7 @@ class ListComponent extends StatelessWidget {
   final double itemExtent;
   final Function(AbstractEntity) onTap;
   final Function(AbstractEntity) onLongPress;
+  final bool Function(AbstractEntity) isSelected;
   final Widget? leadingAction;
   final Widget? trailingAction;
 
@@ -17,6 +18,7 @@ class ListComponent extends StatelessWidget {
     required this.itemExtent,
     required this.onTap,
     required this.onLongPress,
+    required this.isSelected,
     this.leadingAction,
     this.trailingAction,
   });
@@ -34,6 +36,7 @@ class ListComponent extends StatelessWidget {
           onLongPress: () {
             onLongPress(items[index]);
           },
+          isSelected: isSelected(items[index]),
           entity: items[index],
           leadingAction: leadingAction ?? const SizedBox.shrink(),
           trailingAction: trailingAction ?? const SizedBox.shrink(),

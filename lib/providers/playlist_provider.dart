@@ -42,8 +42,8 @@ class PlaylistProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  void addPlaylist(String name, List<String> songs) {
-    _playlistService.addPlaylist(name, songs);
+  void addPlaylist(String name, List<String> songs, String whereToAdd) {
+    _playlistService.addPlaylist(name, songs, whereToAdd);
     notifyListeners();
   }
 
@@ -60,9 +60,15 @@ class PlaylistProvider with ChangeNotifier {
     return _playlistService.getIndestructiblePlaylists();
   }
 
+  List<Playlist> getNormalPlaylists() {
+    return _playlistService.getNormalPlaylists();
+  }
+
   List<Playlist> getPlaylists() {
     return _playlistService.getPlaylists(query, sortField, isAscending);
   }
+
+
 
   void addSongsToPlaylist(Playlist playlist, List<Song> songs) {
     _playlistService.addToPlaylist(playlist, songs);
@@ -73,11 +79,4 @@ class PlaylistProvider with ChangeNotifier {
     _playlistService.deleteFromPlaylist(playlist, song.path);
     notifyListeners();
   }
-
-  void updateIndestructiblePlaylists() {
-    _playlistService.updateIndestructible();
-    notifyListeners();
-  }
-
-
 }

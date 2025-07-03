@@ -1,211 +1,185 @@
-// import 'dart:ui';
-// import 'package:flutter/material.dart';
-// import 'package:musicplayer/utils/fluenticons/fluenticons.dart';
-// import 'package:musicplayer/utils/hover_widget/stack_hover_widget.dart';
-// import 'package:musicplayer/database/objectbox.g.dart';
-// import 'package:musicplayer/entities/playlist.dart';
-// import 'package:musicplayer/entities/song.dart';
-//
-// class AddScreen extends StatefulWidget {
-//   final List<Song> songs;
-//
-//   static Route<dynamic> route({required List<Song> songs}) {
-//     return MaterialPageRoute(
-//       builder: (_) => AddScreen(songs: songs),
-//     );
-//   }
-//
-//   const AddScreen({super.key, required this.songs});
-//
-//   @override
-//   State<AddScreen> createState() => _AddScreenState();
-// }
-//
-// class _AddScreenState extends State<AddScreen> {
-//   List<int> selected = [];
-//   @override
-//   Widget build(BuildContext context) {
-//     //debugPrint(widget.songs.length);
-//     var width = MediaQuery.of(context).size.width;
-//     var height = MediaQuery.of(context).size.height;
-//     //var boldSize = height * 0.025;
-//     var normalSize = height * 0.02;
-//     var smallSize = height * 0.015;
-//     return Container(
-//       width: width,
-//       height: height,
-//       padding: EdgeInsets.only(
-//           top: height * 0.02,
-//           left: width * 0.01,
-//           right: width * 0.01,
-//           bottom: height * 0.02
-//       ),
-//       alignment: Alignment.center,
-//       child: Column(
-//         mainAxisAlignment: MainAxisAlignment.start,
-//         crossAxisAlignment: CrossAxisAlignment.start,
-//         children: [
-//           Row(
-//             crossAxisAlignment: CrossAxisAlignment.center,
-//             children: [
-//               IconButton(
-//                 onPressed: (){
-//                   debugPrint("Back");
-//                   Navigator.pop(context);
-//                 },
-//                 icon: Icon(
-//                   FluentIcons.back,
-//                   size: height * 0.02,
-//                   color: Colors.white,
-//                 ),
-//               ),
-//               SizedBox(
-//                 width: width * 0.01,
-//               ),
-//               Text(
-//                 "Choose one or more playlists to add the selected songs to:",
-//                 style: TextStyle(
-//                     color: Colors.white,
-//                     fontSize: normalSize,
-//                     fontWeight: FontWeight.bold
-//                 ),
-//               ),
-//               const Spacer(),
-//               ElevatedButton(
-//                   onPressed: (){
-//                     //debugPrint("Add to new playlist");
-//                     // for(int i = 0; i < selected.length; i++){
-//                     //   if(selected[i] == 0){
-//                     //     List<String> paths = widget.songs.map((e) => e.path).toList();
-//                     //     //debugPrint(paths);
-//                     //     dc.addToQueue(paths);
-//                     //   }
-//                     //   else{
-//                     //     var playlist = query.find()[i];
-//                     //     dc.addToPlaylist(playlist, widget.songs);
-//                     //   }
-//                     // }
-//                     Navigator.pop(context);
-//                   },
-//                   child: Text(
-//                     "Done",
-//                     style: TextStyle(
-//                         color: Colors.white,
-//                         fontSize: normalSize
-//                     ),
-//                   )
-//               ),
-//
-//             ],
-//           ),
-//           SizedBox(
-//             height: height * 0.8,
-//             child: GridView.builder(
-//               padding: EdgeInsets.only(
-//                 left: width * 0.01,
-//                 right: width * 0.01,
-//                 top: height * 0.01,
-//                 bottom: width * 0.125,
-//               ),
-//               itemCount: query.find().length + 1,
-//               gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
-//                 childAspectRatio: 0.8275,
-//                 maxCrossAxisExtent: width * 0.125,
-//                 crossAxisSpacing: width * 0.0125,
-//                 mainAxisSpacing: width * 0.0125,
-//               ),
-//               itemBuilder: (BuildContext context, int index) {
-//                 Playlist playlist = Playlist();
-//                 if(index > 0){
-//                   playlist = query.find()[index-1];
-//                 }
-//                 return MouseRegion(
-//                   cursor: SystemMouseCursors.click,
-//                   child: GestureDetector(
-//                     onTap: () {
-//                       debugPrint("Tapped on $index");
-//                       setState(() {
-//                         selected.contains(index) ? selected.remove(index) : selected.add(index);
-//                       });
-//                     },
-//                     child: Column(
-//                       children: [
-//                         ClipRRect(
-//                           borderRadius: BorderRadius.circular(width * 0.01),
-//                           child: Stack(
-//                             alignment: Alignment.center,
-//                             children: [
-//                               if(index == 0)
-//                                 AspectRatio(
-//                                   aspectRatio: 1.0,
-//                                   child: StackHoverWidget(
-//                                     bottomWidget: Container(
-//                                       decoration: BoxDecoration(
-//                                           color: Colors.black,
-//                                           image: DecorationImage(
-//                                             fit: BoxFit.cover,
-//                                             image: Image.asset("assets/current_queue.png").image,
-//                                           )
-//                                       ),
-//                                     ),
-//                                     topWidget: ClipRRect(
-//                                       child: BackdropFilter(
-//                                         filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-//                                         child: Container(
-//                                           color: Colors.black.withOpacity(0.3),
-//                                           alignment: Alignment.center,
-//                                         ),
-//                                       ),
-//                                     ),
-//                                   ),
-//                                 )
-//                               else
-//                                 ImageWidget(
-//                                   path: playlist.pathsInOrder.first,
-//                                   heroTag: "${playlist.name} ${playlist.pathsInOrder.first}",
-//                                 ),
-//                               if(selected.contains(index))
-//                                 BackdropFilter(
-//                                   filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-//                                   child: Container(
-//                                     alignment: Alignment.center,
-//                                     child: Icon(
-//                                       FluentIcons.check,
-//                                       size: height * 0.1,
-//                                       color: Colors.white,
-//                                     ),
-//                                   ),
-//                                 ),
-//
-//                             ],
-//                           ),
-//
-//                         ),
-//                         SizedBox(
-//                           height: height * 0.004,
-//                         ),
-//                         Text(
-//                           index == 0 ? "Current Queue" : playlist.name,
-//                           maxLines: 2,
-//                           overflow: TextOverflow.ellipsis,
-//                           textAlign: TextAlign.center,
-//                           style: TextStyle(
-//                               color: Colors.white,
-//                               fontSize: smallSize,
-//                               fontWeight: FontWeight.normal
-//                           ),
-//                         )
-//
-//
-//                       ],
-//                     ),
-//                   ),
-//                 );
-//               },
-//             ),
-//           ),
-//         ],
-//       ),
-//     );
-//   }
-// }
+import 'package:bot_toast/bot_toast.dart';
+import 'package:flutter/material.dart';
+import 'package:musicplayer/components/custom_tiling/grid_component.dart';
+import 'package:musicplayer/providers/audio_provider.dart';
+import 'package:musicplayer/providers/playlist_provider.dart';
+import 'package:musicplayer/utils/fluenticons/fluenticons.dart';
+import 'package:musicplayer/entities/playlist.dart';
+import 'package:musicplayer/entities/song.dart';
+import 'package:provider/provider.dart';
+
+class AddScreen extends StatefulWidget {
+  static Route route({required List<Song> songs}) {
+    return PageRouteBuilder(
+      settings: const RouteSettings(name: '/add', arguments: List<Song>),
+      pageBuilder: (context, animation, secondaryAnimation) {
+        return AddScreen(songs: songs);
+      },
+    );
+  }
+
+  final List<Song> songs;
+  const AddScreen({super.key, required this.songs});
+
+  @override
+  State<AddScreen> createState() => _AddScreenState();
+}
+
+class _AddScreenState extends State<AddScreen> {
+  ValueNotifier<List<Playlist>> selected = ValueNotifier<List<Playlist>>([]);
+
+  @override
+  Widget build(BuildContext context) {
+    //debugPrint(widget.songs.length);
+    var width = MediaQuery.of(context).size.width;
+    var height = MediaQuery.of(context).size.height;
+    //var boldSize = height * 0.025;
+    var normalSize = height * 0.02;
+    var smallSize = height * 0.015;
+    return Scaffold(
+      body: Container(
+        width: width,
+        height: height,
+        padding: EdgeInsets.only(
+            top: height * 0.02,
+            left: width * 0.01,
+            right: width * 0.01,
+            bottom: height * 0.02
+        ),
+        alignment: Alignment.center,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                IconButton(
+                  onPressed: (){
+                    debugPrint("Back");
+                    Navigator.pop(context);
+                  },
+                  icon: Icon(
+                    FluentIcons.back,
+                    size: height * 0.02,
+                    color: Colors.white,
+                  ),
+                ),
+                SizedBox(
+                  width: width * 0.01,
+                ),
+                Text(
+                  "Choose one or more playlists to add the selected songs to:",
+                  style: TextStyle(
+                      color: Colors.white,
+                      fontSize: normalSize,
+                      fontWeight: FontWeight.bold
+                  ),
+                ),
+                const Spacer(),
+                ElevatedButton(
+                    onPressed: (){
+                      if (selected.value.isEmpty) {
+                        BotToast.showText(
+                          text: "Please select at least one playlist",
+                        );
+                        return;
+                      }
+                      debugPrint("Add to new playlist");
+                      for(int i = 0; i < selected.value.length; i++){
+                        Playlist playlist = selected.value[i];
+                        if (playlist.indestructible && playlist.name == 'Current Queue') {
+                          var audioProvider = Provider.of<AudioProvider>(context, listen: false);
+                          for (Song song in widget.songs) {
+                            audioProvider.addToQueue(song.path);
+                          }
+                        }
+                        else {
+                          var playlistProvider = Provider.of<PlaylistProvider>(context, listen: false);
+                          playlistProvider.addSongsToPlaylist(playlist, widget.songs);
+                        }
+                      }
+                      Navigator.pop(context);
+                    },
+                    child: Text(
+                      "Done",
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontSize: normalSize
+                      ),
+                    )
+                ),
+
+              ],
+            ),
+            Expanded(
+              child: Consumer<PlaylistProvider>(
+                builder: (_, playlistProvider, __){
+                  return FutureBuilder(
+                      future: Future(() => playlistProvider.getNormalPlaylists()),
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState == ConnectionState.waiting) {
+                          return Center(
+                            child: CircularProgressIndicator(),
+                          );
+                        }
+                        if (snapshot.hasError) {
+                          debugPrint(snapshot.error.toString());
+                          debugPrintStack();
+                          return Center(
+                            child: Text(
+                              "Error loading playlists",
+                              style: TextStyle(color: Colors.white, fontSize: smallSize),
+                            ),
+                          );
+                        }
+                        List<Playlist> items = snapshot.data ?? [];
+                        Playlist queue = Playlist();
+                        queue.name = "Current Queue";
+                        var audioProvider = Provider.of<AudioProvider>(context, listen: false);
+                        queue.pathsInOrder = audioProvider.queue;
+                        queue.indestructible = true;
+                        items.insert(0, queue);
+                        return CustomScrollView(
+                            slivers: [
+                              SliverPadding(
+                                padding: EdgeInsets.only(
+                                  left: width * 0.01,
+                                  right: width * 0.01,
+                                ),
+                                sliver: ValueListenableBuilder(
+                                  valueListenable: selected,
+                                  builder: (context, value, child) {
+                                    return GridComponent(
+                                      items: items,
+                                      isSelected: (entity) {
+                                        return selected.value.contains(entity as Playlist);
+                                      },
+                                      onTap: (entity) {
+                                        debugPrint("Tapped on ${entity.name}");
+                                        if (selected.value.contains(entity as Playlist)) {
+                                          selected.value = List<Playlist>.from(selected.value)..remove(entity);
+                                        } else {
+                                          selected.value = List<Playlist>.from(selected.value)..add(entity);
+                                        }
+                                      },
+                                      onLongPress: (entity) {
+                                        debugPrint("Long pressed on ${entity.name}");
+                                      },
+                                    );
+                                  },
+                                ),
+                              ),
+                            ]
+                        );
+                      }
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}

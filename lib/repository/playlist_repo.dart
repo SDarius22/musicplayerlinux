@@ -45,14 +45,14 @@ class PlaylistRepository {
           .query(Playlist_.name.contains(query, caseSensitive: false))
           .order(Playlist_.indestructible, flags: Order.descending)
           .order(
-        sortField == 'name' ? Playlist_.name : Playlist_.createdAt,
+        sortField == 'Name' ? Playlist_.name : Playlist_.createdAt,
       ).build();
     } else {
       builderQuery = playlistBox
           .query(Playlist_.name.contains(query, caseSensitive: false))
           .order(Playlist_.indestructible, flags: Order.descending)
           .order(
-        sortField == 'name' ? Playlist_.name : Playlist_.createdAt,
+        sortField == 'Name' ? Playlist_.name : Playlist_.createdAt,
         flags: Order.descending,
       ).build();
     }

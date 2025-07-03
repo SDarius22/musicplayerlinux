@@ -4,6 +4,7 @@ import 'dart:typed_data';
 
 import 'package:audiotags/audiotags.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:watcher/watcher.dart';
 
@@ -150,35 +151,16 @@ class FileService {
     return null;
   }
 
-    // static Future<List<String>> getSongsToRemove() async {
-    //   List<String> toRemove = [];
-    //   for (String path in paths) {
-    //     if (!await File(path).exists() && path.isNotEmpty) {
-    //       toRemove.add(path);
-    //     }
-    //   }
-    // }
-    //
-    // static Future<void> retrieveAllSongs() async{
-    //   var songBox = ObjectBox.store.box<Song>();
-    //   Set<String> paths = songBox.getAll().map((e) => e.path).toSet();
-    //
-    //
-    //   for (String path in toRemove) {
-    //     debugPrint("Removing $path");
-    //     var query = songBox.query(Song_.path.equals(path)).build();
-    //     var result = query.findFirst(); // Use findFirst() for safety
-    //     if (result != null) {
-    //       songBox.remove(result.id);
-    //       if (SettingsController.shuffledQueue.contains(path)) {
-    //         if (SettingsController.currentSongPath == path) {
-    //           SettingsController.index = 0;
-    //         }
-    //         SettingsController.queue = SettingsController.queue..remove(path);
-    //       }
-    //     }
-    //   }
-    //
-    //
-    // }
+  static Future<File> createWorkaroundFile(Uint8List bytes, int id) async {
+    final ByteData data = ByteData.view(bytes.buffer);
+    final String dir = (await getApplicationCacheDirectory()).path;
+    final String path = '$dir/$id.jpeg';
+    final File file = File(path);
+    await file.writeAsBytes(data.buffer.asUint8List());
+    return file;
+  }
+
+  static bool fileExists(String path) {
+    return File(path).existsSync();
+  }
 }

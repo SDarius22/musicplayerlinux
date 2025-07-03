@@ -8,10 +8,8 @@ class Album extends AbstractEntity with AbstractCollection{
   @Id()
   int id = 0;
 
-  // Real field for ObjectBox
   String _name = "Unknown album";
 
-  // Override the abstract getter
   @override
   String get name => _name;
 

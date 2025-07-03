@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:musicplayer/components/custom_text_scroll.dart';
 import 'package:musicplayer/components/image_widget.dart';
@@ -5,6 +7,7 @@ import 'package:musicplayer/entities/abstract/abstract_collection.dart';
 import 'package:musicplayer/entities/abstract/abstract_entity.dart';
 import 'package:musicplayer/entities/song.dart';
 import 'package:musicplayer/providers/audio_provider.dart';
+import 'package:musicplayer/utils/fluenticons/fluenticons.dart';
 import 'package:musicplayer/utils/hover_widget/hover_container.dart';
 import 'package:provider/provider.dart';
 
@@ -14,12 +17,14 @@ class CustomListTile extends StatelessWidget {
   final Widget? trailingAction;
   final GestureTapCallback onTap;
   final GestureLongPressCallback onLongPress;
+  final bool isSelected;
 
   const CustomListTile({
     super.key,
     required this.entity,
     required this.onTap,
     required this.onLongPress,
+    required this.isSelected,
     this.leadingAction = const SizedBox.shrink(),
     this.trailingAction = const SizedBox.shrink(),
   });
@@ -51,12 +56,37 @@ class CustomListTile extends StatelessWidget {
                 margin: EdgeInsets.only(
                   right: height * 0.01,
                 ),
+                decoration: BoxDecoration(
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.2),
+                      offset: const Offset(1, 1),
+                      blurRadius: 4,
+                    ),
+                  ],
+                ),
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(8.0),
                   child: ImageWidget(
                     path: entity is Song ? (entity as Song).path
                         : (entity as AbstractCollection).songs[0].path,
+                    type: ImageWidgetType.song,
                     hoveredChild: leadingAction,
+                    child: isSelected ? ClipRect(
+                      child: BackdropFilter(
+                        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                        child: Container(
+                          color: Colors.black.withValues(alpha: 0.4),
+                          alignment: Alignment.center,
+                          child:  Icon(
+                            FluentIcons.check,
+                            color: Colors.white,
+                            size: height * 0.05,
+                          ),
+                        ),
+                      ),
+                    ) : null,
+
                   ),
                 ),
               ),
@@ -76,6 +106,13 @@ class CustomListTile extends StatelessWidget {
                                 (entity as Song).path ? Colors.blue : Colors.white,
                             fontSize: normalSize,
                             fontWeight: FontWeight.bold,
+                            shadows: [
+                              Shadow(
+                                color: Colors.black.withValues(alpha: 0.5),
+                                offset: const Offset(1, 2),
+                                blurRadius: 4,
+                              ),
+                            ],
                           ),
                         );
                       },
@@ -86,6 +123,13 @@ class CustomListTile extends StatelessWidget {
                         color: Colors.white,
                         fontSize: normalSize,
                         fontWeight: FontWeight.bold,
+                        shadows: [
+                          Shadow(
+                            color: Colors.black.withValues(alpha: 0.5),
+                            offset: const Offset(1, 2),
+                            blurRadius: 4,
+                          ),
+                        ],
                       ),
                     ),
                     if (entity is Song)
@@ -98,6 +142,13 @@ class CustomListTile extends StatelessWidget {
                                   (entity as Song).path ? Colors.blue : Colors.white,
                               fontSize: smallSize,
                               fontWeight: FontWeight.normal,
+                              shadows: [
+                                Shadow(
+                                  color: Colors.black.withValues(alpha: 0.5),
+                                  offset: const Offset(1, 2),
+                                  blurRadius: 4,
+                                ),
+                              ],
                             ),
                           );
                         },
@@ -116,6 +167,13 @@ class CustomListTile extends StatelessWidget {
                             (entity as Song).path ? Colors.blue : Colors.white,
                         fontSize: normalSize,
                         fontWeight: FontWeight.normal,
+                        shadows: [
+                          Shadow(
+                            color: Colors.black.withValues(alpha: 0.5),
+                            offset: const Offset(1, 2),
+                            blurRadius: 4,
+                          ),
+                        ],
                       ),
                     );
                   },

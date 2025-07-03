@@ -2,15 +2,19 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:musicplayer/services/file_service.dart';
 
+enum ImageWidgetType {
+  asset,
+  song,
+  network,
+}
+
 class ImageWidget extends StatefulWidget {
-  final String? path;
-  final String? url;
+  final String path;
   final Widget? hoveredChild;
   final Widget? child;
+  final ImageWidgetType type;
 
-  const ImageWidget({super.key, this.path, this.hoveredChild, this.url, this.child})
-      : assert(path == null || url == null, "Cannot provide both a path and a url!")
-  ;
+  const ImageWidget({super.key,required this.path, required this.type, this.hoveredChild, this.child});
 
   @override
   State<ImageWidget> createState() => _ImageWidgetState();
@@ -28,15 +32,20 @@ class _ImageWidgetState extends State<ImageWidget> {
   }
 
   Future getImage() {
-    if (widget.path != null) {
+    if (widget.type == ImageWidgetType.song) {
       return Future(() async {
-        final image = await FileService.getImage(widget.path!);
+        final image = await FileService.getImage(widget.path);
         return Image.memory(image).image;
       });
     }
-    if (widget.url != null) {
+    if (widget.type == ImageWidgetType.network) {
       return Future(() async {
-        return Image.network(widget.url ?? "").image;
+        return Image.network(widget.path).image;
+      });
+    }
+    if (widget.type == ImageWidgetType.asset) {
+      return Future(() async {
+        return Image.asset(widget.path).image;
       });
     }
     return Future(() async {
@@ -68,14 +77,12 @@ class _ImageWidgetState extends State<ImageWidget> {
               builder: (context, value, child) {
                 return Stack(
                   children: [
-                    AnimatedOpacity(
+                    Opacity(
                       opacity: value ? 0.0 : 1.0,
-                      duration: const Duration(milliseconds: 0),
                       child: widget.child,
                     ),
-                    AnimatedOpacity(
+                    Opacity(
                       opacity: value ? 1.0 : 0.0,
-                      duration: const Duration(milliseconds: 0),
                       child: ClipRect(
                         child: BackdropFilter(
                           filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),

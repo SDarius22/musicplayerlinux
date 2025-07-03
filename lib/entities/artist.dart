@@ -11,7 +11,6 @@ class Artist extends AbstractEntity with AbstractCollection {
   @Unique()
   String _name = "Unknown artist";
 
-  // Override the abstract getter
   @override
   String get name => _name;
 
@@ -19,8 +18,9 @@ class Artist extends AbstractEntity with AbstractCollection {
   set name(String value) => _name = value;
 
   final _songs = ToMany<Song>();
+
   @override
   ToMany<Song> get songs => _songs;
 
-  int duration = 0; // in seconds
+  int duration = 0;
 }

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:musicplayer/providers/slider_provider.dart';
+import 'package:musicplayer/providers/audio_provider.dart';
 import 'package:musicplayer/utils/fluenticons/fluenticons.dart';
 import 'package:provider/provider.dart';
 
@@ -14,14 +14,12 @@ class VolumeWidget extends StatefulWidget {
 
 class _VolumeWidgetState extends State<VolumeWidget> {
   final ValueNotifier<bool> _visible = ValueNotifier(false);
-  final ValueNotifier<double> _volume = ValueNotifier(0.5);
-  late final SliderProvider _sliderProvider;
+  late final AudioProvider _audioProvider;
 
   @override
   void initState() {
     super.initState();
-    _sliderProvider = Provider.of<SliderProvider>(context, listen: false);
-    _volume.value = _sliderProvider.volume;
+    _audioProvider = Provider.of<AudioProvider>(context, listen: false);
   }
 
 
@@ -55,7 +53,7 @@ class _VolumeWidgetState extends State<VolumeWidget> {
                       ),
                     ),
                     child: ValueListenableBuilder(
-                      valueListenable: _volume,
+                      valueListenable: _audioProvider.volumeNotifier,
                       builder: (context, value, child) {
                         return Slider(
                           min: 0.0,
@@ -66,11 +64,10 @@ class _VolumeWidgetState extends State<VolumeWidget> {
                           thumbColor: Colors.white,
                           inactiveColor: Colors.white,
                           onChangeEnd: (double value) {
-                            _volume.value = value;
-                            _sliderProvider.setVolume(value);
+                            _audioProvider.setVolume(value);
                           },
                           onChanged: (double value) {
-                            _volume.value = value;
+                            _audioProvider.volumeNotifier.value = value;
                           },
                         );
                       },
@@ -87,7 +84,7 @@ class _VolumeWidgetState extends State<VolumeWidget> {
                 _visible.value = false;
               },
               child: ValueListenableBuilder(
-                valueListenable: _volume,
+                valueListenable: _audioProvider.volumeNotifier,
                 builder: (context, value, child) {
                   return IconButton(
                     icon: value > 0.0 ? Icon(
@@ -102,11 +99,9 @@ class _VolumeWidgetState extends State<VolumeWidget> {
                     ),
                     onPressed: () {
                       if (value > 0.0) {
-                        _volume.value = 0.0;
-                        _sliderProvider.setVolume(0.0);
+                        _audioProvider.setVolume(0.0);
                       } else {
-                        _volume.value = 0.25;
-                        _sliderProvider.setVolume(0.25);
+                        _audioProvider.setVolume(0.25);
                       }
                     },
                   );
