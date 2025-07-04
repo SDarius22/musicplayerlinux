@@ -34,6 +34,7 @@ class _TracksState extends State<Tracks>{
   ValueNotifier<List<Song>> selected = ValueNotifier<List<Song>>([]);
   FocusNode searchNode = FocusNode();
   Timer? _debounce;
+  final TextEditingController _controller = TextEditingController();
 
   @override
   void dispose() {
@@ -75,7 +76,7 @@ class _TracksState extends State<Tracks>{
                         children: [
                           Expanded(
                             child: TextFormField(
-                              initialValue: '',
+                              controller: _controller,
                               focusNode: searchNode,
                               onChanged: (value) {
                                 if (_debounce?.isActive ?? false) _debounce?.cancel();
@@ -104,7 +105,20 @@ class _TracksState extends State<Tracks>{
                                   color: Colors.white,
                                   fontSize: smallSize,
                                 ),
-                                labelText: 'Search', suffixIcon: Icon(FluentIcons.search, color: Colors.white, size: height * 0.02,),
+                                labelText: 'Search',
+                                suffixIcon: IconButton(
+                                  onPressed: () {
+                                    debugPrint("Clear search");
+                                    _controller.clear();
+                                    songProvider.setQuery('');
+                                    searchNode.unfocus();
+                                  },
+                                  icon: Icon(
+                                    FluentIcons.trash,
+                                    color: Colors.white,
+                                    size: height * 0.03,
+                                  ),
+                                ),
                               ),
                             ),
                           ),

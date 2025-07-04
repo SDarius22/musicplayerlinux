@@ -16,16 +16,16 @@ class SongProvider with ChangeNotifier {
     songsFuture = Future(() => _songService.getAllSongs());
 
 
-    songsStream.throttleTime(const Duration(seconds: 10)).listen((_) {
-      debugPrint("Songs stream updated");
-      songsFuture = Future(() => _songService.getSongs(query, sortField, isAscending));
-      notifyListeners();
-    });
-
-    fileChangesStream.throttleTime(const Duration(seconds: 10)).listen((event) {
-      debugPrint("File changes detected $event");
-      notifyListeners();
-    });
+    // songsStream.throttleTime(const Duration(seconds: 10)).listen((_) {
+    //   debugPrint("Songs stream updated");
+    //   songsFuture = Future(() => _songService.getSongs(query, sortField, isAscending));
+    //   notifyListeners();
+    // });
+    //
+    // fileChangesStream.throttleTime(const Duration(seconds: 10)).listen((event) {
+    //   debugPrint("File changes detected $event");
+    //   notifyListeners();
+    // });
     
 
   }

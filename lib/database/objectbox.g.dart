@@ -96,7 +96,7 @@ final _entities = <obx_int.ModelEntity>[
   obx_int.ModelEntity(
     id: const obx_int.IdUid(8, 1201344405344257820),
     name: 'Playlist',
-    lastPropertyId: const obx_int.IdUid(9, 7588506137969260202),
+    lastPropertyId: const obx_int.IdUid(10, 4929891136115003712),
     flags: 0,
     properties: <obx_int.ModelProperty>[
       obx_int.ModelProperty(
@@ -145,6 +145,12 @@ final _entities = <obx_int.ModelEntity>[
         id: const obx_int.IdUid(9, 7588506137969260202),
         name: 'createdAt',
         type: 10,
+        flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(10, 4929891136115003712),
+        name: 'coverArt',
+        type: 23,
         flags: 0,
       ),
     ],
@@ -786,7 +792,10 @@ obx_int.ModelDefinition getObjectBoxModel() {
         final pathsInOrderOffset = fbb.writeList(
           object.pathsInOrder.map(fbb.writeString).toList(growable: false),
         );
-        fbb.startTable(10);
+        final coverArtOffset = object.coverArt == null
+            ? null
+            : fbb.writeListInt8(object.coverArt!);
+        fbb.startTable(11);
         fbb.addInt64(0, object.id);
         fbb.addOffset(1, nameOffset);
         fbb.addOffset(2, nextAddedOffset);
@@ -795,6 +804,7 @@ obx_int.ModelDefinition getObjectBoxModel() {
         fbb.addOffset(6, artistCountOffset);
         fbb.addOffset(7, pathsInOrderOffset);
         fbb.addInt64(8, object.createdAt.millisecondsSinceEpoch);
+        fbb.addOffset(9, coverArtOffset);
         fbb.finish(fbb.endTable());
         return object.id;
       },
@@ -832,7 +842,12 @@ obx_int.ModelDefinition getObjectBoxModel() {
           ).vTableGet(buffer, rootOffset, 18, [])
           ..createdAt = DateTime.fromMillisecondsSinceEpoch(
             const fb.Int64Reader().vTableGet(buffer, rootOffset, 20, 0),
-          );
+          )
+          ..coverArt =
+              const fb.Uint8ListReader(
+                    lazy: false,
+                  ).vTableGetNullable(buffer, rootOffset, 22)
+                  as Uint8List?;
         obx_int.InternalToManyAccess.setRelInfo<Playlist>(
           object.songs,
           store,
@@ -1284,6 +1299,11 @@ class Playlist_ {
   /// See [Playlist.createdAt].
   static final createdAt = obx.QueryDateProperty<Playlist>(
     _entities[2].properties[7],
+  );
+
+  /// See [Playlist.coverArt].
+  static final coverArt = obx.QueryByteVectorProperty<Playlist>(
+    _entities[2].properties[8],
   );
 
   /// see [Playlist.songs]

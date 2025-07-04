@@ -55,6 +55,7 @@ class AudioProvider with ChangeNotifier {
         playingNotifier.value = state == PlayerState.playing;
         if (state == PlayerState.completed) {
           if (repeatNotifier.value) {
+            debugPrint("Repeat is enabled, repeating song");
             repeat();
           } else {
             skipToNext();
@@ -195,6 +196,7 @@ class AudioProvider with ChangeNotifier {
     if (Platform.isLinux){
       await _audioHandler?.repeat();
     }
+    notifyListeners();
   }
 
   void setVolume(double volume) {

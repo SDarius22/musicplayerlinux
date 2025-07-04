@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:flutter/cupertino.dart';
 import 'package:musicplayer/entities/playlist.dart';
 import 'package:musicplayer/entities/song.dart';
@@ -42,8 +44,8 @@ class PlaylistProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  void addPlaylist(String name, List<String> songs, String whereToAdd) {
-    _playlistService.addPlaylist(name, songs, whereToAdd);
+  void addPlaylist(String name, List<String> songs, String whereToAdd, Uint8List? coverArt) {
+    _playlistService.addPlaylist(name, songs, whereToAdd, coverArt);
     notifyListeners();
   }
 

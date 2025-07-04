@@ -166,11 +166,10 @@ class _DrawerWidgetState extends State<DrawerWidget> {
     var width = MediaQuery.of(context).size.width;
     var height = MediaQuery.of(context).size.height;
     var normalSize = height * 0.02;
-    return Selector<AppStateProvider, bool>(
-      selector: (context, appState) => appState.isDrawerOpen,
-      builder: (context, isDrawerOpen, child) {
+    return Consumer<AppStateProvider>(
+      builder: (context, appState, child) {
         return AnimatedContainer(
-          width: isDrawerOpen ? width * 0.12 : width * 0.035,
+          width: appState.isDrawerOpen ? width * 0.12 : width * 0.035,
           duration: const Duration(milliseconds: 300),
           decoration: BoxDecoration(
             color: const Color(0xFF0E0E0E),
@@ -188,7 +187,7 @@ class _DrawerWidgetState extends State<DrawerWidget> {
                   itemCount: menuItems.length,
                   itemBuilder: (context, index) {
                     return AnimatedContainer(
-                      height: isDrawerOpen && menuItems[index]["bigger"] != null && menuItems[index]["bigger"]
+                      height: appState.isDrawerOpen && menuItems[index]["bigger"] != null && menuItems[index]["bigger"]
                           ? height * 0.10
                           : height * 0.05,
                       duration: const Duration(milliseconds: 300),
@@ -216,7 +215,7 @@ class _DrawerWidgetState extends State<DrawerWidget> {
                                       size: height * 0.025,
                                       color: Colors.white,
                                     ),
-                                    if (isDrawerOpen && _finishedAnimation)
+                                    if (appState.isDrawerOpen && _finishedAnimation)
                                       Expanded(
                                         child: AnimatedContainer(
                                           duration: const Duration(milliseconds: 500),

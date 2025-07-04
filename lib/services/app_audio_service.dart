@@ -98,8 +98,16 @@ class AppAudioService extends BaseAudioHandler {
     audioSettings.index = audioSettings.currentQueue.indexOf(path);
     settingsService.updateAudioSettings(audioSettings);
     await updateCurrentSong();
-    await seek(Duration.zero);
-    await play();
+    seek(Duration.zero);
+    play();
+  }
+
+  Future<void> repeat() async {
+    currentSong?.lastPlayed = DateTime.now();
+    currentSong?.playCount = (currentSong?.playCount ?? 0) + 1;
+    songService.updateSong(currentSong!);
+    seek(Duration.zero);
+    play();
   }
 
   @override
@@ -107,14 +115,6 @@ class AppAudioService extends BaseAudioHandler {
     debugPrint("seek to $position");
     setSlider(position.inMilliseconds);
     audioPlayer.seek(position);
-  }
-
-  Future<void> repeat() async {
-    currentSong?.lastPlayed = DateTime.now();
-    currentSong?.playCount = (currentSong?.playCount ?? 0) + 1;
-    songService.updateSong(currentSong!);
-    await seek(Duration.zero);
-    await play();
   }
 
   void setVolume(double volume) {

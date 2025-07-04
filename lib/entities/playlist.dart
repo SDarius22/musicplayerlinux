@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:musicplayer/entities/abstract/abstract_collection.dart';
 import 'package:musicplayer/entities/abstract/abstract_entity.dart';
 import 'package:musicplayer/entities/song.dart';
@@ -25,6 +27,9 @@ class Playlist extends AbstractEntity with AbstractCollection {
   String nextAdded = "last";
   List<String> pathsInOrder = [];
   List<String> artistCount = []; // Strings of form "Artist - Count"
+
+  @Property(type: PropertyType.byteVector)
+  Uint8List? coverArt;
 
   @Property(type: PropertyType.date) // milliseconds since epoch
   DateTime createdAt = DateTime.now();

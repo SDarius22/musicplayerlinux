@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:flutter/cupertino.dart';
 import 'package:musicplayer/entities/playlist.dart';
 import 'package:musicplayer/entities/song.dart';
@@ -20,7 +22,7 @@ class PlaylistService {
 
   Stream watchPlaylists() => playlistRepo.watchAllPlaylists();
 
-  void addPlaylist(String name, List<String> songs, String whereToAdd) {
+  void addPlaylist(String name, List<String> songs, String whereToAdd, Uint8List? coverArt) {
     if (name.isEmpty) {
       throw ArgumentError("Playlist name cannot be empty");
     }
@@ -35,6 +37,7 @@ class PlaylistService {
     Playlist newPlaylist = Playlist();
     newPlaylist.name = name;
     newPlaylist.nextAdded = whereToAdd;
+    newPlaylist.coverArt = coverArt;
     List<Song> songObjects = [];
     for (var songPath in songs) {
       Song? song = songService.getSong(songPath);

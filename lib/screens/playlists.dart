@@ -1,10 +1,12 @@
 import 'dart:async';
 
 import 'package:musicplayer/components/custom_tiling/grid_component.dart';
+import 'package:musicplayer/components/custom_tiling/grid_tile.dart';
 import 'package:musicplayer/providers/app_state_provider.dart';
 import 'package:musicplayer/providers/audio_provider.dart';
 import 'package:musicplayer/providers/playlist_provider.dart';
 import 'package:musicplayer/screens/add_screen.dart';
+import 'package:musicplayer/screens/create_screen.dart';
 import 'package:musicplayer/screens/playlist_screen.dart';
 import 'package:musicplayer/utils/fluenticons/fluenticons.dart';
 import 'package:flutter/material.dart';
@@ -320,7 +322,31 @@ class _PlaylistsState extends State<Playlists>{
                                           ];
                                         },
                                       );
-                                    }
+                                    },
+                                    buildExtraTile: () {
+                                      Playlist emptyPlaylist = Playlist();
+                                      emptyPlaylist.name = "Create New Playlist";
+                                      emptyPlaylist.indestructible = true;
+                                      return CustomGridTile(
+                                        onTap: () {
+                                          debugPrint("Create new playlist tapped");
+                                          var appState = Provider.of<AppStateProvider>(context, listen: false);
+                                          appState.navigatorKey.currentState?.push(
+                                            CreateScreen.route()
+                                          );
+                                        },
+                                        onLongPress: () {
+                                          debugPrint("Create new playlist long pressed");
+                                        },
+                                        entity: emptyPlaylist,
+                                        isSelected: false,
+                                        mainAction: Icon(
+                                          FluentIcons.add,
+                                          color: Colors.white,
+                                          size: height * 0.03,
+                                        ),
+                                      );
+                                    },
                                   );
                                 }
                               ),

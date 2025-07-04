@@ -22,7 +22,9 @@ class SongsRepository {
     Query<Song> builderQuery;
     if (flag == false) {
       builderQuery = songBox
-          .query(Song_.name.contains(query, caseSensitive: false))
+          .query(Song_.name.contains(query, caseSensitive: false) |
+                 Song_.trackArtist.contains(query, caseSensitive: false) |
+                 Song_.album.contains(query, caseSensitive: false))
           .order(
         sortField == 'Name' ? Song_.name : Song_.duration,
       ).build();

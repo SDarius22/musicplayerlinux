@@ -43,153 +43,322 @@ class _ArtistScreenState extends State<ArtistScreen> {
             bottom: height * 0.02
         ),
         alignment: Alignment.center,
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            IconButton(
-              onPressed: (){
-                debugPrint("Back");
-                Navigator.pop(context);
-              },
-              icon: Icon(
-                FluentIcons.back,
-                size: height * 0.02,
-                color: Colors.white,
-              ),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                IconButton(
+                  onPressed: (){
+                    debugPrint("Back");
+                    Navigator.pop(context);
+                  },
+                  icon: Icon(
+                    FluentIcons.back,
+                    size: height * 0.02,
+                    color: Colors.white,
+                  ),
+                ),
+                Text(
+                  widget.artist.name,
+                  style: TextStyle(
+                    fontSize: boldSize,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+                const Spacer(),
+              ],
             ),
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 500),
-              width: width * 0.4,
-              padding: EdgeInsets.only(
-                top: height * 0.1,
-                bottom: height * 0.05,
-              ),
-              child: Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children:[
-                    Hero(
-                      tag: widget.artist.name,
-                      child: Container(
-                        height: height * 0.5,
-                        width: height * 0.5,
-                        padding: EdgeInsets.only(
-                          bottom: height * 0.01,
+            Expanded(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Expanded(
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: width * 0.05,
                         ),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(width * 0.025),
-                          child: ImageWidget(
-                            path: widget.artist.songs.isNotEmpty
-                                ? widget.artist.songs.first.path
-                                : '',
-                            type: ImageWidgetType.song,
-                          ),
-                        )
+                        child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children:[
+                              Hero(
+                                tag: widget.artist.name,
+                                child: Container(
+                                  height: height * 0.5,
+                                  width: height * 0.5,
+                                  padding: EdgeInsets.only(
+                                    bottom: height * 0.01,
+                                  ),
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(width * 0.025),
+                                    child: ImageWidget(
+                                      path: widget.artist.songs.isNotEmpty
+                                          ? widget.artist.songs.first.path
+                                          : '',
+                                      type: ImageWidgetType.song,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              Text(
+                                widget.artist.name,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontSize: boldSize,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              SizedBox(
+                                height: height * 0.005,
+                              ),
+                              Text(
+                                Duration(seconds: widget.artist.duration,).pretty(),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontSize: smallSize,
+                                  fontWeight: FontWeight.normal,
+                                ),
+                              ),
+                              SizedBox(
+                                height: height * 0.01,
+                              ),
+                              Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    IconButton(
+                                      onPressed: () async {
+                                        debugPrint("Play ${widget.artist.name}");
+                                        List<String> songPaths = widget.artist.songs.map((e) => e.path).toList();
+                                        var audioProvider = Provider.of<AudioProvider>(context, listen: false);
+                                        audioProvider.setQueue(songPaths);
+                                        await audioProvider.setCurrentIndex(widget.artist.songs.first.path);
+                                      },
+                                      icon: Icon(
+                                        FluentIcons.play,
+                                        color: Colors.white,
+                                        size: height * 0.025,
+                                      ),
+                                    ),
+                                    IconButton(
+                                      onPressed: (){
+                                        debugPrint("Add ${widget.artist.name}");
+                                        var appStateProvider = Provider.of<AppStateProvider>(context, listen: false);
+                                        appStateProvider.navigatorKey.currentState?.push(AddScreen.route(songs: widget.artist.songs));
+                                      },
+                                      icon: Icon(
+                                        FluentIcons.add,
+                                        color: Colors.white,
+                                        size: height * 0.025,
+                                      ),
+                                    ),
+                                  ]
+                              ),
+                            ]
+                        ),
+                      )
+                  ),
+                  Expanded(
+                    child: Container(
+                      padding: EdgeInsets.all(width * 0.01),
+                      margin: EdgeInsets.only(
+                        top: height * 0.02,
                       ),
-                    ),
-
-                    Text(
-                      widget.artist.name,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: boldSize,
-                        fontWeight: FontWeight.bold,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(width * 0.02),
+                        color: const Color(0xFF242424),
                       ),
-                    ),
-                    SizedBox(
-                      height: height * 0.005,
-                    ),
-                    Text(
-                      Duration(seconds: widget.artist.duration).pretty(),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: smallSize,
-                        fontWeight: FontWeight.normal,
-                      ),
-                    ),
-                    SizedBox(
-                      height: height * 0.01,
-                    ),
-                    Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          IconButton(
-                            onPressed: () async {
-                              List<String> songPaths = widget.artist.songs.map((e) => e.path).toList();
-                              var audioProvider = Provider.of<AudioProvider>(context, listen: false);
-                              audioProvider.setQueue(songPaths);
-                              await audioProvider.setCurrentIndex(widget.artist.songs.first.path);
-                            },
-                            icon: Icon(
-                              FluentIcons.play,
-                              color: Colors.white,
-                              size: height * 0.025,
+                      child: CustomScrollView(
+                        slivers: [
+                          SliverPadding(
+                            padding: EdgeInsets.only(
+                              bottom: height * 0.02,
+                            ),
+                            sliver: ListComponent(
+                              items: widget.artist.songs,
+                              itemExtent: height * 0.125,
+                              isSelected: (entity) {
+                                return false;
+                              },
+                              onTap: (entity) async {
+                                debugPrint("Tapped on ${entity.name}");
+                                List<String> songPaths = widget.artist.songs.map((e) => e.path).toList();
+                                var audioProvider = Provider.of<AudioProvider>(context, listen: false);
+                                audioProvider.setQueue(songPaths);
+                                await audioProvider.setCurrentIndex((entity as Song).path);
+                              },
+                              onLongPress: (entity) {
+                                debugPrint("Long pressed on ${entity.name}");
+                                // Show context menu or options
+                              },
                             ),
                           ),
-                          IconButton(
-                            onPressed: (){
-                              var appStateProvider = Provider.of<AppStateProvider>(context, listen: false);
-                              appStateProvider.navigatorKey.currentState?.push(AddScreen.route(songs: widget.artist.songs));
-
-                            },
-                            icon: Icon(
-                              FluentIcons.add,
-                              color: Colors.white,
-                              size: height * 0.025,
-                            ),
-                          ),
-                        ]
+                        ],
+                      ),
                     ),
-                  ]
-              ),
-            ),
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 500),
-              width: width * 0.45,
-              padding: EdgeInsets.only(
-                left: width * 0.02,
-                top: height * 0.1,
-                bottom: height * 0.2,
-              ),
-              child: CustomScrollView(
-                slivers: [
-                  SliverPadding(
-                    padding: EdgeInsets.only(
-                      bottom: height * 0.02,
-                    ),
-                    sliver: ListComponent(
-                      items: widget.artist.songs,
-                      itemExtent: height * 0.125,
-                      isSelected: (entity) {
-                        return false;
-                      },
-                      onTap: (entity) async {
-                        debugPrint("Tapped on ${entity.name}");
-                        List<String> songPaths = widget.artist.songs.map((e) => e.path).toList();
-                        var audioProvider = Provider.of<AudioProvider>(context, listen: false);
-                        audioProvider.setQueue(songPaths);
-                        await audioProvider.setCurrentIndex((entity as Song).path);
-                      },
-                      onLongPress: (entity) {
-                        debugPrint("Long pressed on ${entity.name}");
-                        // Show context menu or options
-                      },
-                    ),
-                  )
+                  ),
+                  SizedBox(
+                    width: width * 0.025,
+                  ),
                 ],
               ),
-            ),
-            SizedBox(
-              width: width * 0.02,
-            ),
+            )
           ],
         ),
+        // child: Row(
+        //   crossAxisAlignment: CrossAxisAlignment.start,
+        //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        //   children: [
+        //     IconButton(
+        //       onPressed: (){
+        //         debugPrint("Back");
+        //         Navigator.pop(context);
+        //       },
+        //       icon: Icon(
+        //         FluentIcons.back,
+        //         size: height * 0.02,
+        //         color: Colors.white,
+        //       ),
+        //     ),
+        //     AnimatedContainer(
+        //       duration: const Duration(milliseconds: 500),
+        //       width: width * 0.4,
+        //       padding: EdgeInsets.only(
+        //         top: height * 0.1,
+        //         bottom: height * 0.05,
+        //       ),
+        //       child: Column(
+        //           mainAxisAlignment: MainAxisAlignment.start,
+        //           crossAxisAlignment: CrossAxisAlignment.center,
+        //           children:[
+        //             Hero(
+        //               tag: widget.artist.name,
+        //               child: Container(
+        //                 height: height * 0.5,
+        //                 width: height * 0.5,
+        //                 padding: EdgeInsets.only(
+        //                   bottom: height * 0.01,
+        //                 ),
+        //                 child: ClipRRect(
+        //                   borderRadius: BorderRadius.circular(width * 0.025),
+        //                   child: ImageWidget(
+        //                     path: widget.artist.songs.isNotEmpty
+        //                         ? widget.artist.songs.first.path
+        //                         : '',
+        //                     type: ImageWidgetType.song,
+        //                   ),
+        //                 )
+        //               ),
+        //             ),
+        //
+        //             Text(
+        //               widget.artist.name,
+        //               maxLines: 2,
+        //               overflow: TextOverflow.ellipsis,
+        //               textAlign: TextAlign.center,
+        //               style: TextStyle(
+        //                 fontSize: boldSize,
+        //                 fontWeight: FontWeight.bold,
+        //               ),
+        //             ),
+        //             SizedBox(
+        //               height: height * 0.005,
+        //             ),
+        //             Text(
+        //               Duration(seconds: widget.artist.duration).pretty(),
+        //               maxLines: 2,
+        //               overflow: TextOverflow.ellipsis,
+        //               textAlign: TextAlign.center,
+        //               style: TextStyle(
+        //                 fontSize: smallSize,
+        //                 fontWeight: FontWeight.normal,
+        //               ),
+        //             ),
+        //             SizedBox(
+        //               height: height * 0.01,
+        //             ),
+        //             Row(
+        //                 mainAxisAlignment: MainAxisAlignment.center,
+        //                 crossAxisAlignment: CrossAxisAlignment.center,
+        //                 children: [
+        //                   IconButton(
+        //                     onPressed: () async {
+        //                       List<String> songPaths = widget.artist.songs.map((e) => e.path).toList();
+        //                       var audioProvider = Provider.of<AudioProvider>(context, listen: false);
+        //                       audioProvider.setQueue(songPaths);
+        //                       await audioProvider.setCurrentIndex(widget.artist.songs.first.path);
+        //                     },
+        //                     icon: Icon(
+        //                       FluentIcons.play,
+        //                       color: Colors.white,
+        //                       size: height * 0.025,
+        //                     ),
+        //                   ),
+        //                   IconButton(
+        //                     onPressed: (){
+        //                       var appStateProvider = Provider.of<AppStateProvider>(context, listen: false);
+        //                       appStateProvider.navigatorKey.currentState?.push(AddScreen.route(songs: widget.artist.songs));
+        //
+        //                     },
+        //                     icon: Icon(
+        //                       FluentIcons.add,
+        //                       color: Colors.white,
+        //                       size: height * 0.025,
+        //                     ),
+        //                   ),
+        //                 ]
+        //             ),
+        //           ]
+        //       ),
+        //     ),
+        //     AnimatedContainer(
+        //       duration: const Duration(milliseconds: 500),
+        //       width: width * 0.45,
+        //       padding: EdgeInsets.only(
+        //         left: width * 0.02,
+        //         top: height * 0.1,
+        //         bottom: height * 0.2,
+        //       ),
+        //       child: CustomScrollView(
+        //         slivers: [
+        //           SliverPadding(
+        //             padding: EdgeInsets.only(
+        //               bottom: height * 0.02,
+        //             ),
+        //             sliver: ListComponent(
+        //               items: widget.artist.songs,
+        //               itemExtent: height * 0.125,
+        //               isSelected: (entity) {
+        //                 return false;
+        //               },
+        //               onTap: (entity) async {
+        //                 debugPrint("Tapped on ${entity.name}");
+        //                 List<String> songPaths = widget.artist.songs.map((e) => e.path).toList();
+        //                 var audioProvider = Provider.of<AudioProvider>(context, listen: false);
+        //                 audioProvider.setQueue(songPaths);
+        //                 await audioProvider.setCurrentIndex((entity as Song).path);
+        //               },
+        //               onLongPress: (entity) {
+        //                 debugPrint("Long pressed on ${entity.name}");
+        //                 // Show context menu or options
+        //               },
+        //             ),
+        //           )
+        //         ],
+        //       ),
+        //     ),
+        //     SizedBox(
+        //       width: width * 0.02,
+        //     ),
+        //   ],
+        // ),
       ),
     );
   }

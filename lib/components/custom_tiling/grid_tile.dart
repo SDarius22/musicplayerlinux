@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
@@ -39,9 +40,15 @@ class CustomGridTile extends StatelessWidget {
       if (entity.name == 'Current Queue' && entity.indestructible) {
         return 'assets/current_queue.png';
       }
+      if (entity.name == 'Create New Playlist' && entity.indestructible) {
+        return 'assets/create_playlist.png';
+      }
+      if (entity.coverArt != null && entity.coverArt!.isNotEmpty) {
+        return base64Encode(entity.coverArt!);
+      }
       return (entity).pathsInOrder.isNotEmpty
-          ? (entity).pathsInOrder.first
-          : '';
+            ? (entity).pathsInOrder.first
+            : '';
     }
     if (entity is AbstractCollection) {
       return (entity as AbstractCollection).songs.isNotEmpty
@@ -51,13 +58,26 @@ class CustomGridTile extends StatelessWidget {
     return '';
   }
 
+  ImageWidgetType _getImageWidgetType(AbstractEntity entity) {
+    if (entity is Playlist) {
+      if (entity.name == 'Current Queue' && entity.indestructible) {
+        return ImageWidgetType.asset;
+      }
+      if (entity.name == 'Create New Playlist' && entity.indestructible) {
+        return ImageWidgetType.asset;
+      }
+      if (entity.coverArt != null && entity.coverArt!.isNotEmpty) {
+        return ImageWidgetType.bytes;
+      }
+    }
+    return ImageWidgetType.song;
+  }
+
   @override
   Widget build(BuildContext context) {
     var width = MediaQuery.of(context).size.width;
     var height = MediaQuery.of(context).size.height;
     var normalSize = height * 0.02;
-    // debugPrint('CustomGridTile: ${entity.name}');
-    // debugPrint('CustomGridTile: ${entity.runtimeType}');
 
     return MouseRegion(
       cursor: SystemMouseCursors.click,
@@ -72,9 +92,7 @@ class CustomGridTile extends StatelessWidget {
             borderRadius: BorderRadius.circular(width * 0.01),
             child: ImageWidget(
               path: _pathForImageWidget(entity),
-              type: entity is Playlist && (entity as Playlist).name == 'Current Queue' && (entity as Playlist).indestructible
-                  ? ImageWidgetType.asset
-                  : ImageWidgetType.song,
+              type: _getImageWidgetType(entity),
               hoveredChild: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 crossAxisAlignment: CrossAxisAlignment.center,

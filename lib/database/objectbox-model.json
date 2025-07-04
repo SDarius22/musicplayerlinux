@@ -65,7 +65,7 @@
     },
     {
       "id": "8:1201344405344257820",
-      "lastPropertyId": "9:7588506137969260202",
+      "lastPropertyId": "10:4929891136115003712",
       "name": "Playlist",
       "properties": [
         {
@@ -108,6 +108,11 @@
           "id": "9:7588506137969260202",
           "name": "createdAt",
           "type": 10
+        },
+        {
+          "id": "10:4929891136115003712",
+          "name": "coverArt",
+          "type": 23
         }
       ],
       "relations": [
