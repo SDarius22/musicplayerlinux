@@ -2,9 +2,14 @@ import 'package:duration/duration.dart';
 import 'package:flutter/material.dart';
 import 'package:musicplayer/components/custom_tiling/list_component.dart';
 import 'package:musicplayer/entities/song.dart';
+import 'package:musicplayer/providers/app_state_provider.dart';
+import 'package:musicplayer/providers/audio_provider.dart';
+import 'package:musicplayer/providers/playlist_provider.dart';
+import 'package:musicplayer/screens/add_screen.dart';
 import 'package:musicplayer/utils/fluenticons/fluenticons.dart';
 import 'package:musicplayer/entities/playlist.dart';
 import 'package:musicplayer/components/image_widget.dart';
+import 'package:provider/provider.dart';
 
 class PlaylistScreen extends StatefulWidget {
   static Route<void> route({required Playlist playlist}) {
@@ -197,11 +202,10 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
                         children: [
                           IconButton(
                             onPressed: () async {
-                              // if(SettingsController.queue.equals(widget.playlist.pathsInOrder) == false){
-                              //   dc.updatePlaying(widget.playlist.pathsInOrder, 0);
-                              // }
-                              // SettingsController.index = SettingsController.currentQueue.indexOf(widget.playlist.pathsInOrder.first);
-                              // await AppAudioHandler.play();
+                              List<String> songPaths = widget.playlist.songs.map((e) => e.path).toList();
+                              var audioProvider = Provider.of<AudioProvider>(context, listen: false);
+                              audioProvider.setQueue(songPaths);
+                              await audioProvider.setCurrentIndex(widget.playlist.songs.first.path);
                             },
                             icon: Icon(
                               FluentIcons.play,
@@ -213,7 +217,8 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
                           IconButton(
                             onPressed: (){
                               debugPrint("Add ${widget.playlist.name}");
-                              //Navigator.pushNamed(context, '/add', arguments: songs);
+                              var appStateProvider = Provider.of<AppStateProvider>(context, listen: false);
+                              appStateProvider.navigatorKey.currentState?.push(AddScreen.route(songs: widget.playlist.songs));
                             },
                             icon: Icon(
                               FluentIcons.add,
@@ -225,8 +230,9 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
                             IconButton(
                               onPressed: () {
                                 debugPrint("Delete ${widget.playlist.name}");
-                                // dc.deletePlaylist(widget.playlist);
-                                // Navigator.pop(context);
+                                var playlistProvider = Provider.of<PlaylistProvider>(context, listen: false);
+                                playlistProvider.deletePlaylist(widget.playlist);
+                                Navigator.pop(context);
                               },
                               icon: Icon(
                                 FluentIcons.trash,
@@ -270,12 +276,10 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
                             },
                             onTap: (entity) async {
                               debugPrint("Tapped on ${entity.name}");
-                              // var songPaths = widget.album.songs.map((e) => e.path).toList();
-                              // if(SettingsController.queue.equals(songPaths) == false){
-                              //   dc.updatePlaying(songPaths, 0);
-                              // }
-                              // SettingsController.index = SettingsController.currentQueue.indexOf(entity.path);
-                              // await AppAudioHandler.play();
+                              List<String> songPaths = widget.playlist.songs.map((e) => e.path).toList();
+                              var audioProvider = Provider.of<AudioProvider>(context, listen: false);
+                              audioProvider.setQueue(songPaths);
+                              await audioProvider.setCurrentIndex((entity as Song).path);
                             },
                             onLongPress: (entity) {
                               debugPrint("Long pressed on ${entity.name}");

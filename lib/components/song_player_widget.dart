@@ -1,7 +1,6 @@
 import 'dart:typed_data';
 import 'dart:ui';
 
-import 'package:audio_video_progress_bar/audio_video_progress_bar.dart';
 import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:bot_toast/bot_toast.dart';
 import 'package:flutter/material.dart';
@@ -13,6 +12,7 @@ import 'package:musicplayer/components/player_tabs/queue_tab.dart';
 import 'package:musicplayer/providers/app_state_provider.dart';
 import 'package:musicplayer/providers/audio_provider.dart';
 import 'package:musicplayer/providers/song_provider.dart';
+import 'package:musicplayer/utils/audio_video_progress_bar/audio_video_progress_bar.dart';
 import 'package:musicplayer/utils/fluenticons/fluenticons.dart';
 import 'package:provider/provider.dart';
 
@@ -144,6 +144,20 @@ class _SongPlayerWidgetState extends State<SongPlayerWidget> with TickerProvider
               width: width * 0.3,
               height: height * 0.15,
               child: _buildPlayerButtons(audioProvider)
+            ),
+          ),
+
+          const Spacer(),
+
+          Opacity(
+            opacity: progressBarOpacity,
+            child: SizedBox(
+                width: width * 0.3,
+                height: height * 0.15,
+                child: IgnorePointer(
+                  ignoring: true,
+                  child: LyricsTab(oneLine: true),
+                ),
             ),
           ),
 
@@ -287,25 +301,78 @@ class _SongPlayerWidgetState extends State<SongPlayerWidget> with TickerProvider
                     return ValueListenableBuilder(
                       valueListenable: audioProvider.sliderNotifier,
                       builder: (context, value, child) {
-                        return ProgressBar(
-                          progress: Duration(milliseconds: value),
-                          total: snapshot.hasData
-                              ? snapshot.data as Duration
-                              : Duration.zero,
-                          progressBarColor: appStateProvider.darkColor,
-                          thumbColor: Colors.white,
-                          barHeight: 4.0,
-                          thumbRadius: 7.0,
-                          timeLabelLocation: TimeLabelLocation.sides,
-                          timeLabelTextStyle: TextStyle(
-                            color: Colors.white,
-                            fontSize: height * 0.02,
-                            fontWeight: FontWeight.normal,
+                        final textScaler = MediaQuery.textScalerOf(context);
+                        TextPainter leftTp = TextPainter(
+                          text: TextSpan(
+                            text: _getTimeString(Duration(milliseconds: value)),
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: height * 0.02,
+                              fontWeight: FontWeight.normal,
+                            ),
                           ),
-                          onSeek: (duration) {
-                            audioProvider.seek(duration);
-                          },
+                          textDirection: TextDirection.ltr,
+                          textScaler: textScaler,
                         );
+                        leftTp.layout(minWidth: 0, maxWidth: double.infinity);
+                        double leftPadding = leftTp.size.width + 10 + 7; // 10 for padding, 7 for thumb radius
+                        TextPainter rightTp = TextPainter(
+                          text: TextSpan(
+                            text: _getTimeString(snapshot.hasData
+                                ? snapshot.data as Duration
+                                : Duration.zero),
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: height * 0.02,
+                              fontWeight: FontWeight.normal,
+                            ),
+                          ),
+                          textDirection: TextDirection.ltr,
+                          textScaler: textScaler,
+                        );
+                        rightTp.layout(minWidth: 0, maxWidth: double.infinity);
+                        double rightPadding = rightTp.size.width + 10 + 7; // 10 for padding, 7 for thumb radius
+
+                        return Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            Container(
+                              height: 6.0,
+                              margin: EdgeInsets.only(
+                                left: leftPadding,
+                                right: rightPadding,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withValues(alpha: 0.35),
+                                borderRadius: BorderRadius.circular(2.0),
+                              ),
+                            ),
+
+
+                            ProgressBar(
+                              progress: Duration(milliseconds: value),
+                              total: snapshot.hasData
+                                  ? snapshot.data as Duration
+                                  : Duration.zero,
+                              progressBarColor: appStateProvider.darkColor,
+                              baseBarColor: appStateProvider.darkColor.withValues(alpha: 0.25),
+                              thumbColor: Colors.white,
+                              barHeight: 4.0,
+                              thumbRadius: 7.0,
+                              timeLabelLocation: TimeLabelLocation.sides,
+                              timeLabelTextStyle: TextStyle(
+                                color: Colors.white,
+                                fontSize: height * 0.02,
+                                fontWeight: FontWeight.normal,
+                              ),
+                              timeLabelPadding: 5.0,
+                              onSeek: (duration) {
+                                audioProvider.seek(duration);
+                              },
+                            ),
+                          ],
+                        );
+
                       },
                     );
                   },
@@ -517,5 +584,17 @@ class _SongPlayerWidgetState extends State<SongPlayerWidget> with TickerProvider
       ],
     );
 
+  }
+
+  String _getTimeString(Duration time) {
+    final minutes =
+    time.inMinutes.remainder(Duration.minutesPerHour).toString();
+    final seconds = time.inSeconds
+        .remainder(Duration.secondsPerMinute)
+        .toString()
+        .padLeft(2, '0');
+    return time.inHours > 0
+        ? "${time.inHours}:${minutes.padLeft(2, "0")}:$seconds"
+        : "$minutes:$seconds";
   }
 }

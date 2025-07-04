@@ -63,7 +63,7 @@ class _ImageWidgetState extends State<ImageWidget> {
         onExit: (event) {
           isHovered.value = false;
         },
-        child:Container(
+        child: Container(
           decoration: BoxDecoration(
             color: Colors.black,
             image: DecorationImage(

@@ -11,7 +11,9 @@ import 'package:provider/provider.dart';
 
 
 class LyricsTab extends StatelessWidget {
-  LyricsTab({super.key});
+  final bool oneLine;
+  LyricsTab({super.key, this.oneLine = false});
+
 
   final ScrollController itemScrollController = ScrollController();
 
@@ -23,27 +25,39 @@ class LyricsTab extends StatelessWidget {
     var normalSize = height * 0.02;
 
     UINetease lyricUI = UINetease(
-        defaultTextStyle: TextStyle(color: Colors.white, fontSize: MediaQuery.of(context).size.height * 0.022, shadows: [
-          Shadow(
-            color: Colors.black.withValues(alpha: 0.5),
-            offset: const Offset(1, 2),
-            blurRadius: 4,
-          ),
-        ],),
-        defaultExtTextStyle: TextStyle(color: Colors.grey, fontSize: MediaQuery.of(context).size.height * 0.020,                 shadows: [
-          Shadow(
-            color: Colors.black.withValues(alpha: 0.5),
-            offset: const Offset(1, 2),
-            blurRadius: 4,
-          ),
-        ],),
-        otherMainTextStyle: TextStyle(color: Colors.grey, fontSize: MediaQuery.of(context).size.height * 0.020,                 shadows: [
-          Shadow(
-            color: Colors.black.withValues(alpha: 0.2),
-            offset: const Offset(1, 2),
-            blurRadius: 4,
-          ),
-        ],),
+        defaultTextStyle: TextStyle(
+          color: Colors.white,
+          fontSize: MediaQuery.of(context).size.height * 0.022,
+          shadows: [
+            Shadow(
+              color: Colors.black.withValues(alpha: 0.5),
+              offset: const Offset(1, 2),
+              blurRadius: 4,
+            ),
+          ],
+        ),
+        defaultExtTextStyle: TextStyle(
+          color: oneLine ? Colors.transparent : Colors.grey,
+          fontSize: MediaQuery.of(context).size.height * 0.020,
+          shadows: [
+            Shadow(
+              color: Colors.black.withValues(alpha: oneLine ? 0.0 : 0.5),
+              offset: const Offset(1, 2),
+              blurRadius: 4,
+            ),
+          ],
+        ),
+        otherMainTextStyle: TextStyle(
+          color: oneLine ? Colors.transparent : Colors.grey,
+          fontSize: MediaQuery.of(context).size.height * 0.020,
+          shadows: [
+            Shadow(
+              color: Colors.black.withValues(alpha: oneLine ? 0.0 : 0.2),
+              offset: const Offset(1, 2),
+              blurRadius: 4,
+            ),
+          ],
+        ),
         bias : 0.5,
         lineGap : 5,
         inlineGap : 5,
@@ -72,7 +86,7 @@ class LyricsTab extends StatelessWidget {
                   right: width * 0.01,
                   left: width * 0.01,
                 ),
-                selectLineBuilder: (progress, confirm) {
+                selectLineBuilder: oneLine ? null : (progress, confirm) {
                   return MouseRegion(
                     cursor: SystemMouseCursors.click,
                     child: GestureDetector(
@@ -83,7 +97,7 @@ class LyricsTab extends StatelessWidget {
                     ),
                   );
                 },
-                emptyBuilder: () {
+                emptyBuilder: oneLine ? null : () {
                   return lyricsProvider.unsyncedLyrics == "" ?
                   Center(
                     child: Text(

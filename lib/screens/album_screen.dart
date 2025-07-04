@@ -2,7 +2,9 @@ import 'package:duration/duration.dart';
 import 'package:flutter/material.dart';
 import 'package:musicplayer/components/custom_tiling/list_component.dart';
 import 'package:musicplayer/entities/song.dart';
+import 'package:musicplayer/providers/app_state_provider.dart';
 import 'package:musicplayer/providers/audio_provider.dart';
+import 'package:musicplayer/screens/add_screen.dart';
 import 'package:musicplayer/utils/fluenticons/fluenticons.dart';
 import 'package:musicplayer/entities/album.dart';
 import 'package:musicplayer/components/image_widget.dart';
@@ -156,7 +158,8 @@ class _AlbumScreenState extends State<AlbumScreen> {
                           IconButton(
                             onPressed: (){
                               debugPrint("Add ${widget.album.name}");
-                              //Navigator.pushNamed(context, '/add', arguments: widget.album.songs);
+                              var appStateProvider = Provider.of<AppStateProvider>(context, listen: false);
+                              appStateProvider.navigatorKey.currentState?.push(AddScreen.route(songs: widget.album.songs));
                             },
                             icon: Icon(
                               FluentIcons.add,
@@ -195,13 +198,6 @@ class _AlbumScreenState extends State<AlbumScreen> {
                         var audioProvider = Provider.of<AudioProvider>(context, listen: false);
                         audioProvider.setQueue(songPaths);
                         await audioProvider.setCurrentIndex((entity as Song).path);
-
-                        // var songPaths = widget.album.songs.map((e) => e.path).toList();
-                        // if(SettingsController.queue.equals(songPaths) == false){
-                        //   dc.updatePlaying(songPaths, 0);
-                        // }
-                        // SettingsController.index = SettingsController.currentQueue.indexOf(entity.path);
-                        // await AppAudioHandler.play();
                       },
                       onLongPress: (entity) {
                         debugPrint("Long pressed on ${entity.name}");

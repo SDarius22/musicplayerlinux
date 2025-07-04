@@ -6,6 +6,7 @@ import 'package:musicplayer/entities/album.dart';
 import 'package:musicplayer/providers/albums_provider.dart';
 import 'package:musicplayer/providers/app_state_provider.dart';
 import 'package:musicplayer/providers/audio_provider.dart';
+import 'package:musicplayer/screens/add_screen.dart';
 import 'package:musicplayer/screens/album_screen.dart';
 import 'package:musicplayer/utils/fluenticons/fluenticons.dart';
 import 'package:provider/provider.dart';
@@ -28,6 +29,7 @@ class Albums extends StatefulWidget{
 
 
 class _AlbumsState extends State<Albums>{
+  ValueNotifier<List<Album>> selected = ValueNotifier<List<Album>>([]);
   FocusNode searchNode = FocusNode();
   Timer? _debounce;
 
@@ -187,91 +189,138 @@ class _AlbumsState extends State<Albums>{
                                 left: width * 0.01,
                                 right: width * 0.01,
                               ),
-                              sliver: GridComponent(
-                                items: snapshot.data ?? [],
-                                isSelected: (entity) {
-                                  // This is a placeholder
-                                  return false;
-                                },
-                                onTap: (entity) async {
-                                  debugPrint("tapped ${entity.name}");
-                                  debugPrint("Entity type: ${entity.runtimeType}");
-                                  if (entity is Album) {
-                                    // Navigate to album page
-                                    debugPrint("Songs in album: ${entity.songs.length}");
-                                    var appStateProvider = Provider.of<AppStateProvider>(context, listen: false);
-                                    appStateProvider.navigatorKey.currentState!.push(AlbumScreen.route(album: entity));
-                                  } else {
-                                    debugPrint("Entity is not an Album");
-                                  }
-                                },
-                                onLongPress: (entity) {
-                                  debugPrint("long pressed ${entity.name}");
-                                },
-                                buildLeftAction: (entity) => IconButton(
-                                  icon: Icon(FluentIcons.play, color: Colors.white, size: height * 0.025),
-                                  onPressed: () async {
-                                    debugPrint("Playing album ${entity.name}");
-                                    if (entity is! Album) {
-                                      debugPrint("Entity is not an Album");
-                                      return;
+                              sliver: ValueListenableBuilder(
+                                valueListenable: selected,
+                                builder: (context, value, child) {
+                                  return GridComponent(
+                                    items: snapshot.data ?? [],
+                                    isSelected: (entity) {
+                                      return selected.value.contains(entity);
+                                    },
+                                    onTap: (entity) async {
+                                      if (entity is Album) {
+                                        if (selected.value.isNotEmpty) {
+                                          if (selected.value.contains(entity)) {
+                                            selected.value = List<Album>.from(selected.value)..remove(entity);
+                                          } else {
+                                            selected.value = List<Album>.from(selected.value)..add(entity);
+                                          }
+                                          return;
+                                        }
+                                        var appStateProvider = Provider.of<AppStateProvider>(context, listen: false);
+                                        appStateProvider.navigatorKey.currentState!.push(AlbumScreen.route(album: entity));
+                                      } else {
+                                        debugPrint("Entity is not an Album");
+                                      }
+                                    },
+                                    onLongPress: (entity) {
+                                      debugPrint("long pressed ${entity.name}");
+                                      if (entity is Album) {
+                                        if (selected.value.contains(entity)) {
+                                          selected.value = List<Album>.from(selected.value)..remove(entity);
+                                        } else {
+                                          selected.value = List<Album>.from(selected.value)..add(entity);
+                                        }
+                                      }
+                                    },
+                                    buildLeftAction: (entity) {
+                                      if (selected.value.contains(entity)) {
+                                        return SizedBox.shrink();
+                                      }
+                                      return IconButton(
+                                        icon: Icon(FluentIcons.play, color: Colors.white, size: height * 0.025),
+                                        onPressed: () async {
+                                          debugPrint("Playing album ${entity.name}");
+                                          if (entity is! Album) {
+                                            debugPrint("Entity is not an Album");
+                                            return;
+                                          }
+                                          Album album = entity;
+                                          album.songs.sort((a, b) => a.trackNumber.compareTo(b.trackNumber));
+                                          List<String> songPaths = album.songs.map((e) => e.path).toList();
+                                          var audioProvider = Provider.of<AudioProvider>(context, listen: false);
+                                          audioProvider.setQueue(songPaths);
+                                          await audioProvider.setCurrentIndex(album.songs.first.path);
+                                        },
+                                      );
+                                    },
+                                    buildMainAction: (entity) {
+                                      if (selected.value.contains(entity)) {
+                                        return Icon(
+                                          FluentIcons.checkCircleOn,
+                                          color: Colors.white,
+                                        );
+                                      }
+                                      if (selected.value.isNotEmpty) {
+                                        return Icon(
+                                          FluentIcons.checkCircleOff,
+                                          color: Colors.white,
+                                        );
+                                      }
+                                      return Icon(
+                                        FluentIcons.open,
+                                        color: Colors.white,
+                                        size: height * 0.03,
+                                      );
+                                    },
+                                    buildRightAction: (entity) {
+                                      if (selected.value.contains(entity)) {
+                                        return SizedBox.shrink();
+                                      }
+                                      return PopupMenuButton<String>(
+                                        icon: Icon(
+                                          FluentIcons.moreVertical,
+                                          color: Colors.white,
+                                          size: height * 0.03,
+                                        ),
+                                        onSelected: (String value) async {
+                                          switch(value){
+                                            case 'add':
+                                              Album album = entity as Album;
+                                              album.songs.sort((a, b) => a.trackNumber.compareTo(b.trackNumber));
+                                              var appStateProvider = Provider.of<AppStateProvider>(context, listen: false);
+                                              appStateProvider.navigatorKey.currentState!.push(
+                                                  AddScreen.route(songs: album.songs)
+                                              );
+                                              break;
+                                            case 'playNext':
+                                              Album album = entity as Album;
+                                              album.songs.sort((a, b) => b.trackNumber.compareTo(a.trackNumber));
+                                              var audioProvider = Provider.of<AudioProvider>(context, listen: false);
+                                              audioProvider.addMultipleNextToQueue(
+                                                album.songs.map((e) => e.path).toList(),
+                                              );
+                                              break;
+                                            case 'select':
+                                              Album album = entity as Album;
+                                              if (selected.value.contains(album)) {
+                                                selected.value = List<Album>.from(selected.value)..remove(album);
+                                              } else {
+                                                selected.value = List<Album>.from(selected.value)..add(album);
+                                              }
+                                              break;
+                                          }
+                                        },
+                                        itemBuilder: (context){
+                                          return [
+                                            const PopupMenuItem<String>(
+                                              value: 'add',
+                                              child: Text("Add to Playlist"),
+                                            ),
+                                            const PopupMenuItem<String>(
+                                              value: 'playNext',
+                                              child: Text("Play Next"),
+                                            ),
+                                            const PopupMenuItem<String>(
+                                              value: 'select',
+                                              child: Text("Select"),
+                                            ),
+                                          ];
+                                        },
+                                      );
                                     }
-                                    Album album = entity;
-                                    album.songs.sort((a, b) => a.trackNumber.compareTo(b.trackNumber));
-                                    List<String> songPaths = album.songs.map((e) => e.path).toList();
-                                    var audioProvider = Provider.of<AudioProvider>(context, listen: false);
-                                    audioProvider.setQueue(songPaths);
-                                    await audioProvider.setCurrentIndex(album.songs.first.path);
-                                  },
-                                ),
-                                buildMainAction: (entity) => Icon(
-                                  FluentIcons.open,
-                                  color: Colors.white,
-                                  size: height * 0.03,
-                                ),
-                                buildRightAction: (entity) => PopupMenuButton<String>(
-                                  icon: Icon(
-                                    FluentIcons.moreVertical,
-                                    color: Colors.white,
-                                    size: height * 0.03,
-                                  ),
-                                  onSelected: (String value){
-                                    switch(value){
-                                      case 'add':
-                                      // debugPrint("Add $index");
-                                      // Navigator.pushNamed(context, '/add', arguments: [song]);
-                                        break;
-                                      case 'playNext':
-                                      //debugPrint("Play Next: $index");
-                                      // dc.addNextToQueue([song.path]);
-                                        break;
-                                      case 'select':
-                                      //debugPrint("Select $index");
-                                      // if (DataController.selected.contains(song.path)){
-                                      //   DataController.selected = List.from(DataController.selected)..remove(song.path);
-                                      //   return;
-                                      // }
-                                      // DataController.selected = List.from(DataController.selected)..add(song.path);
-                                        break;
-                                    }
-                                  },
-                                  itemBuilder: (context){
-                                    return [
-                                      const PopupMenuItem<String>(
-                                        value: 'add',
-                                        child: Text("Add to Playlist"),
-                                      ),
-                                      const PopupMenuItem<String>(
-                                        value: 'playNext',
-                                        child: Text("Play Next"),
-                                      ),
-                                      const PopupMenuItem<String>(
-                                        value: 'select',
-                                        child: Text("Select"),
-                                      ),
-                                    ];
-                                  },
-                                ),
+                                  );
+                                }
                               ),
                             ),
                           ],
@@ -283,6 +332,103 @@ class _AlbumsState extends State<Albums>{
             );
           },
         ),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.miniCenterFloat,
+      floatingActionButton: ValueListenableBuilder(
+        valueListenable: selected,
+        builder: (context, value, child) {
+          return Visibility(
+            visible: value.isNotEmpty,
+            child: Container(
+              width: MediaQuery.of(context).size.width * 0.1,
+              height: MediaQuery.of(context).size.height * 0.05,
+              margin: EdgeInsets.only(
+                bottom: MediaQuery.of(context).size.height * 0.1,
+              ),
+              decoration: BoxDecoration(
+                color: Colors.blue,
+                borderRadius: BorderRadius.circular(30),
+              ),
+              foregroundDecoration: BoxDecoration(
+                border: Border.all(color: Colors.grey, width: 1),
+                borderRadius: BorderRadius.circular(30),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Expanded(
+                    child: TextButton.icon(
+                      icon: Icon(FluentIcons.add, color: Colors.white, size: MediaQuery.of(context).size.height * 0.02,),
+                      label: Text(
+                        "Add",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: normalSize,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      onPressed: () async {
+                        debugPrint("Add button pressed");
+                        if (selected.value.isEmpty) {
+                          return;
+                        }
+                        var appState = Provider.of<AppStateProvider>(context, listen: false);
+                        var songs = selected.value.expand((album) {
+                          album.songs.sort((a, b) => a.trackNumber.compareTo(b.trackNumber));
+                          return album.songs;
+                        }).toList();
+                        appState.navigatorKey.currentState?.push(
+                          AddScreen.route(songs: songs),
+                        ).then((value) {
+                          selected.value = [];
+                        });
+                      },
+                      style: TextButton.styleFrom(
+                        backgroundColor: Colors.blue,
+                        padding: EdgeInsets.zero,
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.only(
+                              topLeft: Radius.circular(30),
+                              bottomLeft: Radius.circular(30),
+                            )
+                        ),
+                      ),
+                    ),
+                  ),
+                  Container(
+                    width: 1,
+                    height: MediaQuery.of(context).size.height * 0.05,
+                    color: Colors.grey,
+                  ),
+                  IconButton(
+                    onPressed: () {
+                      debugPrint("Delete button pressed");
+                      if (selected.value.isEmpty) {
+                        return;
+                      }
+                      selected.value = [];
+                    },
+                    icon: Icon(
+                      FluentIcons.trash,
+                      color: Colors.white,
+                      size: MediaQuery.of(context).size.height * 0.02,
+                    ),
+                    style: IconButton.styleFrom(
+                      backgroundColor: Colors.red,
+                      padding: EdgeInsets.zero,
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.only(
+                            topRight: Radius.circular(30),
+                            bottomRight: Radius.circular(30),
+                          )
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
       ),
     );
 

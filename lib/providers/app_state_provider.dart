@@ -45,6 +45,7 @@ class AppStateProvider with ChangeNotifier, TrayListener{
       } else {
         animatedMeshGradientController.stop();
       }
+      initTray();
     });
   }
 

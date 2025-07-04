@@ -25,7 +25,6 @@ dependencies:
   # Audio
   audioplayers: ^6.0.0
   audiotags: ^1.4.5
-  audio_video_progress_bar: ^2.0.2
   audio_service_mpris: ^0.2.0
   audio_service: ^0.18.16
 

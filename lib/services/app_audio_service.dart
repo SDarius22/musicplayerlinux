@@ -140,7 +140,6 @@ class AppAudioService extends BaseAudioHandler {
   void setShuffle(bool shuffle) {
     audioSettings.shuffle = shuffle;
     settingsService.updateAudioSettings(audioSettings);
-    
   }
 
   void setSlider(int slider) {
@@ -205,6 +204,35 @@ class AppAudioService extends BaseAudioHandler {
       audioSettings.shuffledQueue.add(songPath);
       settingsService.updateAudioSettings(audioSettings);
     }
+  }
+
+  void addMultipleToQueue(List<String> songPaths) {
+    for (String songPath in songPaths) {
+      if (!audioSettings.queue.contains(songPath)) {
+        audioSettings.queue.add(songPath);
+        audioSettings.shuffledQueue.add(songPath);
+      }
+    }
+    settingsService.updateAudioSettings(audioSettings);
+  }
+
+  void addToQueueAtIndex(String songPath, int index) {
+    if (!audioSettings.queue.contains(songPath)) {
+      audioSettings.queue.insert(index, songPath);
+      audioSettings.shuffledQueue.insert(index, songPath);
+      settingsService.updateAudioSettings(audioSettings);
+    }
+  }
+
+  void addMultipleToQueueAtIndex(List<String> songPaths, int index) {
+    for (String songPath in songPaths) {
+      if (!audioSettings.queue.contains(songPath)) {
+        audioSettings.queue.insert(index, songPath);
+        audioSettings.shuffledQueue.insert(index, songPath);
+        index++;
+      }
+    }
+    settingsService.updateAudioSettings(audioSettings);
   }
 
   void removeFromQueue(String songPath) {

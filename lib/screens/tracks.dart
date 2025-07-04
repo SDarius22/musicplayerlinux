@@ -247,6 +247,9 @@ class _TracksState extends State<Tracks>{
                                           }
                                         },
                                         buildLeftAction: (entity) {
+                                          if (selected.value.contains(entity)) {
+                                            return SizedBox.shrink();
+                                          }
                                           return IconButton(
                                             tooltip: "Go to Album",
                                             onPressed: (){
@@ -286,15 +289,24 @@ class _TracksState extends State<Tracks>{
                                           return Consumer<AudioProvider>(
                                             builder: (_, audioProvider, __) {
                                               Song song = entity as Song;
-                                              return Icon(
-                                                audioProvider.currentSong.path == song.path && audioProvider.playingNotifier.value == true ?
-                                                FluentIcons.pause : FluentIcons.play,
-                                                color: Colors.white,
+                                              return ValueListenableBuilder(
+                                                valueListenable: audioProvider.playingNotifier,
+                                                builder: (context, isPlaying, child) {
+                                                  return Icon(
+                                                    audioProvider.currentSong.path == song.path && audioProvider.playingNotifier.value == true ?
+                                                    FluentIcons.pause : FluentIcons.play,
+                                                    color: Colors.white,
+                                                  );
+                                                },
+
                                               );
                                             },
                                           );
                                         },
                                         buildRightAction: (entity) {
+                                          if (selected.value.contains(entity)) {
+                                            return SizedBox.shrink();
+                                          }
                                           return PopupMenuButton<String>(
                                             icon: Icon(
                                               FluentIcons.moreVertical,
@@ -304,13 +316,12 @@ class _TracksState extends State<Tracks>{
                                             onSelected: (String value){
                                               switch(value){
                                                 case 'add':
-                                                // debugPrint("Add $index");
                                                   var appState = Provider.of<AppStateProvider>(context, listen: false);
                                                   appState.navigatorKey.currentState?.push(AddScreen.route(songs: [entity as Song]));
                                                   break;
                                                 case 'playNext':
-                                                //debugPrint("Play Next: $index");
-                                                // dc.addNextToQueue([song.path]);
+                                                  var audioProvider = Provider.of<AudioProvider>(context, listen: false);
+                                                  audioProvider.addNextToQueue((entity as Song).path);
                                                   break;
                                                 case 'select':
                                                   debugPrint("Select ${entity.name}");

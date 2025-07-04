@@ -90,9 +90,7 @@ class _AddScreenState extends State<AddScreen> {
                         Playlist playlist = selected.value[i];
                         if (playlist.indestructible && playlist.name == 'Current Queue') {
                           var audioProvider = Provider.of<AudioProvider>(context, listen: false);
-                          for (Song song in widget.songs) {
-                            audioProvider.addToQueue(song.path);
-                          }
+                          audioProvider.addMultipleToQueue(widget.songs.map((song) => song.path).toList());
                         }
                         else {
                           var playlistProvider = Provider.of<PlaylistProvider>(context, listen: false);

@@ -276,6 +276,48 @@ class AudioProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  void addMultipleToQueue(List<String> songPaths) {
+    if (Platform.isLinux){
+      _audioHandler?.addMultipleToQueue(songPaths);
+    }
+    // else if (Platform.isWindows){
+    //   final apc = AudioPlayerController();
+    //   await apc.addMultipleToQueue(songPaths);
+    // }
+    queueFuture = Future(() => _audioHandler?.getQueue());
+    notifyListeners();
+  }
+
+  void addNextToQueue(String songPath) {
+    if (Platform.isLinux){
+      _audioHandler?.addToQueueAtIndex(
+        songPath,
+        _audioHandler?.audioSettings.currentQueue.indexOf(currentSong.path) + 1
+      );
+    }
+    // else if (Platform.isWindows){
+    //   final apc = AudioPlayerController();
+    //   await apc.addNextToQueue(songPath);
+    // }
+    queueFuture = Future(() => _audioHandler?.getQueue());
+    notifyListeners();
+  }
+
+  void addMultipleNextToQueue(List<String> songPaths) {
+    if (Platform.isLinux){
+      _audioHandler?.addMultipleToQueueAtIndex(
+        songPaths,
+        _audioHandler?.audioSettings.currentQueue.indexOf(currentSong.path) + 1
+      );
+    }
+    // else if (Platform.isWindows){
+    //   final apc = AudioPlayerController();
+    //   await apc.addMultipleNextToQueue(songPaths);
+    // }
+    queueFuture = Future(() => _audioHandler?.getQueue());
+    notifyListeners();
+  }
+
   void removeFromQueue(String songPath) {
     if (Platform.isLinux){
       _audioHandler?.removeFromQueue(songPath);

@@ -18,7 +18,7 @@ class LyricsProvider with ChangeNotifier {
   }
 
   Future<void> buildLyricsModel() async {
-    String? lyrics = await getLyricsForCurrentSong();
+    String? lyrics = await _getLyricsForCurrentSong();
     lyricsModelBuilder = LyricsModelBuilder.create().bindLyricToMain(lyrics ?? '').getModel();
     debugPrint('LyricsModelBuilder: ${lyricsModelBuilder.lyrics.length} lines');
     if (lyricsModelBuilder.lyrics.isEmpty) {
@@ -29,7 +29,7 @@ class LyricsProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<String?> getLyricsForCurrentSong() async {
+  Future<String?> _getLyricsForCurrentSong() async {
     return await FileService.getLyrics(_audioProvider.currentSong.path);
   }
 
