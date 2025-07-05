@@ -25,11 +25,11 @@ class UINetease extends LyricUI {
       this.bias = 0.5,
       this.lineGap = 25,
       this.inlineGap = 25,
-      this.lyricAlign = LyricAlign.CENTER,
-      this.lyricBaseLine = LyricBaseLine.CENTER,
+      this.lyricAlign = LyricAlign.center,
+      this.lyricBaseLine = LyricBaseLine.center,
       this.highlightColor = Colors.blue,
       this.highlight = true,
-      this.highlightDirection = HighlightDirection.LTR});
+      this.highlightDirection = HighlightDirection.leftToRight});
 
   UINetease.clone(UINetease uiNetease)
       : this(

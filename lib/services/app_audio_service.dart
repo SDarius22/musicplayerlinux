@@ -32,6 +32,7 @@ class AppAudioService extends BaseAudioHandler {
       playing: false,
     ));
     audioSettings = settingsService.getAudioSettings() ?? AudioSettings();
+    debugPrint("Audio settings loaded: $audioSettings");
   }
 
   @override
@@ -121,24 +122,28 @@ class AppAudioService extends BaseAudioHandler {
     audioSettings.volume = volume;
     audioPlayer.setVolume(volume);
     settingsService.updateAudioSettings(audioSettings);
-    
+  }
+
+  void setPlaybackSpeed(double speed) {
+    audioPlayer.setPlaybackRate(speed);
   }
 
   void setBalance(double balance) {
     audioSettings.balance = balance;
     audioPlayer.setBalance(balance);
     settingsService.updateAudioSettings(audioSettings);
-    
   }
 
   void setRepeat(bool repeat) {
     audioSettings.repeat = repeat;
     settingsService.updateAudioSettings(audioSettings);
-    
   }
 
   void setShuffle(bool shuffle) {
     audioSettings.shuffle = shuffle;
+    audioSettings.index = audioSettings.currentQueue.indexOf(
+      currentSong?.path ?? audioSettings.queue[audioSettings.index]
+    );
     settingsService.updateAudioSettings(audioSettings);
   }
 

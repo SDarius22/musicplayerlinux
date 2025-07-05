@@ -41,9 +41,7 @@ class _AnimatedBackgroundState extends State<AnimatedBackground> with SingleTick
         return AnimatedMeshGradient(
           controller: appState.animatedMeshGradientController,
           colors: [
-            appState.darkColor.withValues(
-              alpha: 0.8,
-            ),
+            appState.lightColor,
             Colors.black,
             Color(0xFF0E0E0E),
             appState.darkColor,

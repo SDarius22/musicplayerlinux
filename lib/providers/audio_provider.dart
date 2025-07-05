@@ -24,19 +24,25 @@ class AudioProvider with ChangeNotifier {
   ValueNotifier<int> sliderNotifier = ValueNotifier<int>(0);
   ValueNotifier<double> balanceNotifier = ValueNotifier<double>(0.0);
   ValueNotifier<double> volumeNotifier = ValueNotifier<double>(0.5);
+  ValueNotifier<double> playbackSpeedNotifier = ValueNotifier<double>(1.0);
+
+  bool hasBeenInitialized = false;
 
   late Future queueFuture;
 
   Future<void> init(SettingsService settingsService, SongService songService) async {
     if (Platform.isLinux) {
-      _audioHandler = await platform_service.AudioService.init(
-        builder: () => AppAudioService(settingsService, songService),
-        config: const platform_service.AudioServiceConfig(
-          androidNotificationChannelId: 'com.example.musicplayer',
-          androidNotificationChannelName: 'Music Player',
-          androidNotificationOngoing: true,
-        ),
-      );
+      if (!hasBeenInitialized) {
+        _audioHandler = await platform_service.AudioService.init(
+          builder: () => AppAudioService(settingsService, songService),
+          config: const platform_service.AudioServiceConfig(
+            androidNotificationChannelId: 'com.example.musicplayer',
+            androidNotificationChannelName: 'Music Player',
+            androidNotificationOngoing: true,
+          ),
+        );
+        hasBeenInitialized = true;
+      }
       await _audioHandler?.updateCurrentSong();
       await _audioHandler?.initSettings();
       await changeMediaItem();
@@ -197,6 +203,17 @@ class AudioProvider with ChangeNotifier {
       await _audioHandler?.repeat();
     }
     notifyListeners();
+  }
+
+  void setPlaybackSpeed(double speed) {
+    playbackSpeedNotifier.value = speed;
+    if (Platform.isLinux){
+      _audioHandler?.setPlaybackSpeed(speed);
+    }
+    // else if (Platform.isWindows){
+    //   final apc = AudioPlayerController();
+    //   await apc.setPlaybackSpeed(speed);
+    // }
   }
 
   void setVolume(double volume) {

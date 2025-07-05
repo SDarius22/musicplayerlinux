@@ -79,16 +79,16 @@ class LyricHelper {
       LyricBaseLine baseLine, LyricUI lyricUI, int playIndex) {
     if (lyric == null) return 0;
     switch (baseLine) {
-      case LyricBaseLine.MAIN_CENTER:
+      case LyricBaseLine.mainCenter:
         return ((isCurr
                     ? lyric.drawInfo?.playingMainTextHeight
                     : lyric.drawInfo?.otherMainTextHeight) ??
                 0) /
             2;
-      case LyricBaseLine.EXT_CENTER:
+      case LyricBaseLine.extCenter:
         if (!lyric.hasExt) {
           return _realCenterOffset(
-              lyric, isCurr, LyricBaseLine.MAIN_CENTER, lyricUI, playIndex);
+              lyric, isCurr, LyricBaseLine.mainCenter, lyricUI, playIndex);
         }
         return ((isCurr
                     ? lyric.drawInfo?.playingMainTextHeight
@@ -100,10 +100,10 @@ class LyricHelper {
                         : lyric.drawInfo?.otherExtTextHeight) ??
                     0) /
                 2;
-      case LyricBaseLine.CENTER:
+      case LyricBaseLine.center:
         if (!lyric.hasExt) {
           return _realCenterOffset(
-              lyric, isCurr, LyricBaseLine.MAIN_CENTER, lyricUI, playIndex);
+              lyric, isCurr, LyricBaseLine.mainCenter, lyricUI, playIndex);
         }
         return ((isCurr
                     ? lyric.drawInfo?.playingMainTextHeight

@@ -1,5 +1,4 @@
 import 'package:musicplayer/database/objectBox.dart';
-import 'package:musicplayer/database/objectbox.g.dart';
 import 'package:musicplayer/entities/app_settings.dart';
 import 'package:musicplayer/entities/audio_settings.dart';
 
@@ -12,7 +11,7 @@ class SettingsRepo {
   }
 
   AudioSettings? getAudioSettings() {
-    return audioSettingsBox.query(AudioSettings_.id.equals(1)).build().findUnique();
+    return audioSettingsBox.query().build().findFirst();
   }
 
   void updateAudioSettings(AudioSettings settings)  {
@@ -39,7 +38,7 @@ class SettingsRepo {
   }
 
   AppSettings? getAppSettings()  {
-    return appSettingsBox.query(AppSettings_.id.equals(1)).build().findUnique();
+    return appSettingsBox.query().build().findFirst();
   }
 
   void updateAppSettings(AppSettings settings)  {

@@ -37,6 +37,7 @@ dependencies:
   # Database
   objectbox: ^4.0.1
   objectbox_flutter_libs: any
+  collection: ^1.19.1
 
   # UI
   image: ^4.2.0

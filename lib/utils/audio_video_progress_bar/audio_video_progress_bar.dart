@@ -267,9 +267,9 @@ class ProgressBar extends LeafRenderObjectWidget {
       onDragUpdate: onDragUpdate,
       onDragEnd: onDragEnd,
       barHeight: barHeight,
-      baseBarColor: baseBarColor ?? primaryColor.withOpacity(0.24),
+      baseBarColor: baseBarColor ?? primaryColor.withValues(alpha: 0.24),
       progressBarColor: progressBarColor ?? primaryColor,
-      bufferedBarColor: bufferedBarColor ?? primaryColor.withOpacity(0.24),
+      bufferedBarColor: bufferedBarColor ?? primaryColor.withValues(alpha: 0.24),
       barCapShape: barCapShape,
       thumbRadius: thumbRadius,
       thumbColor: thumbColor ?? primaryColor,
@@ -300,9 +300,9 @@ class ProgressBar extends LeafRenderObjectWidget {
       ..onDragUpdate = onDragUpdate
       ..onDragEnd = onDragEnd
       ..barHeight = barHeight
-      ..baseBarColor = baseBarColor ?? primaryColor.withOpacity(0.24)
+      ..baseBarColor = baseBarColor ?? primaryColor.withValues(alpha: 0.24)
       ..progressBarColor = progressBarColor ?? primaryColor
-      ..bufferedBarColor = bufferedBarColor ?? primaryColor.withOpacity(0.24)
+      ..bufferedBarColor = bufferedBarColor ?? primaryColor.withValues(alpha: 0.24)
       ..barCapShape = barCapShape
       ..thumbRadius = thumbRadius
       ..thumbColor = thumbColor ?? primaryColor
@@ -1039,23 +1039,37 @@ class _RenderProgressBar extends RenderBox {
     );
   }
 
-  void _drawBar(
-      {required Canvas canvas,
-        required Size availableSize,
-        required double widthProportion,
-        required Color color}) {
+  void _drawBar({
+    required Canvas canvas,
+    required Size availableSize,
+    required double widthProportion,
+    required Color color,
+  }) {
     final strokeCap = (_barCapShape == BarCapShape.round)
         ? StrokeCap.round
         : StrokeCap.square;
+
+    final capRadius = _barHeight / 2;
+    final adjustedWidth = availableSize.width - _barHeight;
+    final dx = widthProportion * adjustedWidth + capRadius;
+
+    final startPoint = Offset(capRadius, availableSize.height / 2);
+    final endPoint = Offset(dx, availableSize.height / 2);
+
+    // Draw border (1px stroke)
+    final borderPaint = Paint()
+      ..color = Colors.white.withValues(alpha: 0.35)
+      ..strokeCap = strokeCap
+      ..strokeWidth = _barHeight + 1; // 1px border
+
+    canvas.drawLine(startPoint, endPoint, borderPaint);
+
+    // Draw actual bar over it
     final baseBarPaint = Paint()
       ..color = color
       ..strokeCap = strokeCap
       ..strokeWidth = _barHeight;
-    final capRadius = _barHeight / 2;
-    final adjustedWidth = availableSize.width - barHeight;
-    final dx = widthProportion * adjustedWidth + capRadius;
-    final startPoint = Offset(capRadius, availableSize.height / 2);
-    var endPoint = Offset(dx, availableSize.height / 2);
+
     canvas.drawLine(startPoint, endPoint, baseBarPaint);
   }
 

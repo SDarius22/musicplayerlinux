@@ -51,7 +51,6 @@ class _DrawerWidgetState extends State<DrawerWidget> {
         });
         _appStateProvider.navigatorKey.currentState!.pushNamed('/user');
       },
-      "bigger": true,
     },
     {
       "text": "Albums",
@@ -185,11 +184,11 @@ class _DrawerWidgetState extends State<DrawerWidget> {
               Flexible(
                 child: ListView.builder(
                   itemCount: menuItems.length,
+                  itemExtent: height * 0.05,
+                  shrinkWrap: true,
                   itemBuilder: (context, index) {
                     return AnimatedContainer(
-                      height: appState.isDrawerOpen && menuItems[index]["bigger"] != null && menuItems[index]["bigger"]
-                          ? height * 0.10
-                          : height * 0.05,
+                      height: height * 0.05,
                       duration: const Duration(milliseconds: 300),
                       child: MouseRegion(
                         cursor: SystemMouseCursors.click,

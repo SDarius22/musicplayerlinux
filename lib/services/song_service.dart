@@ -61,6 +61,19 @@ class SongService {
     }
   }
 
+  Song? getSongContaining(String query) {
+    if (query.isEmpty) {
+      throw ArgumentError("Query cannot be empty");
+    }
+
+    try {
+      return songRepo.getSongContaining(query);
+    } catch (e) {
+      debugPrint("Error fetching song containing '$query': $e");
+      return null;
+    }
+  }
+
   List<Song> getSongs(String query, String sortField, bool flag) {
     try {
       return songRepo.getSongs(query, sortField, flag);

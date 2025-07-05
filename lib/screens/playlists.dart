@@ -33,6 +33,7 @@ class _PlaylistsState extends State<Playlists>{
   ValueNotifier<List<Playlist>> selected = ValueNotifier<List<Playlist>>([]);
   FocusNode searchNode = FocusNode();
   Timer? _debounce;
+  final TextEditingController _controller = TextEditingController();
 
   @override
   void dispose() {
@@ -101,7 +102,17 @@ class _PlaylistsState extends State<Playlists>{
                               color: Colors.white,
                               fontSize: smallSize,
                             ),
-                            labelText: 'Search', suffixIcon: Icon(FluentIcons.search, color: Colors.white, size: height * 0.02,),
+                            labelText: 'Search',
+                            suffixIcon: _controller.text.isNotEmpty
+                                ? IconButton(
+                              icon: Icon(Icons.clear, color: Colors.white, size: height * 0.03),
+                              onPressed: () {
+                                _controller.clear();
+                                playlistProvider.setQuery('');
+                                searchNode.unfocus();
+                              },
+                            )
+                                : Icon(FluentIcons.search, color: Colors.white, size: height * 0.03),
                           ),
                         ),
                       ),

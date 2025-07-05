@@ -57,7 +57,19 @@ class _CreateScreenState extends State<CreateScreen> {
     var paths = widget.playlistPaths;
     playlistName = name;
     if (paths.isNotEmpty) {
-      selected.value.addAll(paths);
+      if (widget.import) {
+        var songProvider = Provider.of<SongProvider>(context, listen: false);
+        selected.value = paths.map((path) {
+          var song = songProvider.getSongContaining(path);
+          if (song != null) {
+            return song.path;
+          } else {
+            return path;
+          }
+        }).toList();
+      } else {
+        selected.value = List.from(paths);
+      }
     }
     super.initState();
     nameNode.requestFocus();
@@ -224,7 +236,6 @@ class _CreateScreenState extends State<CreateScreen> {
                                       );
                                     }
                                     var value = values[1] as List<String>;
-                                    debugPrint("Selected songs: ${value.length}");
                                     return ImageWidget(
                                       path: value.isEmpty ? '' : value.first,
                                       type: ImageWidgetType.song,

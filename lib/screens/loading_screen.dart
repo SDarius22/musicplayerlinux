@@ -34,7 +34,7 @@ class _LoadingScreenState extends State<LoadingScreen> with AfterLayoutMixin<Loa
     if (mounted) {
       // var infoProvider = Provider.of<InfoProvider>(context, listen: false);
       var appStateProvider = Provider.of<AppStateProvider>(context, listen: false);
-      if (appStateProvider.appSettings.firstTime) {
+      if (appStateProvider.appSettings.firstTime || appStateProvider.appSettings.mainSongPlace.isEmpty) {
         Navigator.pushReplacement(context, WelcomeScreen.route());
       }
       else {

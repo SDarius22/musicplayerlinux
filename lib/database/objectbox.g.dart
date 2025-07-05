@@ -433,32 +433,8 @@ final _entities = <obx_int.ModelEntity>[
         flags: 0,
       ),
       obx_int.ModelProperty(
-        id: const obx_int.IdUid(6, 250223119048497435),
-        name: 'appNotifications',
-        type: 1,
-        flags: 0,
-      ),
-      obx_int.ModelProperty(
-        id: const obx_int.IdUid(7, 272815104278839493),
-        name: 'gridView',
-        type: 1,
-        flags: 0,
-      ),
-      obx_int.ModelProperty(
         id: const obx_int.IdUid(8, 2165713424117401281),
         name: 'mainSongPlace',
-        type: 9,
-        flags: 0,
-      ),
-      obx_int.ModelProperty(
-        id: const obx_int.IdUid(9, 2530389220734099795),
-        name: 'queueAdd',
-        type: 9,
-        flags: 0,
-      ),
-      obx_int.ModelProperty(
-        id: const obx_int.IdUid(10, 2617477544973385086),
-        name: 'queuePlay',
         type: 9,
         flags: 0,
       ),
@@ -671,6 +647,10 @@ obx_int.ModelDefinition getObjectBoxModel() {
       2686885678487302492,
       1293669422185756488,
       6403839440653166736,
+      2530389220734099795,
+      2617477544973385086,
+      250223119048497435,
+      272815104278839493,
     ],
     retiredRelationUids: const [
       3440552932794375637,
@@ -1115,8 +1095,6 @@ obx_int.ModelDefinition getObjectBoxModel() {
       },
       objectToFB: (AppSettings object, fb.Builder fbb) {
         final mainSongPlaceOffset = fbb.writeString(object.mainSongPlace);
-        final queueAddOffset = fbb.writeString(object.queueAdd);
-        final queuePlayOffset = fbb.writeString(object.queuePlay);
         final songPlacesOffset = fbb.writeList(
           object.songPlaces.map(fbb.writeString).toList(growable: false),
         );
@@ -1132,11 +1110,7 @@ obx_int.ModelDefinition getObjectBoxModel() {
         fbb.addBool(2, object.firstTime);
         fbb.addBool(3, object.systemTray);
         fbb.addBool(4, object.fullClose);
-        fbb.addBool(5, object.appNotifications);
-        fbb.addBool(6, object.gridView);
         fbb.addOffset(7, mainSongPlaceOffset);
-        fbb.addOffset(8, queueAddOffset);
-        fbb.addOffset(9, queuePlayOffset);
         fbb.addOffset(10, songPlacesOffset);
         fbb.addOffset(11, songPlaceIncludeSubfoldersOffset);
         fbb.addOffset(12, missingSongsOffset);
@@ -1167,27 +1141,9 @@ obx_int.ModelDefinition getObjectBoxModel() {
             12,
             false,
           )
-          ..appNotifications = const fb.BoolReader().vTableGet(
-            buffer,
-            rootOffset,
-            14,
-            false,
-          )
-          ..gridView = const fb.BoolReader().vTableGet(
-            buffer,
-            rootOffset,
-            16,
-            false,
-          )
           ..mainSongPlace = const fb.StringReader(
             asciiOptimization: true,
           ).vTableGet(buffer, rootOffset, 18, '')
-          ..queueAdd = const fb.StringReader(
-            asciiOptimization: true,
-          ).vTableGet(buffer, rootOffset, 20, '')
-          ..queuePlay = const fb.StringReader(
-            asciiOptimization: true,
-          ).vTableGet(buffer, rootOffset, 22, '')
           ..songPlaces = const fb.ListReader<String>(
             fb.StringReader(asciiOptimization: true),
             lazy: false,
@@ -1507,42 +1463,22 @@ class AppSettings_ {
     _entities[6].properties[4],
   );
 
-  /// See [AppSettings.appNotifications].
-  static final appNotifications = obx.QueryBooleanProperty<AppSettings>(
-    _entities[6].properties[5],
-  );
-
-  /// See [AppSettings.gridView].
-  static final gridView = obx.QueryBooleanProperty<AppSettings>(
-    _entities[6].properties[6],
-  );
-
   /// See [AppSettings.mainSongPlace].
   static final mainSongPlace = obx.QueryStringProperty<AppSettings>(
-    _entities[6].properties[7],
-  );
-
-  /// See [AppSettings.queueAdd].
-  static final queueAdd = obx.QueryStringProperty<AppSettings>(
-    _entities[6].properties[8],
-  );
-
-  /// See [AppSettings.queuePlay].
-  static final queuePlay = obx.QueryStringProperty<AppSettings>(
-    _entities[6].properties[9],
+    _entities[6].properties[5],
   );
 
   /// See [AppSettings.songPlaces].
   static final songPlaces = obx.QueryStringVectorProperty<AppSettings>(
-    _entities[6].properties[10],
+    _entities[6].properties[6],
   );
 
   /// See [AppSettings.songPlaceIncludeSubfolders].
   static final songPlaceIncludeSubfolders =
-      obx.QueryIntegerVectorProperty<AppSettings>(_entities[6].properties[11]);
+      obx.QueryIntegerVectorProperty<AppSettings>(_entities[6].properties[7]);
 
   /// See [AppSettings.missingSongs].
   static final missingSongs = obx.QueryStringVectorProperty<AppSettings>(
-    _entities[6].properties[12],
+    _entities[6].properties[8],
   );
 }

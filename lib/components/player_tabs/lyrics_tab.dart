@@ -30,7 +30,7 @@ class LyricsTab extends StatelessWidget {
           fontSize: MediaQuery.of(context).size.height * 0.022,
           shadows: [
             Shadow(
-              color: Colors.black.withValues(alpha: 0.5),
+              color: Colors.black.withValues(alpha: 0.75),
               offset: const Offset(1, 2),
               blurRadius: 4,
             ),
@@ -41,7 +41,7 @@ class LyricsTab extends StatelessWidget {
           fontSize: MediaQuery.of(context).size.height * 0.020,
           shadows: [
             Shadow(
-              color: Colors.black.withValues(alpha: oneLine ? 0.0 : 0.5),
+              color: Colors.black.withValues(alpha: oneLine ? 0.0 : 0.75),
               offset: const Offset(1, 2),
               blurRadius: 4,
             ),
@@ -52,7 +52,7 @@ class LyricsTab extends StatelessWidget {
           fontSize: MediaQuery.of(context).size.height * 0.020,
           shadows: [
             Shadow(
-              color: Colors.black.withValues(alpha: oneLine ? 0.0 : 0.2),
+              color: Colors.black.withValues(alpha: oneLine ? 0.0 : 0.5),
               offset: const Offset(1, 2),
               blurRadius: 4,
             ),
@@ -62,8 +62,8 @@ class LyricsTab extends StatelessWidget {
         lineGap : 5,
         inlineGap : 5,
         highlightColor: Colors.blue, // SettingsController.lightColorNotifier.value,
-        lyricAlign : LyricAlign.CENTER,
-        lyricBaseLine : LyricBaseLine.CENTER,
+        lyricAlign : LyricAlign.center,
+        lyricBaseLine : LyricBaseLine.center,
         highlight : false
     );
 

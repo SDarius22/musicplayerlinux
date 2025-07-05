@@ -9,8 +9,13 @@ class LyricsProvider with ChangeNotifier {
   late LyricsReaderModel lyricsModelBuilder;
   late String unsyncedLyrics;
 
+  bool hasBeenInitialized = false;
+
   void init(AudioProvider audioProvider) {
-    _audioProvider = audioProvider;
+    if (!hasBeenInitialized) {
+      _audioProvider = audioProvider;
+      hasBeenInitialized = true;
+    }
     buildLyricsModel();
     _audioProvider.addListener(() {
       buildLyricsModel();

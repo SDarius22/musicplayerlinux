@@ -106,19 +106,16 @@ class _TracksState extends State<Tracks>{
                                   fontSize: smallSize,
                                 ),
                                 labelText: 'Search',
-                                suffixIcon: IconButton(
-                                  onPressed: () {
-                                    debugPrint("Clear search");
-                                    _controller.clear();
-                                    songProvider.setQuery('');
-                                    searchNode.unfocus();
-                                  },
-                                  icon: Icon(
-                                    FluentIcons.trash,
-                                    color: Colors.white,
-                                    size: height * 0.03,
-                                  ),
-                                ),
+                                suffixIcon: _controller.text.isNotEmpty
+                                    ? IconButton(
+                                        icon: Icon(Icons.clear, color: Colors.white, size: height * 0.03),
+                                        onPressed: () {
+                                          _controller.clear();
+                                          songProvider.setQuery('');
+                                          searchNode.unfocus();
+                                        },
+                                      )
+                                    : Icon(FluentIcons.search, color: Colors.white, size: height * 0.03),
                               ),
                             ),
                           ),

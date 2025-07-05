@@ -1,8 +1,10 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:musicplayer/entities/app_settings.dart';
 import 'package:musicplayer/providers/app_state_provider.dart';
+import 'package:musicplayer/providers/audio_provider.dart';
+import 'package:musicplayer/screens/create_screen.dart';
+import 'package:musicplayer/screens/loading_screen.dart';
 import 'package:musicplayer/utils/fluenticons/fluenticons.dart';
 import 'package:provider/provider.dart';
 
@@ -43,10 +45,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
               bottom: height * 0.02
           ),
           alignment: Alignment.center,
-          child: Selector<AppStateProvider, AppSettings>(
-              selector: (_, provider) => provider.appSettings,
-              builder: (_, appSettings, __) {
-                var lightColor = Provider.of<AppStateProvider>(context).lightColor;
+          child: Consumer<AppStateProvider>(
+              builder: (_, appState, __) {
                 return Container(
                   width: width * 0.85,
                   padding: EdgeInsets.only(
@@ -83,237 +83,200 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           ),
                         ],
                       ),
-                      // ///Music Directory
-                      // Row(
-                      //   children: [
-                      //     Column(
-                      //       crossAxisAlignment: CrossAxisAlignment.start,
-                      //       mainAxisAlignment: MainAxisAlignment.center,
-                      //       children: [
-                      //         Text(
-                      //           "Music Directory",
-                      //           style: TextStyle(
-                      //             fontSize: normalSize,
-                      //             fontWeight: FontWeight.normal,
-                      //             color: Colors.white,
-                      //           ),
-                      //         ),
-                      //         SizedBox(
-                      //           height: height * 0.005,
-                      //         ),
-                      //         Text("Select the directory where your music is stored", style: TextStyle(
-                      //           fontSize: smallSize,
-                      //           fontWeight: FontWeight.normal,
-                      //           color: Colors.grey.shade50,
-                      //         ),),
-                      //       ],
-                      //     ),
-                      //     SizedBox(
-                      //       width: width * 0.025,
-                      //     ),
-                      //     const Tooltip(
-                      //       message: 'Changing the directory will clear the current queue and possibly make your playlists unusable.',
-                      //       child: Icon(
-                      //         Icons.warning,
-                      //       ),
-                      //     ),
-                      //     const Spacer(),
-                      //     ElevatedButton(
-                      //       style: ElevatedButton.styleFrom(
-                      //         foregroundColor: Colors.white, backgroundColor: Colors.grey.shade900,
-                      //         shape: RoundedRectangleBorder(
-                      //           borderRadius: BorderRadius.circular(width * 0.01),
-                      //         ),
-                      //       ),
-                      //       onPressed: () async {
-                      //         String directory = await FilePicker.platform.getDirectoryPath() ?? "";
-                      //         if(directory != "") {
-                      //           setState(() {
-                      //             SettingsController.directory = directory;
-                      //           });
-                      //           SettingsController.queue = [];
-                      //           SettingsController.index = 0;
-                      //           DataController.reset();
-                      //           if(mounted) {
-                      //             Navigator.pushReplacementNamed(context, '/');
-                      //           }
-                      //           // am.navigatorKey.currentState!.pop(MaterialPageRoute(builder: (context) => const HomeScreen()));
-                      //           // SettingsController.settingsBox.put(SettingsController.settings);
-                      //           // SettingsController.reset();
-                      //         }
-                      //       },
-                      //       child: Text(
-                      //         SettingsController.directory.length <= 40 ? SettingsController.directory : "${SettingsController.directory.substring(0, 40)}...",
-                      //         style: TextStyle(
-                      //           fontSize: normalSize,
-                      //           fontWeight: FontWeight.normal,
-                      //           color: Colors.white,
-                      //         ),
-                      //       ),
-                      //     ),
-                      //   ],
-                      // ),
+                      ///Music Directory
+                      DataTable(
+                        columns: [
+                          DataColumn(
+                            label: Text(
+                              "Folder",
+                              style: TextStyle(
+                                fontSize: normalSize,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                          DataColumn(
+                            label: Text(
+                              "Main",
+                              style: TextStyle(
+                                fontSize: normalSize,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                          DataColumn(
+                            headingRowAlignment: MainAxisAlignment.center,
+                            label: Text(
+                              "Include subfolders",
+                              style: TextStyle(
+                                fontSize: normalSize,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                          DataColumn(
+                            label: Text(
+                              "",
+                              style: TextStyle(
+                                fontSize: normalSize,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        ],
+                        rows: List<DataRow>.generate(
+                            appState.appSettings.songPlaces.length + 1,
+                          (index) {
+                            return index < appState.appSettings.songPlaces.length?
+                            DataRow(
+                              cells: [
+                                DataCell(
+                                  Text(
+                                    appState.appSettings.songPlaces[index],
+                                    style: TextStyle(
+                                      fontSize: normalSize,
+                                      fontWeight: FontWeight.normal,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ),
+                                DataCell(
+                                  IconButton(
+                                    icon: Icon(
+                                      appState.appSettings.mainSongPlace ==
+                                          appState.appSettings.songPlaces[index]
+                                          ? FluentIcons.checkCircleOn
+                                          : FluentIcons.checkCircleOff,
+                                      color: Colors.white,
+                                      size: height * 0.03,
+                                    ),
+                                    onPressed: appState.appSettings.songPlaces.length <= 1 ? null : () {
+                                      setState(() {
+                                        appState.appSettings.mainSongPlace =
+                                        appState.appSettings.songPlaces[index];
+                                      });
+                                    },
+                                  ),
+                                ),
+                                DataCell(
+                                  IconButton(
+                                    icon: Icon(
+                                      appState.appSettings.songPlaceIncludeSubfolders[index] == 1
+                                          ? FluentIcons.checkCircleOn
+                                          : FluentIcons.checkCircleOff,
+                                      color: Colors.white,
+                                      size: height * 0.03,
+                                    ),
+                                    onPressed: () {
+                                      if (appState.appSettings.songPlaceIncludeSubfolders[index] == 1) {
+                                        debugPrint("Setting to 0");
+                                        final updatedList = List<int>.from(
+                                            appState.appSettings.songPlaceIncludeSubfolders);
+                                        updatedList[index] = 0;
+                                        appState.appSettings.songPlaceIncludeSubfolders = updatedList;
+                                      } else {
+                                        debugPrint("Setting to 1");
+                                        final updatedList = List<int>.from(
+                                            appState.appSettings.songPlaceIncludeSubfolders);
+                                        updatedList[index] = 1;
+                                        appState.appSettings.songPlaceIncludeSubfolders = updatedList;
+                                      }
+                                      setState(() {});
+                                    },
+                                  ),
+                                ),
+                                DataCell(
+                                  IconButton(
+                                    icon: Icon(
+                                      FluentIcons.trash,
+                                      color: Colors.red,
+                                      size: height * 0.03,
+                                    ),
+                                    onPressed: () {
+                                      String current = appState.appSettings.songPlaces[index];
+                                      appState.appSettings.songPlaces = List<String>.from(appState.appSettings.songPlaces)..removeAt(index);
+                                      appState.appSettings.songPlaceIncludeSubfolders = List<int>.from(appState.appSettings.songPlaceIncludeSubfolders)..removeAt(index);
+                                      if (appState.appSettings.mainSongPlace == current) {
+                                        try {
+                                          appState.appSettings.mainSongPlace = appState.appSettings.songPlaces[0];
+                                        } catch (e) {
+                                          appState.appSettings.mainSongPlace = "";
+                                        }
+                                      }
+                                      setState(() {
+                                      });
+                                    },
+                                  ),
+                                ),
+                              ],
+                            ) :
+                            DataRow(
+                              cells: [
+                                const DataCell(
+                                  Text("")
+                                ),
+                                const DataCell(
+                                  Text("")
+                                ),
+                                const DataCell(
+                                  Text("")
+                                ),
+                                DataCell(
+                                  IconButton(
+                                    onPressed: () async {
+                                      String chosen = await FilePicker.platform.getDirectoryPath() ?? "";
+                                      if(chosen != "") {
+                                        //debugPrint(chosen);
+                                        appState.appSettings.songPlaces = List<String>.from(appState.appSettings.songPlaces)..add(chosen);
+                                        appState.appSettings.songPlaceIncludeSubfolders = List<int>.from(appState.appSettings.songPlaceIncludeSubfolders)..add(1);
+                                        setState(() {
+                                        });
+                                      }
+                                    },
+                                    tooltip: "Add Another Folder",
+                                    icon: Icon(FluentIcons.folderAdd, color: Colors.white, size: height * 0.03,),
+                                  ),
+                                ),
+                              ],
+                            );
+                          }
+                        ),
+                      ),
+                      Row(
+                        children: [
+                          const Spacer(),
+                          ElevatedButton(
+                            onPressed: () async {
+                              ///TODO - Find out why the fuck this isnt working
+                              await appState.settingsService.resetAudioSettings();
+                              appState.updateAppSettings();
+                              Navigator.of(context, rootNavigator: true).pushReplacement(
+                                LoadingScreen.route(),
+                              );
+                            },
+                            style: ElevatedButton.styleFrom(
+                              padding: EdgeInsets.symmetric(
+                                horizontal: width * 0.02,
+                                vertical: height * 0.01,
+                              ),
+                            ),
+                            child: Text(
+                              "Save changes",
+                              style: TextStyle(
+                                fontSize: normalSize,
+                                fontWeight: FontWeight.normal,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                       SizedBox(
                         height: height * 0.02,
-                      ),
-
-                      ///Add Order Settings
-                      Row(
-                        children: [
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                "Queue Add Order",
-                                style: TextStyle(
-                                  fontSize: normalSize,
-                                  fontWeight: FontWeight.normal,
-                                  color: Colors.white,
-                                ),
-                              ),
-                              SizedBox(
-                                height: height * 0.005,
-                              ),
-                              Text("Choose where the tracks are added to the queue", style: TextStyle(
-                                fontSize: smallSize,
-                                fontWeight: FontWeight.normal,
-                                color: Colors.grey.shade50,
-                              ),),
-                            ],
-                          ),
-                          SizedBox(
-                            width: width * 0.025,
-                          ),
-                          const Tooltip(
-                            message: 'At the beginning: Add the selected tracks at the beginning of the queue\nAfter Current: Add the selected tracks after the currently playing track\nAt the end: Add the selected tracks at the end of the queue',
-                            child: Icon(
-                              Icons.info,
-                            ),
-                          ),
-
-                          const Spacer(),
-                          DropdownButton<String>(
-                              value: appSettings.queueAdd,
-                              icon: Icon(
-                                FluentIcons.down,
-                                color: Colors.white,
-                                size: height * 0.025,
-                              ),
-                              style: TextStyle(
-                                fontSize: normalSize,
-                                fontWeight: FontWeight.normal,
-                                color: Colors.white,
-                              ),
-                              underline: Container(
-                                height: 0,
-                              ),
-                              borderRadius: BorderRadius.circular(width * 0.01),
-                              padding: EdgeInsets.zero,
-                              alignment: Alignment.center,
-                              items: const [
-                                DropdownMenuItem(
-                                  value: 'next',
-                                  child: Text("After Current"),
-                                ),
-                                DropdownMenuItem(
-                                  value: 'last',
-                                  child: Text("At the end"),
-                                ),
-                              ],
-                              onChanged: (String? newValue){
-                                setState(() {
-                                  appSettings.queueAdd = newValue ?? "last";
-                                });
-                                // appSettings.settingsBox.put(appSettings.settings);
-                              }
-                          ),
-
-
-
-                        ],
-                      ),
-                      SizedBox(
-                        height: height * 0.025,
-                      ),
-
-                      ///Play Settings
-                      Row(
-                        children: [
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                "Play Settings",
-                                style: TextStyle(
-                                  fontSize: normalSize,
-                                  fontWeight: FontWeight.normal,
-                                  color: Colors.white,
-                                ),
-                              ),
-                              SizedBox(
-                                height: height * 0.005,
-                              ),
-                              Text("Choose how you want playing a song to behave", style: TextStyle(
-                                fontSize: smallSize,
-                                fontWeight: FontWeight.normal,
-                                color: Colors.grey.shade50,
-                              ),),
-                            ],
-                          ),
-                          SizedBox(
-                            width: width * 0.025,
-                          ),
-                          const Tooltip(
-                            message: 'Play All Tracks: Replace the current queue with the playlist of the played track\nPlay Selected Track: Add the selected track to the queue',
-                            child: Icon(
-                              Icons.info,
-                            ),
-                          ),
-                          const Spacer(),
-                          DropdownButton<String>(
-                              value: appSettings.queuePlay,
-                              icon: Icon(
-                                FluentIcons.down,
-                                color: Colors.white,
-                                size: height * 0.025,
-                              ),
-                              style: TextStyle(
-                                fontSize: normalSize,
-                                fontWeight: FontWeight.normal,
-                                color: Colors.white,
-                              ),
-                              underline: Container(
-                                height: 0,
-                              ),
-                              borderRadius: BorderRadius.circular(width * 0.01),
-                              padding: EdgeInsets.zero,
-                              alignment: Alignment.center,
-                              items: const [
-                                DropdownMenuItem(
-                                  value: 'all',
-                                  child: Text("Play All Tracks"),
-                                ),
-                                DropdownMenuItem(
-                                  value: 'selected',
-                                  child: Text("Play Selected Track"),
-                                ),
-                              ],
-                              onChanged: (String? newValue){
-                                setState(() {
-                                  appSettings.queuePlay = newValue ?? "all";
-                                });
-                                // appSettings.settingsBox.put(appSettings.settings);
-                              }
-                          ),
-
-
-
-                        ],
-                      ),
-                      SizedBox(
-                        height: height * 0.025,
                       ),
 
                       Column(
@@ -340,137 +303,137 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         ],
                       ),
 
-                      // ///Playback Speed
-                      // Row(
-                      //   children: [
-                      //     Column(
-                      //       crossAxisAlignment: CrossAxisAlignment.start,
-                      //       mainAxisAlignment: MainAxisAlignment.center,
-                      //       children: [
-                      //         Text(
-                      //           "Playback Speed",
-                      //           style: TextStyle(
-                      //             fontSize: normalSize,
-                      //             fontWeight: FontWeight.normal,
-                      //             color: Colors.white,
-                      //           ),
-                      //         ),
-                      //         SizedBox(
-                      //           height: height * 0.005,
-                      //         ),
-                      //         Text("Set the playback speed to a certain value", style: TextStyle(
-                      //           fontSize: smallSize,
-                      //           fontWeight: FontWeight.normal,
-                      //           color: Colors.grey.shade50,
-                      //         ),),
-                      //       ],
-                      //     ),
-                      //     const Spacer(),
-                      //     ValueListenableBuilder(
-                      //         valueListenable: appSettings.speedNotifier,
-                      //         builder: (context, value, child){
-                      //           return SliderTheme(
-                      //             data: SliderThemeData(
-                      //               trackHeight: 2,
-                      //               thumbColor: Colors.white,
-                      //               thumbShape: RoundSliderThumbShape(enabledThumbRadius: height * 0.0075),
-                      //               showValueIndicator: ShowValueIndicator.always,
-                      //               activeTrackColor: lightColor,
-                      //               inactiveTrackColor: Colors.white,
-                      //               valueIndicatorColor: Colors.white,
-                      //               valueIndicatorTextStyle: TextStyle(
-                      //                 fontSize: smallSize,
-                      //                 color: Colors.black,
-                      //               ),
-                      //               valueIndicatorShape: const PaddleSliderValueIndicatorShape(),
-                      //             ),
-                      //             child: Slider(
-                      //               min: 0.0,
-                      //               max: 2.0,
-                      //               divisions: 20,
-                      //               label: "${value.toStringAsPrecision(2)}x",
-                      //               mouseCursor: SystemMouseCursors.click,
-                      //               value: value,
-                      //               onChanged: (double value) {
-                      //                 appSettings.speedNotifier.value = value;
-                      //                 AudioPlayerController.audioPlayer.setPlaybackRate(value);
-                      //               },
-                      //             ),
-                      //           );
-                      //         }
-                      //     ),
-                      //   ],
-                      // ),
-                      // SizedBox(
-                      //   height: height * 0.02,
-                      // ),
-                      //
-                      // ///Playback Balance
-                      // Row(
-                      //   children: [
-                      //     Column(
-                      //       crossAxisAlignment: CrossAxisAlignment.start,
-                      //       mainAxisAlignment: MainAxisAlignment.center,
-                      //       children: [
-                      //         Text(
-                      //           "Playback Balance",
-                      //           style: TextStyle(
-                      //             fontSize: normalSize,
-                      //             fontWeight: FontWeight.normal,
-                      //             color: Colors.white,
-                      //           ),
-                      //         ),
-                      //         SizedBox(
-                      //           height: height * 0.005,
-                      //         ),
-                      //         Text("Set the playback balance to a certain value", style: TextStyle(
-                      //           fontSize: smallSize,
-                      //           fontWeight: FontWeight.normal,
-                      //           color: Colors.grey.shade50,
-                      //         ),),
-                      //       ],
-                      //     ),
-                      //     const Spacer(),
-                      //     ValueListenableBuilder(
-                      //         valueListenable: appSettings.balanceNotifier,
-                      //         builder: (context, value, child){
-                      //           return SliderTheme(
-                      //             data: SliderThemeData(
-                      //               trackHeight: 2,
-                      //               thumbColor: Colors.white,
-                      //               thumbShape: RoundSliderThumbShape(enabledThumbRadius: height * 0.0075),
-                      //               showValueIndicator: ShowValueIndicator.always,
-                      //               activeTrackColor: lightColor,
-                      //               inactiveTrackColor: Colors.white,
-                      //               valueIndicatorColor: Colors.white,
-                      //               valueIndicatorTextStyle: TextStyle(
-                      //                 fontSize: smallSize,
-                      //                 color: Colors.black,
-                      //               ),
-                      //               valueIndicatorShape: const PaddleSliderValueIndicatorShape(),
-                      //             ),
-                      //             child: Slider(
-                      //               min: -1.0,
-                      //               max: 1.0,
-                      //               divisions: 10,
-                      //               mouseCursor: SystemMouseCursors.click,
-                      //               value: value,
-                      //               label: value < 0 ? "Left : ${value.toStringAsPrecision(2)}" : value > 0 ? "Right : ${value.toStringAsPrecision(2)}" : "Center",
-                      //               onChanged: (double value) {
-                      //                 appSettings.balanceNotifier.value = value;
-                      //                 AudioPlayerController.audioPlayer.setBalance(value);
-                      //               },
-                      //             ),
-                      //           );
-                      //         }
-                      //     ),
-                      //   ],
-                      // ),
-                      // SizedBox(
-                      //   height: height * 0.02,
-                      // ),
-                      //
-                      // ///Timer
+                      ///Playback Speed
+                      Row(
+                        children: [
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                "Playback Speed",
+                                style: TextStyle(
+                                  fontSize: normalSize,
+                                  fontWeight: FontWeight.normal,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              SizedBox(
+                                height: height * 0.005,
+                              ),
+                              Text("Set the playback speed to a certain value", style: TextStyle(
+                                fontSize: smallSize,
+                                fontWeight: FontWeight.normal,
+                                color: Colors.grey.shade50,
+                              ),),
+                            ],
+                          ),
+                          const Spacer(),
+                          ValueListenableBuilder(
+                              valueListenable: Provider.of<AudioProvider>(context, listen: false).playbackSpeedNotifier,
+                              builder: (context, value, child){
+                                return SliderTheme(
+                                  data: SliderThemeData(
+                                    trackHeight: 2,
+                                    thumbColor: Colors.white,
+                                    thumbShape: RoundSliderThumbShape(enabledThumbRadius: height * 0.0075),
+                                    showValueIndicator: ShowValueIndicator.always,
+                                    activeTrackColor: appState.lightColor,
+                                    inactiveTrackColor: Colors.white,
+                                    valueIndicatorColor: Colors.white,
+                                    valueIndicatorTextStyle: TextStyle(
+                                      fontSize: smallSize,
+                                      color: Colors.black,
+                                    ),
+                                    valueIndicatorShape: const PaddleSliderValueIndicatorShape(),
+                                  ),
+                                  child: Slider(
+                                    min: 0.0,
+                                    max: 2.0,
+                                    divisions: 20,
+                                    label: "${value.toStringAsPrecision(2)}x",
+                                    mouseCursor: SystemMouseCursors.click,
+                                    value: value,
+                                    onChanged: (double value) {
+                                      var audioProvider = Provider.of<AudioProvider>(context, listen: false);
+                                      audioProvider.setPlaybackSpeed(value);
+                                    },
+                                  ),
+                                );
+                              }
+                          ),
+                        ],
+                      ),
+                      SizedBox(
+                        height: height * 0.02,
+                      ),
+
+                      ///Playback Balance
+                      Row(
+                        children: [
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                "Playback Balance",
+                                style: TextStyle(
+                                  fontSize: normalSize,
+                                  fontWeight: FontWeight.normal,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              SizedBox(
+                                height: height * 0.005,
+                              ),
+                              Text("Set the playback balance to a certain value", style: TextStyle(
+                                fontSize: smallSize,
+                                fontWeight: FontWeight.normal,
+                                color: Colors.grey.shade50,
+                              ),),
+                            ],
+                          ),
+                          const Spacer(),
+                          ValueListenableBuilder(
+                              valueListenable: Provider.of<AudioProvider>(context, listen: false).balanceNotifier,
+                              builder: (context, value, child){
+                                return SliderTheme(
+                                  data: SliderThemeData(
+                                    trackHeight: 2,
+                                    thumbColor: Colors.white,
+                                    thumbShape: RoundSliderThumbShape(enabledThumbRadius: height * 0.0075),
+                                    showValueIndicator: ShowValueIndicator.always,
+                                    activeTrackColor: appState.lightColor,
+                                    inactiveTrackColor: Colors.white,
+                                    valueIndicatorColor: Colors.white,
+                                    valueIndicatorTextStyle: TextStyle(
+                                      fontSize: smallSize,
+                                      color: Colors.black,
+                                    ),
+                                    valueIndicatorShape: const PaddleSliderValueIndicatorShape(),
+                                  ),
+                                  child: Slider(
+                                    min: -1.0,
+                                    max: 1.0,
+                                    divisions: 10,
+                                    mouseCursor: SystemMouseCursors.click,
+                                    value: value,
+                                    label: value < 0 ? "Left : ${value.toStringAsPrecision(2)}" : value > 0 ? "Right : ${value.toStringAsPrecision(2)}" : "Center",
+                                    onChanged: (double value) {
+                                      var audioProvider = Provider.of<AudioProvider>(context, listen: false);
+                                      audioProvider.setBalance(value);
+                                    },
+                                  ),
+                                );
+                              }
+                          ),
+                        ],
+                      ),
+                      SizedBox(
+                        height: height * 0.02,
+                      ),
+
+                      ///Timer
                       // Row(
                       //   children: [
                       //     Column(
@@ -621,15 +584,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           ),
                           const Spacer(),
                           Switch(
-                            value: appSettings.systemTray,
+                            value: appState.appSettings.systemTray,
                             onChanged: (value){
                               setState(() {
-                                appSettings.systemTray = value;
+                                appState.appSettings.systemTray = value;
                               });
+                              appState.initTray();
                             },
-                            trackColor: WidgetStateProperty.all(lightColor),
+                            trackColor: WidgetStateProperty.all(appState.lightColor),
                             thumbColor: WidgetStateProperty.all(Colors.white),
-                            thumbIcon: WidgetStateProperty.all(appSettings.systemTray ? const Icon(Icons.check, color: Colors.black,) : const Icon(Icons.close, color: Colors.black,)),
+                            thumbIcon: WidgetStateProperty.all(appState.appSettings.systemTray ? const Icon(Icons.check, color: Colors.black,) : const Icon(Icons.close, color: Colors.black,)),
                             activeColor: Colors.white,
                           ),
 
@@ -667,61 +631,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           ),
                           const Spacer(),
                           Switch(
-                            value: !appSettings.fullClose,
+                            value: !appState.appSettings.fullClose,
                             onChanged: (value){
                               setState(() {
-                                appSettings.fullClose = !value;
+                                appState.appSettings.fullClose = !value;
                               });
                             },
-                            trackColor: WidgetStateProperty.all(lightColor),
+                            trackColor: WidgetStateProperty.all(appState.lightColor),
                             thumbColor: WidgetStateProperty.all(Colors.white),
-                            thumbIcon: WidgetStateProperty.all(!appSettings.fullClose ? const Icon(Icons.check, color: Colors.black,) : const Icon(Icons.close, color: Colors.black,)),
-                            activeColor: Colors.white,
-                          ),
-
-
-                        ],
-                      ),
-                      SizedBox(
-                        height: height * 0.02,
-                      ),
-
-                      ///In-App Notifications
-                      Row(
-                        children: [
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                "In-App Notifications",
-                                style: TextStyle(
-                                  fontSize: normalSize,
-                                  fontWeight: FontWeight.normal,
-                                  color: Colors.white,
-                                ),
-                              ),
-                              SizedBox(
-                                height: height * 0.005,
-                              ),
-                              Text("Show notifications in the app", style: TextStyle(
-                                fontSize: smallSize,
-                                fontWeight: FontWeight.normal,
-                                color: Colors.grey.shade50,
-                              ),),
-                            ],
-                          ),
-                          const Spacer(),
-                          Switch(
-                            value: appSettings.appNotifications,
-                            onChanged: (value){
-                              setState(() {
-                                appSettings.appNotifications = value;
-                              });
-                            },
-                            trackColor: WidgetStateProperty.all(lightColor),
-                            thumbColor: WidgetStateProperty.all(Colors.white),
-                            thumbIcon: WidgetStateProperty.all(appSettings.appNotifications ? const Icon(Icons.check, color: Colors.black,) : const Icon(Icons.close, color: Colors.black,)),
+                            thumbIcon: WidgetStateProperty.all(!appState.appSettings.fullClose ? const Icon(Icons.check, color: Colors.black,) : const Icon(Icons.close, color: Colors.black,)),
                             activeColor: Colors.white,
                           ),
 
@@ -784,7 +702,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           const Spacer(),
                           IconButton(
                               onPressed: () async {
-                                FilePickerResult? result = await FilePicker.platform.pickFiles(initialDirectory: appSettings.mainSongPlace, type: FileType.custom, allowedExtensions: ['m3u'], allowMultiple: false);
+                                FilePickerResult? result = await FilePicker.platform.pickFiles(initialDirectory: appState.appSettings.mainSongPlace, type: FileType.custom, allowedExtensions: ['m3u'], allowMultiple: false);
                                 if(result != null) {
                                   File file = File(result.files.single.path ?? "");
                                   List<String> lines = file.readAsLinesSync();
@@ -793,7 +711,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                   for (int i = 0; i < lines.length; i++) {
                                     lines[i] = lines[i].split("/").last;
                                   }
-                                  Navigator.pushNamed(context, '/create', arguments: [playlistName] + lines);
+                                  appState.navigatorKey.currentState?.push(CreateScreen.route(playlistName: playlistName, playlistPaths: lines, import: true));
+                                  // Navigator.pushNamed(context, '/create', arguments: [playlistName] + lines);
                                 }
 
                               },

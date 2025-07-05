@@ -27,7 +27,7 @@ class _TrackScreenState extends State<TrackScreen> {
     var height = MediaQuery.of(context).size.height;
     var boldSize = height * 0.025;
     var normalSize = height * 0.02;
-    var smallSize = height * 0.015;
+    //var smallSize = height * 0.015;
     return Scaffold(
       body: Container(
         width: width,

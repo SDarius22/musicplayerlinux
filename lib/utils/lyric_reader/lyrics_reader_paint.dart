@@ -196,7 +196,7 @@ class LyricsReaderPaint extends ChangeNotifier implements CustomPainter {
       }
       tmpHighlightWidth -= currentWidth;
       var dx = offset.dx + element.offset.dx;
-      if (lyricUI.getHighlightDirection() == HighlightDirection.RTL) {
+      if (lyricUI.getHighlightDirection() == HighlightDirection.rightToLeft) {
         dx += element.width;
         dx -= currentWidth;
       }
@@ -244,11 +244,11 @@ class LyricsReaderPaint extends ChangeNotifier implements CustomPainter {
   ///获取行绘制横向坐标
   double getLineOffsetX(TextPainter textPainter) {
     switch (lyricUI.getLyricHorizontalAlign()) {
-      case LyricAlign.LEFT:
+      case LyricAlign.left:
         return 0;
-      case LyricAlign.CENTER:
+      case LyricAlign.center:
         return (mSize.width - textPainter.width) / 2;
-      case LyricAlign.RIGHT:
+      case LyricAlign.right:
         return mSize.width - textPainter.width;
       }
   }

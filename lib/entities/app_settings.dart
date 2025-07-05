@@ -11,12 +11,8 @@ class AppSettings {
   bool firstTime = true;
   bool systemTray = true;
   bool fullClose = false;
-  bool appNotifications = true;
-  bool gridView = true;
 
   String mainSongPlace = '';
-  String queueAdd = 'last';
-  String queuePlay = 'all';
 
   List<String> songPlaces = [];
   List<int> songPlaceIncludeSubfolders = [];

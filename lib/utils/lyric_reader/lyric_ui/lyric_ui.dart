@@ -38,16 +38,16 @@ abstract class LyricUI {
   ///支持左中右对齐
   LyricAlign getLyricHorizontalAlign();
 
-  LyricBaseLine getBiasBaseLine() => LyricBaseLine.CENTER;
+  LyricBaseLine getBiasBaseLine() => LyricBaseLine.center;
 
   ///单行铺满后的居中方式
   TextAlign getLyricTextAlign() {
     switch (getLyricHorizontalAlign()) {
-      case LyricAlign.LEFT:
+      case LyricAlign.left:
         return TextAlign.left;
-      case LyricAlign.RIGHT:
+      case LyricAlign.right:
         return TextAlign.right;
-      case LyricAlign.CENTER:
+      case LyricAlign.center:
         return TextAlign.center;
     }
   }
@@ -60,7 +60,7 @@ abstract class LyricUI {
   //init progress animation scroll to position
   bool initAnimation() => false;
 
-  HighlightDirection getHighlightDirection() => HighlightDirection.LTR;
+  HighlightDirection getHighlightDirection() => HighlightDirection.leftToRight;
 
   Color getLyricHighlightColor() => Colors.amber;
 
@@ -81,9 +81,9 @@ abstract class LyricUI {
 }
 
 ///lyric align enum
-enum LyricAlign { LEFT, CENTER, RIGHT }
+enum LyricAlign { left, center, right }
 
-enum HighlightDirection { LTR, RTL }
+enum HighlightDirection { leftToRight, rightToLeft }
 
 ///lyric base line enum
-enum LyricBaseLine { MAIN_CENTER, CENTER, EXT_CENTER }
+enum LyricBaseLine { mainCenter, center, extCenter }

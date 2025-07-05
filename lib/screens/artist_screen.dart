@@ -40,7 +40,7 @@ class _ArtistScreenState extends State<ArtistScreen> {
             top: height * 0.02,
             left: width * 0.01,
             right: width * 0.01,
-            bottom: height * 0.02
+            bottom: height * 0.125
         ),
         alignment: Alignment.center,
         child: Column(

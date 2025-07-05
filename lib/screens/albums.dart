@@ -32,6 +32,7 @@ class _AlbumsState extends State<Albums>{
   ValueNotifier<List<Album>> selected = ValueNotifier<List<Album>>([]);
   FocusNode searchNode = FocusNode();
   Timer? _debounce;
+  final TextEditingController _controller = TextEditingController();
 
   @override
   void dispose() {
@@ -71,7 +72,7 @@ class _AlbumsState extends State<Albums>{
                     children: [
                       Expanded(
                         child: TextFormField(
-                          initialValue: '',
+                          controller: _controller,
                           focusNode: searchNode,
                           onChanged: (value) {
                             if (_debounce?.isActive ?? false) _debounce?.cancel();
@@ -100,7 +101,17 @@ class _AlbumsState extends State<Albums>{
                               color: Colors.white,
                               fontSize: smallSize,
                             ),
-                            labelText: 'Search', suffixIcon: Icon(FluentIcons.search, color: Colors.white, size: height * 0.02,),
+                            labelText: 'Search',
+                            suffixIcon: _controller.text.isNotEmpty
+                                ? IconButton(
+                              icon: Icon(Icons.clear, color: Colors.white, size: height * 0.03),
+                              onPressed: () {
+                                _controller.clear();
+                                albumProvider.setQuery("");
+                                searchNode.unfocus();
+                              },
+                            )
+                                : Icon(FluentIcons.search, color: Colors.white, size: height * 0.03),
                           ),
                         ),
                       ),

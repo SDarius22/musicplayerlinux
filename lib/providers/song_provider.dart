@@ -10,22 +10,26 @@ class SongProvider with ChangeNotifier {
   String query = '';
   String sortField = 'Name'; // Name or Duration
 
+  bool _finishedLoading  = true;
+
   late Future songsFuture;
 
   SongProvider(this._songService) {
     songsFuture = Future(() => _songService.getAllSongs());
 
 
-    // songsStream.throttleTime(const Duration(seconds: 10)).listen((_) {
-    //   debugPrint("Songs stream updated");
-    //   songsFuture = Future(() => _songService.getSongs(query, sortField, isAscending));
-    //   notifyListeners();
-    // });
-    //
-    // fileChangesStream.throttleTime(const Duration(seconds: 10)).listen((event) {
-    //   debugPrint("File changes detected $event");
-    //   notifyListeners();
-    // });
+    songsStream.throttleTime(const Duration(seconds: 10)).listen((_) {
+      if (!_finishedLoading) {
+        debugPrint("Songs stream updated");
+        songsFuture = Future(() => _songService.getSongs(query, sortField, isAscending));
+        notifyListeners();
+      }
+    });
+
+    fileChangesStream.throttleTime(const Duration(seconds: 10)).listen((event) {
+      debugPrint("File changes detected $event");
+      notifyListeners();
+    });
     
 
   }
@@ -70,6 +74,10 @@ class SongProvider with ChangeNotifier {
     return _songService.getSong(songPath);
   }
 
+  Song? getSongContaining(String query) {
+    return _songService.getSongContaining(query);
+  }
+
   List<Song> getSongs(String query, String sortField, bool flag) {
     return _songService.getSongs(query, sortField, flag);
   }
@@ -83,11 +91,13 @@ class SongProvider with ChangeNotifier {
   }
 
   Future<void> startLoadingSongs() async {
+    _finishedLoading = false;
     debugPrint("Loading songs...");
     try {
       await _songService.retrieveAllSongs();
     } catch (e) {
       debugPrint("Error loading songs: $e");
     }
+    _finishedLoading = true;
   }
 }

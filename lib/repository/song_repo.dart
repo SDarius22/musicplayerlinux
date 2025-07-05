@@ -18,6 +18,13 @@ class SongsRepository {
     return songBox.query(Song_.path.equals(path)).build().findUnique();
   }
 
+  Song? getSongContaining(String query)  {
+    if (query.isEmpty) {
+      return null;
+    }
+    return songBox.query(Song_.path.contains(query, caseSensitive: false)).build().findFirst();
+  }
+
   List<Song> getSongs(String query, String sortField, bool flag)  {
     Query<Song> builderQuery;
     if (flag == false) {

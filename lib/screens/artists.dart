@@ -31,7 +31,7 @@ class _ArtistsState extends State<Artists>{
   ValueNotifier<List<Artist>> selected = ValueNotifier<List<Artist>>([]);
   FocusNode searchNode = FocusNode();
   Timer? _debounce;
-
+  final TextEditingController _controller = TextEditingController();
 
   @override
   void dispose() {
@@ -70,7 +70,7 @@ class _ArtistsState extends State<Artists>{
                     children: [
                       Expanded(
                         child: TextFormField(
-                          initialValue: '',
+                          controller: _controller,
                           focusNode: searchNode,
                           onChanged: (value) {
                             if (_debounce?.isActive ?? false) _debounce?.cancel();
@@ -99,7 +99,17 @@ class _ArtistsState extends State<Artists>{
                               color: Colors.white,
                               fontSize: smallSize,
                             ),
-                            labelText: 'Search', suffixIcon: Icon(FluentIcons.search, color: Colors.white, size: height * 0.02,),
+                            labelText: 'Search',
+                            suffixIcon: _controller.text.isNotEmpty
+                                ? IconButton(
+                              icon: Icon(Icons.clear, color: Colors.white, size: height * 0.03),
+                              onPressed: () {
+                                _controller.clear();
+                                artistProvider.setQuery('');
+                                searchNode.unfocus();
+                              },
+                            )
+                                : Icon(FluentIcons.search, color: Colors.white, size: height * 0.03),
                           ),
                         ),
                       ),

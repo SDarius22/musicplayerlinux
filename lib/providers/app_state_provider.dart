@@ -50,6 +50,14 @@ class AppStateProvider with ChangeNotifier, TrayListener{
   }
 
   Future<void> initTray() async {
+    if (!appSettings.systemTray) {
+      try{
+        await trayManager.destroy();
+      } catch (e) {
+        debugPrint('Error destroying tray: $e');
+      }
+      return;
+    }
     MenuItem menuItemPlay = MenuItem(
       key: 'play',
       label: audioProvider.playingNotifier.value ? 'Pause' : 'Play',
