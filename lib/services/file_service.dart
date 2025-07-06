@@ -163,4 +163,12 @@ class FileService {
   static bool fileExists(String path) {
     return File(path).existsSync();
   }
+
+  static void exportPlaylist(String fileName, List<String> paths) {
+    var file = File(fileName);
+    file.writeAsStringSync("#EXTM3U\n");
+    for (var song in paths) {
+      file.writeAsStringSync('$song\n', mode: FileMode.append);
+    }
+  }
 }

@@ -28,7 +28,6 @@ class HomeScreen extends StatelessWidget {
           VolumeWidget(),
         ],
       ),
-      drawerEnableOpenDragGesture: true,
       body: Stack(
         children: [
           Row(

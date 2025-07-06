@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:musicplayer/providers/app_state_provider.dart';
 import 'package:musicplayer/providers/audio_provider.dart';
-import 'package:musicplayer/screens/create_screen.dart';
+import 'package:musicplayer/screens/add_or_export_screen.dart';
+import 'package:musicplayer/screens/create_or_import_screen.dart';
 import 'package:musicplayer/screens/loading_screen.dart';
 import 'package:musicplayer/utils/fluenticons/fluenticons.dart';
 import 'package:provider/provider.dart';
@@ -711,7 +712,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                   for (int i = 0; i < lines.length; i++) {
                                     lines[i] = lines[i].split("/").last;
                                   }
-                                  appState.navigatorKey.currentState?.push(CreateScreen.route(playlistName: playlistName, playlistPaths: lines, import: true));
+                                  appState.navigatorKey.currentState?.push(CreateOrImportScreen.route(playlistName: playlistName, playlistPaths: lines, import: true));
                                   // Navigator.pushNamed(context, '/create', arguments: [playlistName] + lines);
                                 }
 
@@ -752,7 +753,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           const Spacer(),
                           IconButton(
                               onPressed: (){
-                                Navigator.pushNamed(context, '/export');
+                                appState.navigatorKey.currentState?.push(AddOrExportScreen.route(export: true));
                               },
                               icon: Icon(FluentIcons.open, color: Colors.white, size: height * 0.03,)
                           ),

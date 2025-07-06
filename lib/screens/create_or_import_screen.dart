@@ -17,7 +17,7 @@ import 'package:provider/provider.dart';
 
 
 
-class CreateScreen extends StatefulWidget {
+class CreateOrImportScreen extends StatefulWidget {
   final String playlistName;
   final List<String> playlistPaths;
   final bool import;
@@ -27,7 +27,7 @@ class CreateScreen extends StatefulWidget {
     return PageRouteBuilder(
       settings: const RouteSettings(name: '/create', arguments: [String, List<String>, bool]),
       pageBuilder: (context, animation, secondaryAnimation) {
-        return CreateScreen(
+        return CreateOrImportScreen(
           playlistName: playlistName,
           playlistPaths: playlistPaths,
           import: import,
@@ -36,13 +36,13 @@ class CreateScreen extends StatefulWidget {
     );
   }
 
-  const CreateScreen({super.key, this.playlistName = "", this.playlistPaths = const [], this.import = false});
+  const CreateOrImportScreen({super.key, this.playlistName = "", this.playlistPaths = const [], this.import = false});
 
   @override
-  State<CreateScreen> createState() => _CreateScreenState();
+  State<CreateOrImportScreen> createState() => _CreateOrImportScreenState();
 }
 
-class _CreateScreenState extends State<CreateScreen> {
+class _CreateOrImportScreenState extends State<CreateOrImportScreen> {
   ValueNotifier<List<String>> selected = ValueNotifier<List<String>>([]);
   String playlistName = "";
   String playlistAdd = "last";

@@ -6,7 +6,7 @@ import 'package:musicplayer/entities/album.dart';
 import 'package:musicplayer/providers/albums_provider.dart';
 import 'package:musicplayer/providers/app_state_provider.dart';
 import 'package:musicplayer/providers/audio_provider.dart';
-import 'package:musicplayer/screens/add_screen.dart';
+import 'package:musicplayer/screens/add_or_export_screen.dart';
 import 'package:musicplayer/screens/album_screen.dart';
 import 'package:musicplayer/utils/fluenticons/fluenticons.dart';
 import 'package:provider/provider.dart';
@@ -291,7 +291,7 @@ class _AlbumsState extends State<Albums>{
                                               album.songs.sort((a, b) => a.trackNumber.compareTo(b.trackNumber));
                                               var appStateProvider = Provider.of<AppStateProvider>(context, listen: false);
                                               appStateProvider.navigatorKey.currentState!.push(
-                                                  AddScreen.route(songs: album.songs)
+                                                  AddOrExportScreen.route(songs: album.songs)
                                               );
                                               break;
                                             case 'playNext':
@@ -389,7 +389,7 @@ class _AlbumsState extends State<Albums>{
                           return album.songs;
                         }).toList();
                         appState.navigatorKey.currentState?.push(
-                          AddScreen.route(songs: songs),
+                          AddOrExportScreen.route(songs: songs),
                         ).then((value) {
                           selected.value = [];
                         });

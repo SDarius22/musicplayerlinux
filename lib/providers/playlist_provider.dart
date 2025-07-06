@@ -71,7 +71,6 @@ class PlaylistProvider with ChangeNotifier {
   }
 
 
-
   void addSongsToPlaylist(Playlist playlist, List<Song> songs) {
     _playlistService.addToPlaylist(playlist, songs);
     notifyListeners();

@@ -1,31 +1,36 @@
 import 'package:bot_toast/bot_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:musicplayer/components/custom_tiling/grid_component.dart';
+import 'package:musicplayer/providers/app_state_provider.dart';
 import 'package:musicplayer/providers/audio_provider.dart';
 import 'package:musicplayer/providers/playlist_provider.dart';
+import 'package:musicplayer/services/file_service.dart';
 import 'package:musicplayer/utils/fluenticons/fluenticons.dart';
 import 'package:musicplayer/entities/playlist.dart';
 import 'package:musicplayer/entities/song.dart';
 import 'package:provider/provider.dart';
 
-class AddScreen extends StatefulWidget {
-  static Route route({required List<Song> songs}) {
+class AddOrExportScreen extends StatefulWidget {
+  final List<Song> songs;
+  final bool export;
+
+  static Route route({List<Song> songs = const [], bool export = false}) {
     return PageRouteBuilder(
-      settings: const RouteSettings(name: '/add', arguments: List<Song>),
+      settings: const RouteSettings(name: '/add', arguments: [List<Song>, bool]),
       pageBuilder: (context, animation, secondaryAnimation) {
-        return AddScreen(songs: songs);
+        return AddOrExportScreen(songs: songs, export: export);
       },
     );
   }
 
-  final List<Song> songs;
-  const AddScreen({super.key, required this.songs});
+
+  const AddOrExportScreen({super.key, this.songs = const [], this.export = false});
 
   @override
-  State<AddScreen> createState() => _AddScreenState();
+  State<AddOrExportScreen> createState() => _AddOrExportScreenState();
 }
 
-class _AddScreenState extends State<AddScreen> {
+class _AddOrExportScreenState extends State<AddOrExportScreen> {
   ValueNotifier<List<Playlist>> selected = ValueNotifier<List<Playlist>>([]);
 
   @override
@@ -69,7 +74,9 @@ class _AddScreenState extends State<AddScreen> {
                   width: width * 0.01,
                 ),
                 Text(
-                  "Choose one or more playlists to add the selected songs to:",
+                  "Choose one or more playlists to ${
+                    widget.export ? 'export' : 'add to'
+                  }",
                   style: TextStyle(
                       color: Colors.white,
                       fontSize: normalSize,
@@ -86,6 +93,17 @@ class _AddScreenState extends State<AddScreen> {
                         return;
                       }
                       debugPrint("Add to new playlist");
+                      if (widget.export) {
+                        var appStateProvider = Provider.of<AppStateProvider>(context, listen: false);
+                        for (int i = 0; i < selected.value.length; i++) {
+                          Playlist playlist = selected.value[i];
+                          var fileName = "${appStateProvider.appSettings.mainSongPlace}/${playlist.name}.m3u";
+                          FileService.exportPlaylist(
+                            fileName,
+                            playlist.pathsInOrder,
+                          );
+                        }
+                      }
                       for(int i = 0; i < selected.value.length; i++){
                         Playlist playlist = selected.value[i];
                         if (playlist.indestructible && playlist.name == 'Current Queue') {
@@ -114,7 +132,7 @@ class _AddScreenState extends State<AddScreen> {
               child: Consumer<PlaylistProvider>(
                 builder: (_, playlistProvider, __){
                   return FutureBuilder(
-                      future: Future(() => playlistProvider.getNormalPlaylists()),
+                      future: Future(() => widget.export ? playlistProvider.getPlaylists() : playlistProvider.getNormalPlaylists()),
                       builder: (context, snapshot) {
                         if (snapshot.connectionState == ConnectionState.waiting) {
                           return Center(

@@ -4,7 +4,7 @@ import 'package:musicplayer/components/custom_tiling/list_component.dart';
 import 'package:musicplayer/entities/song.dart';
 import 'package:musicplayer/providers/app_state_provider.dart';
 import 'package:musicplayer/providers/audio_provider.dart';
-import 'package:musicplayer/screens/add_screen.dart';
+import 'package:musicplayer/screens/add_or_export_screen.dart';
 import 'package:musicplayer/utils/fluenticons/fluenticons.dart';
 import 'package:musicplayer/entities/artist.dart';
 import 'package:musicplayer/components/image_widget.dart';
@@ -151,7 +151,7 @@ class _ArtistScreenState extends State<ArtistScreen> {
                                       onPressed: (){
                                         debugPrint("Add ${widget.artist.name}");
                                         var appStateProvider = Provider.of<AppStateProvider>(context, listen: false);
-                                        appStateProvider.navigatorKey.currentState?.push(AddScreen.route(songs: widget.artist.songs));
+                                        appStateProvider.navigatorKey.currentState?.push(AddOrExportScreen.route(songs: widget.artist.songs));
                                       },
                                       icon: Icon(
                                         FluentIcons.add,

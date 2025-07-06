@@ -5,7 +5,7 @@ import 'package:musicplayer/providers/albums_provider.dart';
 import 'package:musicplayer/providers/app_state_provider.dart';
 import 'package:musicplayer/providers/audio_provider.dart';
 import 'package:musicplayer/providers/song_provider.dart';
-import 'package:musicplayer/screens/add_screen.dart';
+import 'package:musicplayer/screens/add_or_export_screen.dart';
 import 'package:musicplayer/screens/album_screen.dart';
 import 'package:musicplayer/screens/track_screen.dart';
 import 'package:musicplayer/utils/fluenticons/fluenticons.dart';
@@ -328,7 +328,7 @@ class _TracksState extends State<Tracks>{
                                               switch(value){
                                                 case 'add':
                                                   var appState = Provider.of<AppStateProvider>(context, listen: false);
-                                                  appState.navigatorKey.currentState?.push(AddScreen.route(songs: [entity as Song]));
+                                                  appState.navigatorKey.currentState?.push(AddOrExportScreen.route(songs: [entity as Song]));
                                                   break;
                                                 case 'playNext':
                                                   var audioProvider = Provider.of<AudioProvider>(context, listen: false);
@@ -427,7 +427,7 @@ class _TracksState extends State<Tracks>{
                         }
                         var appState = Provider.of<AppStateProvider>(context, listen: false);
                         appState.navigatorKey.currentState?.push(
-                          AddScreen.route(songs: selected.value),
+                          AddOrExportScreen.route(songs: selected.value),
                         ).then((value) {
                           selected.value = [];
                         });

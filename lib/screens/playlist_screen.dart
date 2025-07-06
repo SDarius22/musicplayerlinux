@@ -7,7 +7,7 @@ import 'package:musicplayer/entities/song.dart';
 import 'package:musicplayer/providers/app_state_provider.dart';
 import 'package:musicplayer/providers/audio_provider.dart';
 import 'package:musicplayer/providers/playlist_provider.dart';
-import 'package:musicplayer/screens/add_screen.dart';
+import 'package:musicplayer/screens/add_or_export_screen.dart';
 import 'package:musicplayer/utils/fluenticons/fluenticons.dart';
 import 'package:musicplayer/entities/playlist.dart';
 import 'package:musicplayer/components/image_widget.dart';
@@ -269,7 +269,7 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
                                     onPressed: (){
                                       debugPrint("Add ${widget.playlist.name}");
                                       var appStateProvider = Provider.of<AppStateProvider>(context, listen: false);
-                                      appStateProvider.navigatorKey.currentState?.push(AddScreen.route(songs: widget.playlist.songs));
+                                      appStateProvider.navigatorKey.currentState?.push(AddOrExportScreen.route(songs: widget.playlist.songs));
                                     },
                                     icon: Icon(
                                       FluentIcons.add,

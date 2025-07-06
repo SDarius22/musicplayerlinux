@@ -5,8 +5,8 @@ import 'package:musicplayer/components/custom_tiling/grid_tile.dart';
 import 'package:musicplayer/providers/app_state_provider.dart';
 import 'package:musicplayer/providers/audio_provider.dart';
 import 'package:musicplayer/providers/playlist_provider.dart';
-import 'package:musicplayer/screens/add_screen.dart';
-import 'package:musicplayer/screens/create_screen.dart';
+import 'package:musicplayer/screens/add_or_export_screen.dart';
+import 'package:musicplayer/screens/create_or_import_screen.dart';
 import 'package:musicplayer/screens/playlist_screen.dart';
 import 'package:musicplayer/utils/fluenticons/fluenticons.dart';
 import 'package:flutter/material.dart';
@@ -298,7 +298,7 @@ class _PlaylistsState extends State<Playlists>{
                                               });
                                               var appStateProvider = Provider.of<AppStateProvider>(context, listen: false);
                                               appStateProvider.navigatorKey.currentState!.push(
-                                                  AddScreen.route(songs: playlist.songs)
+                                                  AddOrExportScreen.route(songs: playlist.songs)
                                               );
                                               break;
                                             case 'playNext':
@@ -343,7 +343,7 @@ class _PlaylistsState extends State<Playlists>{
                                           debugPrint("Create new playlist tapped");
                                           var appState = Provider.of<AppStateProvider>(context, listen: false);
                                           appState.navigatorKey.currentState?.push(
-                                            CreateScreen.route()
+                                            CreateOrImportScreen.route()
                                           );
                                         },
                                         onLongPress: () {
@@ -422,7 +422,7 @@ class _PlaylistsState extends State<Playlists>{
                           return playlist.songs;
                         }).toList();
                         appState.navigatorKey.currentState?.push(
-                          AddScreen.route(songs: songs),
+                          AddOrExportScreen.route(songs: songs),
                         ).then((value) {
                           selected.value = [];
                         });

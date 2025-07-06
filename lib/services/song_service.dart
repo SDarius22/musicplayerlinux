@@ -173,6 +173,7 @@ class SongService {
     for (final file in audioFiles) {
       final song = songRepo.getSong(file.path);
       if (song == null) {
+        debugPrint("Adding new song: ${file.path}");
         final song = Song();
         song.path = file.path;
         song.name = file.path.split('/').last;

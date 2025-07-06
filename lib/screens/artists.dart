@@ -6,7 +6,7 @@ import 'package:musicplayer/entities/artist.dart';
 import 'package:musicplayer/providers/app_state_provider.dart';
 import 'package:musicplayer/providers/artist_provider.dart';
 import 'package:musicplayer/providers/audio_provider.dart';
-import 'package:musicplayer/screens/add_screen.dart';
+import 'package:musicplayer/screens/add_or_export_screen.dart';
 import 'package:musicplayer/screens/artist_screen.dart';
 import 'package:musicplayer/utils/fluenticons/fluenticons.dart';
 import 'package:provider/provider.dart';
@@ -286,7 +286,7 @@ class _ArtistsState extends State<Artists>{
                                               Artist artist = entity as Artist;
                                               var appStateProvider = Provider.of<AppStateProvider>(context, listen: false);
                                               appStateProvider.navigatorKey.currentState!.push(
-                                                  AddScreen.route(songs: artist.songs)
+                                                  AddOrExportScreen.route(songs: artist.songs)
                                               );
                                               break;
                                             case 'playNext':
@@ -380,7 +380,7 @@ class _ArtistsState extends State<Artists>{
                         var appState = Provider.of<AppStateProvider>(context, listen: false);
                         var songs = selected.value.expand((artist) => artist.songs).toList();
                         appState.navigatorKey.currentState?.push(
-                          AddScreen.route(songs: songs),
+                          AddOrExportScreen.route(songs: songs),
                         ).then((value) {
                           selected.value = [];
                         });
