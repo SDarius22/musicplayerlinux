@@ -133,15 +133,7 @@ class _ImageWidgetState extends State<ImageWidget> {
       future: imageFuture,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return Container(
-            decoration: BoxDecoration(
-                color: Colors.black,
-                image: DecorationImage(
-                  fit: BoxFit.cover,
-                  image: image,
-                )
-            ),
-          );
+          return imageWidget(image);
         }
         return imageWidget(snapshot.data ?? image);
       },

@@ -73,7 +73,7 @@ class _PlaylistsState extends State<Playlists>{
                     children: [
                       Expanded(
                         child: TextFormField(
-                          initialValue: '',
+                          controller: _controller,
                           focusNode: searchNode,
                           onChanged: (value) {
                             if (_debounce?.isActive ?? false) _debounce?.cancel();

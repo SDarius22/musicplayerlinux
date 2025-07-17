@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:collection/collection.dart';
@@ -17,6 +18,7 @@ class AppAudioService extends BaseAudioHandler {
   late final SongService songService;
 
   Song? currentSong = Song();
+  ValueNotifier<bool> currentSongNotifier = ValueNotifier<bool>(false);
   Uint8List? image;
 
 
@@ -69,11 +71,6 @@ class AppAudioService extends BaseAudioHandler {
     playbackState.add(playbackState.value.copyWith(
       controls: [MediaControl.skipToNext],
     ));
-    // await seek(Duration.zero);
-    // audioSettings.index = (audioSettings.index + 1) % audioSettings.queue.length;
-    // settingsService.updateAudioSettings(audioSettings);
-    // await updateCurrentSong();
-    // await play();
     await setCurrentIndex(audioSettings.currentQueue[
       (audioSettings.index + 1) % audioSettings.currentQueue.length
     ]);
@@ -186,6 +183,33 @@ class AppAudioService extends BaseAudioHandler {
     currentSong?.playCount = (existingSong?.playCount ?? 0) + 1;
     debugPrint("Current song updated: ${currentSong?.name}, play count: ${currentSong?.playCount}");
     songService.updateSong(currentSong!);
+    currentSongNotifier.value = !currentSongNotifier.value;
+    changeMediaItem();
+  }
+
+  Future<void> changeMediaItem() async {
+    File tempFile = await FileService.createWorkaroundFile(image ?? Uint8List(0), currentSong?.id ?? 0);
+    if (Platform.isLinux) {
+      MediaItem item = MediaItem(
+          id: currentSong?.id.toString() ?? '-1',
+          album: currentSong?.album ?? 'Unknown Album',
+          title: currentSong?.name ?? 'Unknown Song',
+          artist: currentSong?.trackArtist ?? 'Unknown Artist',
+          duration: Duration(milliseconds: currentSong?.duration ?? 0),
+          artUri: tempFile.uri
+      );
+      mediaItem.add(item);
+    }
+    // else if (Platform.isWindows){
+    //   AppAudioHandler.audioHandler.updateMetadata(
+    //     MusicMetadata(
+    //       title: song.title,
+    //       album: song.album,
+    //       albumArtist: song.albumArtist,
+    //       artist: song.trackArtist,
+    //     ),
+    //   );
+    // }
   }
 
   Future<Duration> getDuration() async {

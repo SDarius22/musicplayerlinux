@@ -92,14 +92,6 @@ class SongService {
     }
   }
 
-  int getSongCount() {
-    try {
-      return songRepo.getTotalSongsCount();
-    } catch (e) {
-      debugPrint("Error fetching song count: $e");
-      return 0;
-    }
-  }
 
   void updateSong(Song song) {
     if (song.path.isEmpty) {

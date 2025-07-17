@@ -12,10 +12,7 @@ import 'package:provider/provider.dart';
 
 class LyricsTab extends StatelessWidget {
   final bool oneLine;
-  LyricsTab({super.key, this.oneLine = false});
-
-
-  final ScrollController itemScrollController = ScrollController();
+  const LyricsTab({super.key, this.oneLine = false});
 
   @override
   Widget build(BuildContext context) {
@@ -138,37 +135,5 @@ class LyricsTab extends StatelessWidget {
         );
       },
     );
-
-    // return FutureBuilder(
-    //   future: Future(() async {
-    //     try {
-    //       // List<String> lyrics = await DataController.getLyrics(SettingsController.currentSongPath);
-    //       List<String> lyrics = ["No lyrics found", "No lyrics found"];
-    //       return lyrics;
-    //     } catch (e) {
-    //       debugPrint(e.toString());
-    //       return ["No lyrics found", "No lyrics found"];
-    //     }
-    //   }),
-    //   builder: (context, snapshot){
-    //     if(snapshot.hasData){
-    //       String plainLyric = snapshot.data![0];
-    //       var lyricModel = LyricsModelBuilder.create().bindLyricToMain(snapshot.data![1]).getModel();
-    //
-    //     }
-    //     else {
-    //       return Center(
-    //           child: Text(
-    //             "Searching for lyrics...",
-    //             style: TextStyle(
-    //               color: Colors.white,
-    //               fontSize: normalSize,
-    //               fontWeight: FontWeight.normal,
-    //             ),
-    //           )
-    //       );
-    //     }
-    //   }
-    // );
   }
 }

@@ -23,7 +23,7 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     AppStateProvider appStateProvider = Provider.of<AppStateProvider>(context, listen: false);
     return Scaffold(
-      appBar: AppBarWidget(
+      appBar: const AppBarWidget(
         actions: [
           VolumeWidget(),
         ],

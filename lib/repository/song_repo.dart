@@ -76,10 +76,6 @@ class SongsRepository {
     return songBox.query().order(Song_.name).build().find();
   }
 
-  int getTotalSongsCount()  {
-    return songBox.count();
-  }
-
   void deleteSong(Song song)  {
      songBox.remove(song.id);
   }

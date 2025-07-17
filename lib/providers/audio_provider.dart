@@ -5,7 +5,6 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:musicplayer/entities/song.dart';
 import 'package:musicplayer/services/app_audio_service.dart';
-import 'package:musicplayer/services/file_service.dart';
 import 'package:musicplayer/services/settings_service.dart';
 import 'package:musicplayer/services/song_service.dart';
 
@@ -45,7 +44,6 @@ class AudioProvider with ChangeNotifier {
       }
       await _audioHandler?.updateCurrentSong();
       await _audioHandler?.initSettings();
-      await changeMediaItem();
       queueFuture = Future(() => _audioHandler?.getQueue());
       repeatNotifier.value = _audioHandler?.audioSettings.repeat ?? false;
       shuffleNotifier.value = _audioHandler?.audioSettings.shuffle ?? false;
@@ -53,6 +51,10 @@ class AudioProvider with ChangeNotifier {
       balanceNotifier.value = _audioHandler?.audioSettings.balance ?? 0.0;
       volumeNotifier.value = _audioHandler?.audioSettings.volume ?? 0.5;
 
+      _audioHandler?.currentSongNotifier.addListener(() {
+        debugPrint("Current song changed: ${_audioHandler?.currentSong?.path}");
+        notifyListeners();
+      });
       audioPlayer.onPositionChanged.listen((Duration event) {
         sliderNotifier.value = event.inMilliseconds;
         _audioHandler?.setSlider(event.inMilliseconds);
@@ -158,7 +160,6 @@ class AudioProvider with ChangeNotifier {
     //   final apc = AudioPlayerController();
     //   await apc.skipToNext();
     //}
-    await changeMediaItem();
     notifyListeners();
   }
 
@@ -170,7 +171,6 @@ class AudioProvider with ChangeNotifier {
     //   final apc = AudioPlayerController();
     //   await apc.skipToPrevious();
     // }
-    await changeMediaItem();
     notifyListeners();
   }
 
@@ -357,34 +357,7 @@ class AudioProvider with ChangeNotifier {
     //   final apc = AudioPlayerController();
     //   await apc.updateCurrentSong();
     // }
-    await changeMediaItem();
     notifyListeners();
-  }
-
-  Future<void> changeMediaItem() async {
-    File tempFile = await FileService.createWorkaroundFile(
-        _audioHandler?.image ?? Uint8List(0), currentSong.id);
-    if (Platform.isLinux) {
-      platform_service.MediaItem item = platform_service.MediaItem(
-          id: currentSong.id.toString(),
-          album: currentSong.album,
-          title: currentSong.name,
-          artist: currentSong.trackArtist,
-          duration: Duration(milliseconds: currentSong.duration),
-          artUri: tempFile.uri
-      );
-      _audioHandler?.mediaItem.add(item);
-    }
-    // else if (Platform.isWindows){
-    //   AppAudioHandler.audioHandler.updateMetadata(
-    //     MusicMetadata(
-    //       title: song.title,
-    //       album: song.album,
-    //       albumArtist: song.albumArtist,
-    //       artist: song.trackArtist,
-    //     ),
-    //   );
-    // }
   }
 
     // try{
